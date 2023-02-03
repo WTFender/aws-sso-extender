@@ -8,6 +8,7 @@
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript",
+    "plugin:vue/vue3-recommended",
     "@vue/typescript/recommended"
   ],
   "ignorePatterns": ["dist/*"],

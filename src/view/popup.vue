@@ -8,16 +8,16 @@
 import extension from "../extension";
 
 export default {
-  name: "popupView",
-  created() {
-    extension.loadData().then((data) => {
-      this.data = data;
-    });
-  },
+  name: "PopupView",
   data() {
     return {
       data: {},
     };
+  },
+  created() {
+    extension.loadData().then((data) => {
+      this.data = data;
+    });
   },
 };
 </script>
