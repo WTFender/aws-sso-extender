@@ -6,10 +6,10 @@
 
 <script>
 export default {
-  name: "OptionsView",
+  name: 'OptionsView', // comment
   data() {
     return {
-      msg: "options",
+      msg: 'options',
     };
   },
 };
