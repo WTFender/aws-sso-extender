@@ -17,7 +17,7 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "linebreak-style": ["error", "windows"],
+    "linebreak-style": "off",
     "no-console": "error",
     "@typescript-eslint/no-unused-vars": ["error"],
     "import/extensions": [
@@ -29,6 +29,6 @@
         "ts": "never",
         "tsx": "never"
       }
-   ]
+    ]
   }
 }

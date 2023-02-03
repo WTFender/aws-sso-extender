@@ -1,14 +1,13 @@
 {
   "scripts": {
-    "pretty": "pretty-quick --staged",
-    "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "build-watch": "vue-cli-service --env.NODE_ENV=development build-watch --mode development",
-    "prepare": "husky install"
+    "watch": "vue-cli-service --env.NODE_ENV=development build-watch --mode development",
+    "pretty": "pretty-quick",
+    "pretty-staged": "pretty-quick --staged"
   },
   "lint-staged": {
-    "*.{ts,tsx}": "eslint --ext .ts --fix src/"
+    "*.{ts,tsx}": "eslint -c .eslintrc.json --ext .ts --fix src/"
   },
   "types": "src/types.d.ts",
   "dependencies": {

@@ -1,9 +1,9 @@
 function buildAppProfileRows(data: ExtensionData) {
-    // TODO clear rows
-    const rows = [];
-    data.apps.forEach((app) => {
+  // TODO clear rows
+  const rows = [];
+  data.apps.forEach((app) => {
     app.profiles.forEach((appProfile) => {
-        rows.push(appProfile);
+      rows.push(appProfile);
     });
   });
 }
@@ -11,7 +11,11 @@ function buildAppProfileRows(data: ExtensionData) {
 function showMenu(data: ExtensionData) {
   // eslint-disable-next-line no-console
   console.log(data);
-  (document.getElementById('json') as HTMLInputElement).value = JSON.stringify(data, null, 4);
+  (document.getElementById('json') as HTMLInputElement).value = JSON.stringify(
+    data,
+    null,
+    4,
+  );
   document.getElementById('config').style.display = 'block';
   buildAppProfileRows(data);
 }
