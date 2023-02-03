@@ -1,7 +1,7 @@
 todo
 
 # Built files
-extension/extension.js
+dist/
 
 # Logs
 logs

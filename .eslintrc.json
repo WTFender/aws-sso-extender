@@ -10,7 +10,7 @@
     "plugin:import/typescript",
     "@vue/typescript/recommended"
   ],
-  "ignorePatterns": ["extension/*"],
+  "ignorePatterns": ["dist/*"],
   "parser": "vue-eslint-parser",
   "parserOptions": {
     "ecmaVersion": 13

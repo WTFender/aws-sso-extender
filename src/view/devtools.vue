@@ -1,14 +1,12 @@
 <template>
-  <div class="main_app">
-    <pre>{{data}}</pre>
-  </div>
+  <pre>{{ data }}</pre>
 </template>
 
 <script>
-import extension from '../entry/extension';
+import extension from "../extension";
 
 export default {
-  name: 'devtoolsView',
+  name: "devtoolsView",
   created() {
     extension.loadData().then((data) => {
       this.data = JSON.stringify(data, null, 2);
@@ -20,16 +18,4 @@ export default {
     };
   },
 };
-
 </script>
-
-<style>
-.main_app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: left;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
+    "moduleResolution": "node",
     "target": "esnext",
-    "lib": ["dom", "es2021"],
-    "outDir": "extension"
+    "lib": ["dom", "es2021"]
   },
   "typings": "src/types.d.ts"
 }

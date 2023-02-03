@@ -1,26 +1,30 @@
 <template>
   <div class="main_app">
-    <h1>Hello {{msg}}</h1>
+    <h1>{{ JSON.stringify(data) }}</h1>
   </div>
 </template>
 
 <script>
-import extension from '../entry/extension';
+import extension from "../extension";
 
 export default {
-  name: 'popupView',
+  name: "popupView",
+  created() {
+    extension.loadData().then((data) => {
+      this.data = data;
+    });
+  },
   data() {
     return {
-      msg: extension.a,
+      data: {},
     };
   },
 };
-
 </script>
 
 <style>
 .main_app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

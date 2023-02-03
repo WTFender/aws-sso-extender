@@ -1,3 +1,3 @@
-import extension from './extension';
+import extension from '../extension';
 
 extension.run();
