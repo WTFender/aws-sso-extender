@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["dom", "es2021"],
+    "outDir": "extension"
+  },
+  "typings": "src/types.d.ts"
+}
