@@ -3,10 +3,10 @@
 </template>
 
 <script>
-import extension from "../extension";
+import extension from '../extension';
 
 export default {
-  name: "DevtoolsView",
+  name: 'DevtoolsView',
   data() {
     return {
       data: {},

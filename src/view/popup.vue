@@ -5,10 +5,10 @@
 </template>
 
 <script>
-import extension from "../extension";
+import extension from '../extension';
 
 export default {
-  name: "PopupView",
+  name: 'PopupView',
   data() {
     return {
       data: {},
