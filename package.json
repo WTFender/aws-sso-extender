@@ -7,7 +7,7 @@
     "pretty-staged": "pretty-quick --staged"
   },
   "lint-staged": {
-    "*.{ts,tsx}": "eslint -c .eslintrc.json --ext .ts --fix src/"
+    "*.{ts,tsx}": "eslint -c .eslintrc.json --ext .ts --ext .vue src/"
   },
   "types": "src/types.d.ts",
   "dependencies": {
