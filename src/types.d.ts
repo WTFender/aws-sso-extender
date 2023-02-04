@@ -20,6 +20,7 @@ type AppData = {
   id: string;
   name: string;
   profiles: AppProfileData[];
+  profile?: AppProfileData;
   searchMetadata: {
     AccountId: string;
     AccountName: string;
