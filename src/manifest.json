@@ -20,10 +20,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'"
-  },
-  "cross_origin_embedder_policy": {
-    "value": "require-corp"
+    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src https://static.global.sso.amazonaws.com/"
   },
   "cross_origin_opener_policy": {
     "value": "same-origin"

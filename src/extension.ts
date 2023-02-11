@@ -112,6 +112,7 @@ class Extension {
     data[this.config.name] = JSON.stringify({
       user: this.user,
       apps: this.apps,
+      updatedAt: Date.now(),
     });
     this.log(data);
     chrome.storage.sync.set(data);

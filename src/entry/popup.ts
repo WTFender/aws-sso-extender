@@ -2,7 +2,7 @@ import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import DataView from 'primevue/dataview';
+import InputText from 'primevue/inputtext';
 import App from '../view/popup.vue';
 import 'primevue/resources/themes/lara-light-indigo/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -13,5 +13,5 @@ app.use(PrimeVue);
 app.component('DataTable', DataTable);
 // eslint-disable-next-line vue/multi-word-component-names
 app.component('Column', Column);
-app.component('DataView', DataView);
+app.component('InputText', InputText);
 app.mount('#app');
