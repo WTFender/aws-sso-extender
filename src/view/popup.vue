@@ -17,11 +17,14 @@
       state-key="dt-state-demo-local2"
     >
       <template #header>
-        <span class="p-input-icon-left">
+        <span
+          class="p-input-icon-left"
+          style="width: 100%"
+        >
           <i class="pi pi-search" />
           <InputText
             v-model="filters1['global'].value"
-            style="min-width: 150%"
+            style="width: 100%"
             placeholder="Search Profiles"
           />
         </span>
@@ -155,6 +158,7 @@
         :row-editor="true"
         style="width:10%; min-width:8rem"
         body-style="text-align:center"
+        header-style="display: none;"
       />
       <Column
         :style="{'width':'20px'}"
