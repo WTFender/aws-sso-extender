@@ -186,8 +186,8 @@ class Extension {
 }
 
 const extensionConfig = {
-  name: 'aws-sso-qs',
-  debug: true,
+  name: 'aws-sso-ext',
+  debug: false,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

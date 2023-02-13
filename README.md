@@ -1,1 +1,1 @@
-# aws-sso-enhancer
+# aws-sso-extender
