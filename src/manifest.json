@@ -26,6 +26,5 @@
     "value": "same-origin"
   },
   "permissions": ["cookies", "tabs", "storage"],
-  "options_page": "options.html",
   "devtools_page": "devtools.html"
 }
