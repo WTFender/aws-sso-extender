@@ -9,17 +9,26 @@
       @updateProfile="updateProfile"
       @updateProfileLabel="updateProfileLabel"
     />
-    <div v-if="page === 'settings'">
-      <form>
-        <PrimeButton
-          class="p-button-danger"
-          label="Reset Preferences"
-          @click="resetCustom()"
-        />
-      </form>
+    <div
+      v-if="page === 'settings'"
+      class="settings"
+    >
+      <PrimeButton
+        class="p-button-warning reset-button"
+        label="Reset Preferences"
+        style="margin-right: 15px"
+        @click="resetCustom()"
+      />
+      <PrimeButton
+        class="p-button-danger reset-button"
+        label="Reset All Data"
+        @click="resetData()"
+      />
     </div>
-    <pre v-if="page === 'json' && config.debug">
-      <br>
+    <pre
+      v-if="page === 'json' && config.debug"
+      class="json"
+    >
       {{ '\n'+dataJson }}
     </pre>
     <div class="footer" />
@@ -64,7 +73,7 @@ export default {
     return {
       config: {},
       dataJson: {},
-      staleHours: 24,
+      staleHours: 1,
       status: {
         message: '',
         status: 'unknown',
@@ -78,8 +87,8 @@ export default {
   },
   computed: {
     staleData() {
-      // const limit = this.staleHours * 1000 * 60 * 60;
-      if ((Date.now()) > this.updatedAt) {
+      const limit = this.staleHours * 1000 * 60 * 60;
+      if ((Date.now() - limit) > this.updatedAt) {
         return true;
       }
       return false;
@@ -102,10 +111,7 @@ export default {
       this.user = data.user;
       this.custom = data.custom;
       this.appProfiles = this.customizeProfiles(data.appProfiles);
-      extension.log(this.custom);
-      extension.log(this.user);
-      extension.log(this.appProfiles);
-      extension.log(this.updatedAt);
+      if (this.faveProfiles.length > 0) { this.page = 'favorites'; }
       if (this.staleData) {
         this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
       } else {
@@ -131,12 +137,20 @@ export default {
       });
       return customProfiles;
     },
+    resetData() {
+      this.custom = {};
+      this.appProfiles = [];
+      this.user = {};
+      extension.resetData();
+      this.page = 'profiles';
+    },
     resetCustom() {
       this.custom = {};
       extension.saveCustom(this.custom);
       extension.loadData().then((data) => {
         this.appProfiles = this.customizeProfiles(data.appProfiles);
       });
+      this.page = 'profiles';
     },
     updateProfile(appProfile) {
       this.custom[appProfile.profile.id] = appProfile.profile.custom;
@@ -253,5 +267,9 @@ export default {
 .footer-icon:hover {
   color: #343a40;
   cursor: pointer;
+}
+.json, .settings {
+  margin: 15px;
+  padding: 15px;
 }
 </style>

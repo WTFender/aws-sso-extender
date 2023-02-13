@@ -52,13 +52,12 @@
       </template>
     </Column>
     <Column
-      field="profile.custom.favorite"
+      field="applicationName"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
     </Column>
-
     <Column
       field="profile.name"
       header-style="display: none;"

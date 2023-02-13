@@ -152,6 +152,12 @@ class Extension {
     this.saveData(`${this.config.name}-custom`, custom);
   }
 
+  resetData() {
+    this.saveData(`${this.config.name}-user`, {});
+    this.saveData(`${this.config.name}-custom`, {});
+    this.saveData(`${this.config.name}-profiles`, {});
+  }
+
   saveData(dataKey, data) {
     this.log(`func:saveData:${dataKey}`);
     const dataObj = {};
