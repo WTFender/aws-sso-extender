@@ -35,7 +35,7 @@ class Extension {
           );
         });
         Promise.all(profiles).then(() => {
-          this.saveData();
+          this.updateData();
           this.loaded = true;
         });
       });
@@ -101,26 +101,81 @@ class Extension {
 
   async loadData() {
     this.log('func:loadData');
-    const dataKey = this.config.name;
-    const data = await chrome.storage.sync.get(dataKey);
-    return JSON.parse(data[dataKey]);
-  }
-
-  saveData() {
-    this.log('func:saveData');
-    const data = {};
-    data[this.config.name] = JSON.stringify({
-      user: this.user,
-      apps: this.apps,
-      updatedAt: Date.now(),
+    const customKey = `${this.config.name}-custom`;
+    const customData = await chrome.storage.sync.get(customKey);
+    const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
+    const userKey = `${this.config.name}-user`;
+    const userData = await chrome.storage.sync.get(userKey);
+    const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
+    const profilesKey = `${this.config.name}-profiles`;
+    const profilesData = await chrome.storage.sync.get(profilesKey);
+    // eslint-disable-next-line max-len
+    const profiles = profilesData[profilesKey] === undefined ? {} : JSON.parse(profilesData[profilesKey]);
+    const { updatedAt } = profiles;
+    const appProfiles = [];
+    this.log(profiles);
+    profiles?.appProfileIds.forEach((apId) => {
+      appProfiles.push(chrome.storage.sync.get(apId));
     });
+    const data = await Promise.all(appProfiles).then((aps) => ({
+      custom,
+      user,
+      updatedAt,
+      appProfiles: aps.map((ap) => JSON.parse(ap[Object.keys(ap)[0]])),
+    }));
     this.log(data);
-    chrome.storage.sync.set(data);
+    return data;
   }
 
-  menu() {
-    this.log('menu class loaded');
-    this.log(window.location);
+  parseAppProfiles() {
+    const appProfiles = [];
+    this.apps.forEach((app) => {
+      app.profiles.forEach((profile) => {
+        const appProfile = {
+          ...app,
+          profile,
+        };
+        delete appProfile.profiles;
+        /* TODO do i need this
+        if (!('favorite' in appProfile)) {
+          appProfile.favorite = false;
+        }
+        */
+        appProfiles.push(appProfile);
+      });
+    });
+    return appProfiles;
+  }
+
+  saveCustom(custom) {
+    this.log('func:saveCustom');
+    this.saveData(`${this.config.name}-custom`, custom);
+  }
+
+  saveData(dataKey, data) {
+    this.log(`func:saveData:${dataKey}`);
+    const dataObj = {};
+    dataObj[dataKey] = JSON.stringify(
+      typeof data === 'object' ? { ...data, updatedAt: Date.now() } : data,
+    );
+    chrome.storage.sync.set(dataObj);
+  }
+
+  saveAppProfiles() {
+    this.log('func:saveAppProfiles');
+    const appProfiles = this.parseAppProfiles();
+    appProfiles.forEach((appProfile) => {
+      this.saveData(appProfile.profile.id, appProfile);
+    });
+    const appProfileIds = appProfiles.map((ap) => ap.profile.id);
+    this.log(appProfileIds);
+    this.saveData(`${this.config.name}-profiles`, { appProfileIds });
+  }
+
+  updateData() {
+    this.log('func:updateData');
+    this.saveAppProfiles();
+    this.saveData(`${this.config.name}-user`, this.user);
   }
 }
 

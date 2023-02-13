@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import App from '../view/devtools.vue';
+import extension from '../extension';
 
-// eslint-disable-next-line no-undef
-chrome.devtools.panels.create('ext-testproj', '', 'devtools.html');
+chrome.devtools.panels.create(extension.config.name, '', 'devtools.html');
 createApp(App).mount('#app');

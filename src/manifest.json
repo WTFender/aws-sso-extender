@@ -25,7 +25,6 @@
   "cross_origin_opener_policy": {
     "value": "same-origin"
   },
-  "host_permissions": ["https://*/*"],
   "permissions": ["cookies", "tabs", "storage"],
   "options_page": "options.html",
   "devtools_page": "devtools.html"

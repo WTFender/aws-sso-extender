@@ -4,6 +4,8 @@ type ExtensionConfig = {
 };
 
 type AppProfileData = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  profiles?: Array<any>;
   description: string;
   id: string;
   name: string;

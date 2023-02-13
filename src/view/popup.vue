@@ -2,267 +2,156 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <div class="card">
-    <DataTable
-      v-model:filters="filters2"
-      class="p-datatable-sm"
-      scroll-height="800px"
-      :value="profiles"
-      row-group-mode="rowspan"
-      group-rows-by="name"
-      sort-mode="single"
-      sort-field="name"
-      :sort-order="1"
-      responsive-layout="scroll"
-      state-storage="local"
-      state-key="dt-state-demo-local2"
-    >
-      <template #header>
-        <span
-          class="p-input-icon-left"
-          style="width: 100%"
-        >
-          <i class="pi pi-search" />
-          <InputText
-            v-model="filters1['global'].value"
-            style="width: 100%"
-            placeholder="Search Profiles"
-          />
-        </span>
-      </template>
-      <Column
-        :style="{'min-width':'120px'}"
-        header-style="display: none;"
-        field="name"
-        body-style="text-align: center;"
-      >
-        <template #body="slotProps">
-          <div>
-            <img
-              :alt="slotProps.data.profile.name"
-              :src="slotProps.data.icon"
-              width="96"
-              style="vertical-align: middle"
-            >
-            <br>
-            <span
-              v-if="slotProps.data.applicationName !== 'AWS Account'"
-            >{{ slotProps.data.name }}</span>
-            <div v-else>
-              <span>{{ slotProps.data.searchMetadata.AccountName }}</span><br>
-              <span style="font-size: .8rem">{{ slotProps.data.searchMetadata.AccountId }}</span>
-            </div>
-          </div>
-        </template>
-      </Column>
-
-      <Column
-        :style="{'min-width':'220px'}"
-        field="profile.name"
-        header-style="display: none;"
-        body-class="sso-profile"
-      >
-        <template #body="slotProps">
-          <div>
-            <a
-              class="sso-link"
-              target="_blank"
-              :href="createUrl(slotProps.data)"
-            ><i class="pi pi-external-link" />
-              {{ slotProps.data.profile.name }}</a>
-          </div>
-        </template>
-      </Column>
-      <Column
-        :style="{'width':'20px'}"
-        header-style="display: none;"
-        body-class="sso-favorite"
-      >
-        <template #body="slotProps">
-          <i
-            class="pi"
-            :class="{
-              'pi-star-fill': slotProps.data.profile?.favorite,
-              'pi-star': !slotProps.data.profile?.favorite
-            }"
-            @click="fave(slotProps)"
-          />
-        </template>
-      </Column>
-    </DataTable>
-    <DataTable
-      v-model:editingRows="editingRows"
-      v-model:filters="filters1"
-      edit-mode="row"
-      class="p-datatable-sm"
-      scroll-height="800px"
-      :value="profiles"
-      row-group-mode="rowspan"
-      :group-rows-by="['name']"
-      sort-mode="single"
-      sort-field="name"
-      :sort-order="-1"
-      responsive-layout="scroll"
-      state-storage="local"
-      state-key="dt-state-demo-local"
-      @row-edit-save="onRowEditSave"
-    >
-      <Column
-        header-style="display: none;"
-        field="name"
-        body-style="text-align: center;"
-        :style="{'min-width':'120px'}"
-      >
-        <template #body="slotProps">
-          <div>
-            <img
-              :alt="slotProps.data.profile.name"
-              :src="slotProps.data.icon"
-              width="96"
-              style="vertical-align: middle"
-            >
-            <br>
-            <span
-              v-if="slotProps.data.applicationName !== 'AWS Account'"
-            >{{ slotProps.data.name }}</span>
-            <div v-else>
-              <span>{{ slotProps.data.searchMetadata.AccountName }}</span><br>
-              <span style="font-size: .8rem">{{ slotProps.data.searchMetadata.AccountId }}</span>
-            </div>
-          </div>
-        </template>
-      </Column>
-      <Column
-        :style="{'min-width':'220px'}"
-        field="profile.name"
-        header-style="display: none;"
-        body-class="sso-profile"
-      >
-        <template #body="slotProps">
-          <div>
-            <a
-              class="sso-link"
-              target="_blank"
-              :href="createUrl(slotProps.data)"
-            ><i class="pi pi-external-link" />
-              {{ 'label' in slotProps.data.profile ? slotProps.data.profile.label : slotProps.data.profile.name }}</a>
-          </div>
-        </template>
-        <template #editor="{ data, field }">
-          <InputText
-            v-model="data[field]"
-            autofocus
-          />
-        </template>
-      </Column>
-      <Column
-        :row-editor="true"
-        style="width:10%; min-width:8rem"
-        body-style="text-align:center"
-        header-style="display: none;"
-      />
-      <Column
-        :style="{'width':'20px'}"
-        header-style="display: none;"
-        body-class="sso-favorite"
-      >
-        <template #body="slotProps">
-          <i
-            class="pi"
-            :class="{
-              'pi-star-fill': slotProps.data.profile?.favorite,
-              'pi-star': !slotProps.data.profile?.favorite
-            }"
-            @click="fave(slotProps)"
-          />
-        </template>
-      </Column>
-    </DataTable>
+    <ProfileTable
+      v-if="page === 'favorites' || page === 'profiles'"
+      :app-profiles="page === 'favorites' ? faveProfiles : appProfiles"
+      :user="user"
+      @updateProfile="updateProfile"
+      @updateProfileLabel="updateProfileLabel"
+    />
+    <div v-if="page === 'settings'">
+      <form>
+        <PrimeButton
+          class="p-button-danger"
+          label="Reset Preferences"
+          @click="resetCustom()"
+        />
+      </form>
+    </div>
+    <pre v-if="page === 'json' && config.debug">
+      <br>
+      {{ '\n'+dataJson }}
+    </pre>
+    <div class="footer" />
   </div>
-  <br>
-  {{ updatedAt }}
+  <i
+    class="pi pi-list page-icon page-profiles"
+    :class="page === 'profiles' ? 'page-active' : ''"
+    @click="page = 'profiles'"
+  />
+  <i
+    class="pi pi-star-fill page-icon page-favorites"
+    :class="page === 'favorites' ? 'page-active' : ''"
+    @click="page = 'favorites'"
+  />
+  <i
+    class="pi pi-circle-fill status-icon"
+    :class="'status-' + status.status"
+    :alt="status.status"
+  />
+  <p class="status-text">
+    {{ status.message }}
+  </p>
+  <i
+    class="pi pi-wrench footer-icon"
+    :class="'status-' + status.status"
+    alt="Settings"
+    @click="page = 'settings'"
+  />
+  <i
+    class="pi pi-code footer-icon"
+    :class="'status-' + status.status"
+    alt="JSON Data"
+    @click="page = 'json'"
+  />
 </template>
 <script>
-import { FilterMatchMode } from 'primevue/api';
 import extension from '../extension';
 
 export default {
   name: 'PopupView',
   data() {
     return {
-      editingRows: [],
-      favorites: [],
-      filters1: {},
-      profiles: [],
+      config: {},
+      dataJson: {},
+      staleHours: 24,
+      status: {
+        message: '',
+        status: 'unknown',
+      },
+      page: 'profiles', // profiles, favorites, settings
+      custom: {},
+      appProfiles: [],
       user: {},
       updatedAt: null,
     };
   },
+  computed: {
+    staleData() {
+      // const limit = this.staleHours * 1000 * 60 * 60;
+      if ((Date.now()) > this.updatedAt) {
+        return true;
+      }
+      return false;
+    },
+    faveProfiles() {
+      const faveProfiles = [];
+      this.appProfiles.forEach((ap) => {
+        if (ap.profile.custom.favorite) {
+          faveProfiles.push(ap);
+        }
+      });
+      return faveProfiles;
+    },
+  },
   created() {
-    this.filters1 = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-      'profile.favorite': { value: false, matchMode: FilterMatchMode.EQUALS },
-    };
-    this.filters2 = {
-      global: this.filters1.global,
-      'profile.favorite': { value: true, matchMode: FilterMatchMode.EQUALS },
-    };
+    this.config = extension.config;
     extension.loadData().then((data) => {
+      this.dataJson = JSON.stringify(data, null, 2);
       this.updatedAt = new Date(data.updatedAt);
       this.user = data.user;
-      this.profiles = this.parseProfiles(data);
+      this.custom = data.custom;
+      this.appProfiles = this.customizeProfiles(data.appProfiles);
+      extension.log(this.custom);
+      extension.log(this.user);
+      extension.log(this.appProfiles);
+      extension.log(this.updatedAt);
+      if (this.staleData) {
+        this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
+      } else {
+        this.status = { status: 'healthy', message: '' };
+      }
+    }).catch((error) => {
+      this.status = { status: 'unhealthy', message: 'failed to load data' };
+      throw error;
     });
   },
   methods: {
-    onRowEditSave(event) {
+    customizeProfiles(appProfiles) {
+      const defaults = {
+        favorite: false,
+        label: null,
+      };
+      const customProfiles = [];
+      appProfiles.forEach((ap) => {
+        const profile = { ...ap };
+        // eslint-disable-next-line max-len
+        profile.profile.custom = ap.profile.id in this.custom ? this.custom[ap.profile.id] : defaults;
+        customProfiles.push(profile);
+      });
+      return customProfiles;
+    },
+    resetCustom() {
+      this.custom = {};
+      extension.saveCustom(this.custom);
+      extension.loadData().then((data) => {
+        this.appProfiles = this.customizeProfiles(data.appProfiles);
+      });
+    },
+    updateProfile(appProfile) {
+      this.custom[appProfile.profile.id] = appProfile.profile.custom;
+      extension.saveCustom(this.custom);
+      extension.loadData().then((data) => {
+        this.appProfiles = this.customizeProfiles(data.appProfiles);
+      });
+    },
+    updateProfileLabel(event) {
+      extension.log(event);
       const { newData } = event;
-      if ('profile.name' in newData) {
-        newData.profile.label = newData['profile.name'];
-        delete newData['profile.name'];
+      if ('profile.custom.label' in newData) {
+        newData.profile.custom.label = newData['profile.custom.label'];
+        this.updateProfile(newData);
       }
-      this.profiles.forEach((profile, index) => {
-        if (profile.profile.id === newData.profile.id) {
-          this.profiles[index] = newData;
-        }
-      });
-    },
-    removeFave(event) {
-      const faveProfiles = [];
-      this.favorites.forEach((profile) => {
-        if (profile.profile.id !== event.data.profile.id) {
-          faveProfiles.push(profile);
-        }
-      });
-      this.favorites = faveProfiles;
-    },
-    fave(event) {
-      const faveProfile = event.data;
-      if (faveProfile.profile?.favorite === true) {
-        faveProfile.profile.favorite = false;
-      } else {
-        faveProfile.profile.favorite = true;
-      }
-    },
-    encodeUriPlusParens(str) {
-      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
-    },
-    createUrl(appProfile) {
-      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
-      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
-      const appProfileName = this.encodeUriPlusParens(appProfile.name);
-      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
-    },
-    parseProfiles(data) {
-      const rows = [];
-      data.apps.forEach((app) => {
-        app.profiles.forEach((profile) => {
-          const appProfile = profile;
-          if (!('favorite' in appProfile)) {
-            appProfile.favorite = false;
-          }
-          rows.push({ ...app, profile: appProfile });
-        });
-      });
-      return rows;
     },
   },
 };
@@ -284,28 +173,85 @@ export default {
     }
 }
 .card {
-  min-width: 400px !important;
-  min-height: 400px !important;
+  width: 500px !important;
   display: inline-block;
+  margin: 0px;
+  padding: 0px;
+  padding-bottom: 24px;
+  border: none;
 }
-.sso-link {
-  color: #495057;
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 5px;
+.page-icon {
+  font-size: 2rem;
+  color: #dee2e6;
+  position: absolute;
+  top: 15px;
 }
-.sso-link:hover {
-  color: #5e3add;
+.page-active {
+  color: #343a40;
+}
+.page-icon:hover{
+  color: #343a40;
   cursor: pointer;
 }
-.pi-star:hover {
-  color: gold !important;
+.page-profiles {
+  left: 450px;
 }
-.pi-star-fill {
-  color: gold !important;
+.page-favorites {
+  left: 410px;
 }
-.pi-star-fill:hover {
-  color: grey !important;
+.footer {
+  color: #343a40;
+  border-top: 1px solid #dee2e6;
+  background: #f8f9fa;
+  position:fixed;
+  bottom:0px;
+  height: 25px;
+  left:0px;
+  right:0px;
+  overflow:hidden;
+  text-align: center;
+}
+.status-icon {
+  position: fixed;
+  left: 5px;
+  bottom: 5px;
+}
+.status-icon.status-unknown {
+  color: #dee2e6;
+}
+.status-icon.status-unhealthy {
+  color: #eb6060;
+}
+.status-icon.status-stale {
+  color: #f7e463;
+}
+.status-icon.status-healthy {
+  color: #7cd992;
+}
+.status-text {
+  position: fixed;
+  left: 25px;
+  bottom: 5px;
+  padding: 0px;
+  margin: 0px;
+}
+.pi-code {
+  position: fixed;
+  left: 5px;
+  bottom: 5px;
+  left: 430px;
+}
+.pi-wrench {
+  position: fixed;
+  left: 5px;
+  bottom: 5px;
+  left: 455px;
+}
+.footer-icon {
+  color: #dee2e6;
+}
+.footer-icon:hover {
+  color: #343a40;
+  cursor: pointer;
 }
 </style>
