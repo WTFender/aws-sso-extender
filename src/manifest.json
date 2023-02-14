@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "AWS SSO Quickswitch",
+  "name": "AWS SSO Extender",
   "version": "1.0.0",
-  "description": "Quickly switch between AWS SSO (Identity Center) roles and accounts",
+  "description": "Extension for AWS SSO (Identity Center) users",
   "author": "WTFender",
   "homepage_url": "https://wtfender.com",
   "icons": {
@@ -25,6 +25,6 @@
   "cross_origin_opener_policy": {
     "value": "same-origin"
   },
-  "permissions": ["cookies", "tabs", "storage"],
+  "permissions": ["cookies", "storage"],
   "devtools_page": "devtools.html"
 }
