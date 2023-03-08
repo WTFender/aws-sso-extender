@@ -13,6 +13,9 @@
   "action": {
     "default_popup": "popup.html"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://*.awsapps.com/start*"],
@@ -25,6 +28,6 @@
   "cross_origin_opener_policy": {
     "value": "same-origin"
   },
-  "permissions": ["cookies", "storage"],
+  "permissions": ["cookies", "notifications", "storage"],
   "devtools_page": "devtools.html"
 }

@@ -37,6 +37,15 @@ class Extension {
         Promise.all(profiles).then(() => {
           this.updateData();
           this.loaded = true;
+          chrome.runtime.sendMessage('', {
+            type: 'notification',
+            options: {
+              type: 'basic',
+              title: this.config.display,
+              message: 'Updated SSO Profiles',
+              iconUrl: `chrome-extension://${this.config.id}/icons/128.png`
+            }
+          });
         });
       });
     });
@@ -114,7 +123,7 @@ class Extension {
     const { updatedAt } = profiles;
     const appProfiles = [];
     this.log(profiles);
-    profiles?.appProfileIds.forEach((apId) => {
+    profiles?.appProfileIds?.forEach((apId) => {
       appProfiles.push(chrome.storage.sync.get(apId));
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
@@ -186,7 +195,9 @@ class Extension {
 }
 
 const extensionConfig = {
+  id: 'hoibkegkkiolnikaihpdphegmbpeilfg',
   name: 'aws-sso-ext',
+  display: 'AWS SSO Extender',
   debug: false,
 };
 
