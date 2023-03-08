@@ -1,5 +1,7 @@
 type ExtensionConfig = {
+  id: string;
   name: string;
+  display: string;
   debug: boolean;
 };
 

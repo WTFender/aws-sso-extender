@@ -21,7 +21,7 @@
         <i class="pi pi-search" />
         <InputText
           v-model="filterProfiles['global'].value"
-          style="width: 90%"
+          style="width: 80%"
           placeholder="Search Profiles"
         />
       </span>
@@ -109,6 +109,10 @@
         />
       </template>
     </Column>
+    <Column
+      :style="{'width':'10px'}"
+      header-style="display: none;"
+    />
   </DataTable>
 </template>
 

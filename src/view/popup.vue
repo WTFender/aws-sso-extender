@@ -1,68 +1,101 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <div class="card">
-    <ProfileTable
-      v-if="page === 'favorites' || page === 'profiles'"
-      :app-profiles="page === 'favorites' ? faveProfiles : appProfiles"
-      :user="user"
-      @updateProfile="updateProfile"
-      @updateProfileLabel="updateProfileLabel"
-    />
-    <div
-      v-if="page === 'settings'"
-      class="settings"
-    >
-      <PrimeButton
-        class="p-button-warning reset-button"
-        label="Reset Preferences"
-        style="margin-right: 15px"
-        @click="resetCustom()"
+  <!--- Uninit -->
+  <div
+    v-if="loaded === true && Object.keys(user).length <= 1"
+    class="card"
+    style="padding-left: 20px;"
+  >
+    <h2>Login to AWS SSO to initialize this extension</h2>
+    <p>Your AWS SSO link typically looks like one of these:</p>
+    <pre>
+        companyName.awsapps.com/start#/
+        directoryId.awsapps.com/start#/
+      </pre>
+  </div>
+
+  <!--- Init -->
+  <div v-else>
+    <div class="card">
+      <!--- Profiles/Favorites page -->
+      <ProfileTable
+        v-if="page === 'favorites' || page === 'profiles'"
+        :app-profiles="page === 'favorites' ? faveProfiles : appProfiles"
+        :user="user"
+        @updateProfile="updateProfile"
+        @updateProfileLabel="updateProfileLabel"
       />
-      <PrimeButton
-        class="p-button-danger reset-button"
-        label="Reset All Data"
-        @click="resetData()"
+
+      <!--- Settings page -->
+      <div
+        v-if="page === 'settings'"
+        class="settings"
+      >
+        <PrimeButton
+          class="p-button-warning reset-button"
+          label="Reset Preferences"
+          style="margin-right: 15px"
+          @click="resetCustom()"
+        />
+        <PrimeButton
+          class="p-button-danger reset-button"
+          label="Reset All Data"
+          @click="resetData()"
+        />
+      </div>
+
+      <!--- Debug JSON page -->
+      <pre
+        v-if="page === 'json' && config.debug"
+        class="json"
+      >
+        {{ '\n'+dataJson }}
+      </pre>
+
+      <!--- Footer -->
+      <div class="footer" />
+
+      <!--- Debug -->
+      <i
+        v-if="config.debug"
+        class="pi pi-circle-fill status-icon"
+        :class="'status-' + status.status"
+        :alt="status.status"
+      />
+      <i
+        v-if="config.debug"
+        class="pi pi-code footer-icon"
+        :class="'status-' + status.status"
+        alt="JSON Data"
+        @click="setPage('json')"
       />
     </div>
-    <pre
-      v-if="page === 'json' && config.debug"
-      class="json"
-    >
-      {{ '\n'+dataJson }}
-    </pre>
-    <div class="footer" />
+
+    <!--- Menu Icons -->
+    <i
+      v-if="page === 'settings'"
+      class="pi pi-chevron-right page-icon page-back"
+      @click="setPage('profiles')"
+    />
+    <i
+      v-if="page !== 'settings'"
+      class="pi pi-list page-icon page-profiles"
+      :class="page === 'profiles' ? 'page-active' : ''"
+      @click="setPage('profiles')"
+    />
+    <i
+      v-if="page !== 'settings'"
+      class="pi pi-star-fill page-icon page-favorites"
+      :class="page === 'favorites' ? 'page-active' : ''"
+      @click="setPage('favorites')"
+    />
+    <i
+      v-if="page !== 'settings'"
+      class="pi pi-cog page-icon page-settings"
+      @click="setPage('settings')"
+    />
   </div>
-  <i
-    class="pi pi-list page-icon page-profiles"
-    :class="page === 'profiles' ? 'page-active' : ''"
-    @click="page = 'profiles'"
-  />
-  <i
-    class="pi pi-star-fill page-icon page-favorites"
-    :class="page === 'favorites' ? 'page-active' : ''"
-    @click="page = 'favorites'"
-  />
-  <i
-    class="pi pi-circle-fill status-icon"
-    :class="'status-' + status.status"
-    :alt="status.status"
-  />
-  <p class="status-text">
-    {{ status.message }}
-  </p>
-  <i
-    class="pi pi-wrench footer-icon"
-    :class="'status-' + status.status"
-    alt="Settings"
-    @click="page = 'settings'"
-  />
-  <i
-    class="pi pi-code footer-icon"
-    :class="'status-' + status.status"
-    alt="JSON Data"
-    @click="page = 'json'"
-  />
 </template>
 <script>
 import extension from '../extension';
@@ -71,6 +104,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      loaded: false,
       config: {},
       dataJson: {},
       staleHours: 1,
@@ -78,6 +112,7 @@ export default {
         message: '',
         status: 'unknown',
       },
+      lastPage: 'profiles',
       page: 'profiles', // profiles, favorites, settings
       custom: {},
       appProfiles: [],
@@ -111,18 +146,23 @@ export default {
       this.user = data.user;
       this.custom = data.custom;
       this.appProfiles = this.customizeProfiles(data.appProfiles);
-      if (this.faveProfiles.length > 0) { this.page = 'favorites'; }
+      if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
       if (this.staleData) {
         this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
       } else {
         this.status = { status: 'healthy', message: '' };
       }
+      this.loaded = true;
     }).catch((error) => {
       this.status = { status: 'unhealthy', message: 'failed to load data' };
       throw error;
     });
   },
   methods: {
+    setPage(page) {
+      this.lastPage = this.page;
+      this.page = page;
+    },
     customizeProfiles(appProfiles) {
       const defaults = {
         favorite: false,
@@ -142,7 +182,7 @@ export default {
       this.appProfiles = [];
       this.user = {};
       extension.resetData();
-      this.page = 'profiles';
+      this.setPage('profiles');
     },
     resetCustom() {
       this.custom = {};
@@ -150,7 +190,7 @@ export default {
       extension.loadData().then((data) => {
         this.appProfiles = this.customizeProfiles(data.appProfiles);
       });
-      this.page = 'profiles';
+      this.setPage('profiles');
     },
     updateProfile(appProfile) {
       this.custom[appProfile.profile.id] = appProfile.profile.custom;
@@ -191,11 +231,10 @@ export default {
   display: inline-block;
   margin: 0px;
   padding: 0px;
-  padding-bottom: 24px;
   border: none;
 }
 .page-icon {
-  font-size: 2rem;
+  font-size: 1.75rem;
   color: #dee2e6;
   position: absolute;
   top: 15px;
@@ -207,11 +246,17 @@ export default {
   color: #343a40;
   cursor: pointer;
 }
+.page-back {
+  left: 450px;
+}
 .page-profiles {
   left: 450px;
 }
 .page-favorites {
   left: 410px;
+}
+.page-settings {
+  left: 370px;
 }
 .footer {
   color: #343a40;
@@ -219,7 +264,7 @@ export default {
   background: #f8f9fa;
   position:fixed;
   bottom:0px;
-  height: 25px;
+  height: 5px;
   left:0px;
   right:0px;
   overflow:hidden;
@@ -254,12 +299,6 @@ export default {
   left: 5px;
   bottom: 5px;
   left: 430px;
-}
-.pi-wrench {
-  position: fixed;
-  left: 5px;
-  bottom: 5px;
-  left: 455px;
 }
 .footer-icon {
   color: #dee2e6;
