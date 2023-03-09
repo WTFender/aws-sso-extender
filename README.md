@@ -7,3 +7,5 @@ Extension for AWS SSO (Identity Center) users
 
 - Quickly login to your favorite applications
 - Apply custom labels to your application profiles
+
+https://user-images.githubusercontent.com/12001399/224067799-c3a9a3d0-c0cf-44e2-918b-767c3a1c018f.mov
