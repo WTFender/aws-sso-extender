@@ -37,6 +37,7 @@ class Extension {
         Promise.all(profiles).then(() => {
           this.updateData();
           this.loaded = true;
+          /*
           chrome.runtime.sendMessage('', {
             type: 'notification',
             options: {
@@ -46,6 +47,7 @@ class Extension {
               iconUrl: `chrome-extension://${this.config.id}/icons/128.png`
             }
           });
+          */
         });
       });
     });
