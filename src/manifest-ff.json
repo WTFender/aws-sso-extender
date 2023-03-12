@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AWS SSO Extender",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Extension for AWS SSO (Identity Center) users",
   "author": "WTFender",
   "homepage_url": "https://wtfender.com",
@@ -26,5 +26,11 @@
     "value": "same-origin"
   },
   "permissions": ["cookies", "notifications", "storage"],
-  "devtools_page": "devtools.html"
+  "devtools_page": "devtools.html",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "testing@local"
+    }
+  }
+  
 }

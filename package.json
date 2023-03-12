@@ -42,6 +42,7 @@
     "typescript": "^4.9.5",
     "vue-cli": "^2.9.6",
     "vue-cli-plugin-chrome-extension-cli": "^1.1.4",
-    "vue-eslint-parser": "^9.1.0"
+    "vue-eslint-parser": "^9.1.0",
+    "webextension-polyfill": "^0.10.0"
   }
 }
