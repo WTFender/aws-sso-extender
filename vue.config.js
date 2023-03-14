@@ -1,4 +1,5 @@
 /* eslint-disable */
+const PLATFORMS = ['chrome', 'firefox']
 const path = require('path')
 const fs = require('fs')
 
@@ -26,24 +27,27 @@ chromeName.forEach((name) => {
 })
 
 const isDevMode = process.env.NODE_ENV === 'development'
+const platform = process.env.PLATFORM
+
 
 module.exports = {
   pages,
+  outputDir: `dist/${platform}/`,
   filenameHashing: false,
   chainWebpack: (config) => {
     config.plugin('copy').use(require('copy-webpack-plugin'), [
       {
         patterns: [
           {
-            from: path.resolve(`src/manifest.json`),
-            to: `${path.resolve('dist')}/manifest.json`
+            from: path.resolve(`public/`),
+            to: path.resolve(`dist/${platform}/`),
           },
           {
-            from: path.resolve(`public/`),
-            to: `${path.resolve('dist')}/`
+            from: path.resolve(`src/manifest/${platform}.json`),
+            to: `${path.resolve(`dist/${platform}`)}/manifest.json`
           }
         ]
-      }
+      },
     ])
   },
   configureWebpack: {

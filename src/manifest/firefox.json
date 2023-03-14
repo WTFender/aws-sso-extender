@@ -22,14 +22,11 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src https://static.global.sso.amazonaws.com/"
   },
-  "cross_origin_opener_policy": {
-    "value": "same-origin"
-  },
-  "permissions": ["cookies", "notifications", "storage"],
-  "devtools_page": "devtools.html",
+  "permissions": ["cookies", "storage"],
+  "optional_permissions": ["https://*.awsapps.com/start*", "history"],
   "browser_specific_settings": {
     "gecko": {
-      "id": "testing@local"
+      "id": ""
     }
   }
   

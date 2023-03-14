@@ -3,6 +3,8 @@ type ExtensionConfig = {
   name: string;
   display: string;
   debug: boolean;
+  origins: string[];
+  ssoUrlRegex: RegExp;
 };
 
 type AppProfileData = {

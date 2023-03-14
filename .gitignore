@@ -1,5 +1,8 @@
 todo
-.DS_STORE
+**/.DS_STORE
+**/web-ext-artifacts
+.npmrc
+release/
 
 # Built files
 dist/

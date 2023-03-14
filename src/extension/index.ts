@@ -1,7 +1,12 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const browser = require('webextension-polyfill');
+
 class Extension {
   config: ExtensionConfig;
 
   ssoUrl: string;
+
+  ssoUrlRegex: RegExp;
 
   user: UserData;
 
@@ -37,20 +42,13 @@ class Extension {
         Promise.all(profiles).then(() => {
           this.updateData();
           this.loaded = true;
-          /*
-          chrome.runtime.sendMessage('', {
-            type: 'notification',
-            options: {
-              type: 'basic',
-              title: this.config.display,
-              message: 'Updated SSO Profiles',
-              iconUrl: `chrome-extension://${this.config.id}/icons/128.png`
-            }
-          });
-          */
         });
       });
     });
+  }
+
+  close() {
+    if (!this.config.debug) { window.close(); }
   }
 
   log(v) {
@@ -63,6 +61,47 @@ class Extension {
         console.log(`${this.config.name}:${v}`);
       }
     }
+  }
+
+  async resetPermissions() {
+    return browser.permissions.remove({
+      permissions: ['history'],
+      origins: this.config.origins,
+    }).then((perms) => {
+      this.log(`func:resetPermissions:${perms}`);
+      if (perms === undefined) { return false; }
+      return perms;
+    });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async requestPermsHistory() {
+    browser.permissions.request({ permissions: ['history'] });
+  }
+
+  async requestPermissions(directoryId = null) {
+    const { origins } = this.config;
+    if (directoryId !== null) {
+      // TODO support granular directory permissions
+      // origins = [`'https://${directoryId}.awsapps.com/start*'`];
+    }
+    browser.permissions.request({ origins });
+  }
+
+  async checkPermissions() {
+    this.log('func:checkPermissions');
+    const site = browser.permissions.contains({
+      origins: this.config.origins,
+    });
+    const history = browser.permissions.contains({
+      permissions: ['history'],
+    });
+    const data = await Promise.all([site, history]).then((res) => ({
+      site: res[0],
+      history: res[1],
+    }));
+    this.log(data);
+    return data;
   }
 
   getRegion() {
@@ -108,6 +147,11 @@ class Extension {
       this.log(`func:api:${path}:results`);
       return response.json();
     });
+  }
+
+  checkProfiles(appProfiles) {
+    this.log(appProfiles);
+    return appProfiles.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
   }
 
   async loadData() {
@@ -163,10 +207,12 @@ class Extension {
     this.saveData(`${this.config.name}-custom`, custom);
   }
 
-  resetData() {
+  reset() {
     this.saveData(`${this.config.name}-user`, {});
     this.saveData(`${this.config.name}-custom`, {});
     this.saveData(`${this.config.name}-profiles`, {});
+    this.resetPermissions();
+    this.close();
   }
 
   saveData(dataKey, data) {
@@ -194,13 +240,52 @@ class Extension {
     this.saveAppProfiles();
     this.saveData(`${this.config.name}-user`, this.user);
   }
+
+  searchHistory(cb) {
+    const dirs = [];
+    return browser.history.search({
+      text: 'awsapps.com/start#/',
+      startTime: (Date.now() - (1000 * 60 * 60 * 24 * 30)), // 1 month ago,
+      maxResults: 1000,
+    }).then((results) => {
+      results?.forEach((site) => {
+        const match = this.config.ssoUrlRegex.exec(site.url);
+        if (match) {
+          if (!(match.groups.directoryId in dirs)) {
+            dirs.push(match.groups.directoryId);
+          }
+        }
+      });
+      const uniqDirs = [...new Set(dirs)];
+      this.log(uniqDirs);
+      cb(uniqDirs);
+    });
+  }
+
+  findDirectories(cb) {
+    this.log('func:findDirectories');
+    return browser.permissions.contains(
+      { permissions: ['history'] },
+    ).then((perms) => {
+      if (perms) {
+        this.searchHistory(cb);
+      } else {
+        browser.permissions.request({
+          permissions: ['history'],
+        });
+        this.close();
+      }
+    });
+  }
 }
 
 const extensionConfig = {
   id: 'hoibkegkkiolnikaihpdphegmbpeilfg',
   name: 'aws-sso-ext',
   display: 'AWS SSO Extender',
-  debug: false,
+  debug: true,
+  origins: ['https://*.awsapps.com/start*'],
+  ssoUrlRegex: /^https:\/\/(?<directoryId>.+)\.awsapps\.com\/start\/?#\/$/,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

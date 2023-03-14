@@ -1,21 +1,111 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <!--- Uninit -->
+  <!--- Setup -->
   <div
-    v-if="loaded === true && Object.keys(user).length <= 1"
+    v-if="permissions === false || loaded === false"
     class="card"
     style="padding-left: 20px;"
   >
-    <h2>Login to AWS SSO to initialize this extension</h2>
-    <p>Your AWS SSO link typically looks like one of these:</p>
-    <pre>
-        companyName.awsapps.com/start#/
-        directoryId.awsapps.com/start#/
-      </pre>
+    <h2>
+      <img
+        alt="AWS SSO Extender"
+        src="icons/128.png"
+        width="25"
+        style="vertical-align:middle;"
+      >
+      Setup
+    </h2>
+    <Accordion
+      style="padding-right: 20px; padding-bottom: 20px;"
+    >
+      <AccordionTab
+        :disabled="permissions.site"
+      >
+        <template #header>
+          <div style="width: 90%">
+            <span style="margin-left: 5px;">Required Permissions</span>
+          </div>
+          <div style="width: 10%">
+            <i
+              class="pi"
+              :class="permissions.site === true ? 'pi-check-circle' : 'pi-exclamation-circle'"
+              :style="permissions.site === true ? 'color: green;' : 'color: orange;'"
+            />
+          </div>
+        </template>
+        <p>This extension requires access to awsapps.com.</p>
+        <PrimeButton
+          size="small"
+          class="p-button-success"
+          label="Request Permissions"
+          @click="requestPermissions()"
+        />
+        <!--- TODO add granular site perms options --->
+        <PrimeButton
+          style="margin-left: 20px; display: none;"
+          size="small"
+          class="p-button-warning"
+          label="Advanced"
+          @click="requestPermissions()"
+        />
+      </AccordionTab>
+
+      <AccordionTab
+        :disabled="loaded"
+      >
+        <template #header>
+          <div style="width: 90%">
+            <span style="margin-left: 5px;">Login to AWS SSO</span>
+          </div>
+          <div style="width: 10%">
+            <i
+              class="pi"
+              :class="loaded === true ? 'pi-check-circle' : 'pi-exclamation-circle'"
+              :style="loaded === true ? 'color: green;' : 'color: orange;'"
+            />
+          </div>
+        </template>
+        <p>Login to AWS SSO to populate your profiles. Your login link typically looks like this:</p>
+        <pre>
+companyName.awsapps.com/start#/
+directoryId.awsapps.com/start#/
+        </pre>
+        <div
+          v-if="!permissions.history"
+        >
+          <Divider
+            align="left"
+            type="solid"
+          >
+            <small>Optional</small>
+          </Divider>
+          <PrimeButton
+            size="small"
+            class="p-button-primary"
+            label="Find Login Links"
+            @click="requestHistory()"
+          />
+        </div>
+        <div v-else-if="foundDirs">
+          <div
+            v-for="dir in foundDirs"
+            :key="dir"
+          >
+            <a
+              target="_blank"
+              :href="`https://${dir}.awsapps.com/start#/`"
+            >{{ `https://${dir}.awsapps.com/start#/` }}</a>
+          </div>
+          <p v-if="foundDirs.length === 0">
+            No login links found in browser history.
+          </p>
+        </div>
+      </AccordionTab>
+    </Accordion>
   </div>
 
-  <!--- Init -->
+  <!--- Post-setup -->
   <div v-else>
     <div class="card">
       <!--- Profiles/Favorites page -->
@@ -41,7 +131,7 @@
         <PrimeButton
           class="p-button-danger reset-button"
           label="Reset All Data"
-          @click="resetData()"
+          @click="reset()"
         />
       </div>
 
@@ -104,6 +194,12 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      foundDirs: null,
+      setupSteps: [
+        { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
+        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
+      ],
+      permissions: false,
       loaded: false,
       config: {},
       dataJson: {},
@@ -140,6 +236,13 @@ export default {
   },
   created() {
     this.config = extension.config;
+    // eslint-disable-next-line func-names
+    extension.checkPermissions().then((perms) => {
+      this.permissions = perms;
+      if (this.permissions.history) {
+        extension.findDirectories(this.setDirectories);
+      }
+    });
     extension.loadData().then((data) => {
       this.dataJson = JSON.stringify(data, null, 2);
       this.updatedAt = new Date(data.updatedAt);
@@ -152,13 +255,27 @@ export default {
       } else {
         this.status = { status: 'healthy', message: '' };
       }
-      this.loaded = true;
+      if (Object.keys(this.user).length > 1) {
+        // if only 1 key (e.g. updatedAt), no data is loaded
+        this.loaded = true;
+      }
     }).catch((error) => {
       this.status = { status: 'unhealthy', message: 'failed to load data' };
       throw error;
     });
   },
   methods: {
+    setDirectories(dirs) {
+      this.foundDirs = dirs;
+    },
+    requestHistory() {
+      extension.requestPermsHistory();
+      extension.close();
+    },
+    requestPermissions() {
+      extension.requestPermissions();
+      extension.close();
+    },
     setPage(page) {
       this.lastPage = this.page;
       this.page = page;
@@ -177,11 +294,11 @@ export default {
       });
       return customProfiles;
     },
-    resetData() {
+    reset() {
       this.custom = {};
       this.appProfiles = [];
       this.user = {};
-      extension.resetData();
+      extension.reset();
       this.setPage('profiles');
     },
     resetCustom() {
@@ -225,6 +342,12 @@ export default {
         vertical-align: middle;
         margin-right: .25rem;
     }
+}
+.setup-done {
+  color: green;
+}
+.setup-pending {
+  color: orange;
 }
 .card {
   width: 500px !important;

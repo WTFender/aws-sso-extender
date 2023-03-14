@@ -1,10 +1,12 @@
 {
   "scripts": {
-    "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "watch": "vue-cli-service --env.NODE_ENV=development build-watch --mode development",
-    "pretty": "pretty-quick",
-    "pretty-staged": "pretty-quick --staged"
+    "build": "npm run build:chrome && npm run build:firefox",
+    "build:chrome": "PLATFORM=chrome vue-cli-service build",
+    "build:firefox": "PLATFORM=firefox vue-cli-service build && web-ext build -s ./dist/firefox/ -a ./release/firefox/",
+    "watch:chrome": "PLATFORM=chrome vue-cli-service --env.NODE_ENV=development build-watch --mode development",
+    "watch:firefox": "PLATFORM=firefox vue-cli-service --env.NODE_ENV=development build-watch --mode development",
+    "serve:firefox": "web-ext run --source-dir ./dist/firefox/ --devtools --no-input"
   },
   "lint-staged": {
     "*.{ts,js,vue}": "eslint -c .eslintrc.json --fix src/"
@@ -14,10 +16,13 @@
     "core-js": "^3.8.3",
     "primeicons": "^6.0.1",
     "primevue": "^3.23.0",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.198",
+    "@types/firefox-webext-browser": "^111.0.0",
+    "@types/webextension-polyfill": "^0.10.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
@@ -42,7 +47,6 @@
     "typescript": "^4.9.5",
     "vue-cli": "^2.9.6",
     "vue-cli-plugin-chrome-extension-cli": "^1.1.4",
-    "vue-eslint-parser": "^9.1.0",
-    "webextension-polyfill": "^0.10.0"
+    "vue-eslint-parser": "^9.1.0"
   }
 }

@@ -1,6 +1,10 @@
+/* eslint-disable vue/multi-word-component-names */
 import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
+import Accordion from 'primevue/accordion';
+import AccordionTab from 'primevue/accordiontab';
 import DataTable from 'primevue/datatable';
+import Divider from 'primevue/divider';
 import Column from 'primevue/column';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
@@ -12,11 +16,12 @@ import 'primeicons/primeicons.css';
 
 const app = createApp(App);
 app.use(PrimeVue);
+app.component('Accordion', Accordion);
+app.component('AccordionTab', AccordionTab);
 app.component('DataTable', DataTable);
-// eslint-disable-next-line vue/multi-word-component-names
+app.component('Divider', Divider);
 app.component('Column', Column);
 app.component('InputText', InputText);
-// eslint-disable-next-line vue/multi-word-component-names
 app.component('PrimeButton', Button);
 app.component('ProfileTable', ProfileTable);
 app.mount('#app');
