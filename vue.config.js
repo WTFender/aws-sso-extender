@@ -1,5 +1,7 @@
 /* eslint-disable */
-const PLATFORMS = ['chrome', 'firefox']
+const isDevMode = process.env.NODE_ENV === 'development'
+const platform = process.env.PLATFORM
+
 const path = require('path')
 const fs = require('fs')
 
@@ -17,6 +19,7 @@ function getFileExtension (filename) {
   return /[.]/.exec(filename) ? /[^.]+$/.exec(filename)[0] : undefined
 }
 chromeName.forEach((name) => {
+  if (name.includes('devtools') && !isDevMode) { return };
   const fileExtension = getFileExtension(name)
   const fileName = name.replace('.' + fileExtension, '')
   pages[fileName] = {
@@ -25,9 +28,6 @@ chromeName.forEach((name) => {
     filename: `${fileName}.html`
   }
 })
-
-const isDevMode = process.env.NODE_ENV === 'development'
-const platform = process.env.PLATFORM
 
 
 module.exports = {
