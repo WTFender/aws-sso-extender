@@ -3,7 +3,7 @@
     "lint": "vue-cli-service lint",
     "build": "npm run build:chrome && npm run build:firefox",
     "build:chrome": "PLATFORM=chrome vue-cli-service build",
-    "build:firefox": "PLATFORM=firefox vue-cli-service build && web-ext build -s ./dist/firefox/ -a ./release/firefox/",
+    "build:firefox": "PLATFORM=firefox vue-cli-service build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest",
     "watch:chrome": "PLATFORM=chrome vue-cli-service --env.NODE_ENV=development build-watch --mode development",
     "watch:firefox": "PLATFORM=firefox vue-cli-service --env.NODE_ENV=development build-watch --mode development",
     "serve:firefox": "web-ext run --source-dir ./dist/firefox/ --devtools --no-input"
