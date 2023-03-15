@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AWS SSO Extender",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Extension for AWS SSO (Identity Center) users",
   "author": "WTFender",
   "homepage_url": "https://wtfender.com",
