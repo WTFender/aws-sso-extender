@@ -20,7 +20,7 @@
       style="padding-right: 20px; padding-bottom: 20px;"
     >
       <AccordionTab
-        :disabled="permissions.site"
+        :disabled="permissions.origins"
       >
         <template #header>
           <div style="width: 90%">
@@ -29,8 +29,8 @@
           <div style="width: 10%">
             <i
               class="pi"
-              :class="permissions.site === true ? 'pi-check-circle' : 'pi-exclamation-circle'"
-              :style="permissions.site === true ? 'color: green;' : 'color: orange;'"
+              :class="permissions.origins === true ? 'pi-check-circle' : 'pi-exclamation-circle'"
+              :style="permissions.origins === true ? 'color: green;' : 'color: orange;'"
             />
           </div>
         </template>
@@ -71,36 +71,15 @@
 companyName.awsapps.com/start#/
 directoryId.awsapps.com/start#/
         </pre>
-        <div
-          v-if="!permissions.history"
+        <Divider
+          align="left"
+          type="solid"
         >
-          <Divider
-            align="left"
-            type="solid"
-          >
-            <small>Optional</small>
-          </Divider>
-          <PrimeButton
-            size="small"
-            class="p-button-primary"
-            label="Find Login Links"
-            @click="requestHistory()"
-          />
-        </div>
-        <div v-else-if="foundDirs">
-          <div
-            v-for="dir in foundDirs"
-            :key="dir"
-          >
-            <a
-              target="_blank"
-              :href="`https://${dir}.awsapps.com/start#/`"
-            >{{ `https://${dir}.awsapps.com/start#/` }}</a>
-          </div>
-          <p v-if="foundDirs.length === 0">
-            No login links found in browser history.
-          </p>
-        </div>
+          <small>Optional</small>
+        </Divider>
+        <LoginLinks
+          :permissions="permissions"
+        />
       </AccordionTab>
     </Accordion>
   </div>
@@ -122,17 +101,25 @@ directoryId.awsapps.com/start#/
         v-if="page === 'settings'"
         class="settings"
       >
-        <PrimeButton
-          class="p-button-warning reset-button"
-          label="Reset Preferences"
-          style="margin-right: 15px"
-          @click="resetCustom()"
-        />
-        <PrimeButton
-          class="p-button-danger reset-button"
-          label="Reset All Data"
-          @click="reset()"
-        />
+        <div>
+          <PrimeButton
+            class="p-button-warning reset-button"
+            label="Reset Preferences"
+            style="margin-right: 15px"
+            @click="resetCustom()"
+          />
+          <PrimeButton
+            class="p-button-danger reset-button"
+            label="Reset All Data"
+            @click="reset()"
+          />
+        </div>
+        <br>
+        <div>
+          <LoginLinks
+            :permissions="permissions"
+          />
+        </div>
       </div>
 
       <!--- Debug JSON page -->
@@ -194,12 +181,11 @@ export default {
   name: 'PopupView',
   data() {
     return {
-      foundDirs: null,
+      permissions: {},
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
         { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
       ],
-      permissions: false,
       loaded: false,
       config: {},
       dataJson: {},
@@ -236,12 +222,13 @@ export default {
   },
   created() {
     this.config = extension.config;
+    this.permissions = {
+      origins: false,
+      history: false,
+    };
     // eslint-disable-next-line func-names
     extension.checkPermissions().then((perms) => {
       this.permissions = perms;
-      if (this.permissions.history) {
-        extension.findDirectories(this.setDirectories);
-      }
     });
     extension.loadData().then((data) => {
       this.dataJson = JSON.stringify(data, null, 2);
@@ -265,13 +252,6 @@ export default {
     });
   },
   methods: {
-    setDirectories(dirs) {
-      this.foundDirs = dirs;
-    },
-    requestHistory() {
-      extension.requestPermsHistory();
-      extension.close();
-    },
     requestPermissions() {
       extension.requestPermissions();
       extension.close();

@@ -90,14 +90,14 @@ class Extension {
 
   async checkPermissions() {
     this.log('func:checkPermissions');
-    const site = browser.permissions.contains({
+    const origins = browser.permissions.contains({
       origins: this.config.origins,
     });
     const history = browser.permissions.contains({
       permissions: ['history'],
     });
-    const data = await Promise.all([site, history]).then((res) => ({
-      site: res[0],
+    const data = await Promise.all([origins, history]).then((res) => ({
+      origins: res[0],
       history: res[1],
     }));
     this.log(data);
@@ -283,7 +283,7 @@ const extensionConfig = {
   id: 'hoibkegkkiolnikaihpdphegmbpeilfg',
   name: 'aws-sso-ext',
   display: 'AWS SSO Extender',
-  debug: false,
+  debug: true,
   origins: ['https://*.awsapps.com/start*'],
   ssoUrlRegex: /^https:\/\/(?<directoryId>.+)\.awsapps\.com\/start\/?#\/$/,
 };
