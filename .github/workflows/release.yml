@@ -11,20 +11,49 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Load Manifest
-        id: manifest
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Setup
         run: |
-          sudo apt-get install jq
-          echo "version=$(jq '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
+          npm ci
+          sudo apt-get install jq zip
+      - id: manifest
+        run: echo "version=$(jq '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
+      - name: Build Chrome Extension
+        run: |
+          npm run build:chrome
+          zip -r release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip dist/chrome/
+      - name: Build Chrome Extension
+        run: npm run build:firefox
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.manifest.outputs.version }}
+          tag_name: v${{ steps.manifest.outputs.version }}
           release_name: Release ${{ steps.manifest.outputs.version }}
           body_path: changelog.md
           draft: false
           prerelease: false
+      - name: Upload Chrome Package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
+          asset_name: aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
+          asset_content_type: application/zip 
+      - name: Upload Firefox Package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./release/firefox/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
+          asset_name: aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
+          asset_content_type: application/zip
+       
