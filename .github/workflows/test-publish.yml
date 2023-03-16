@@ -28,7 +28,7 @@ jobs:
       - name: Upload Mozilla Store
         run: |
           npx web-ext-submit \
-            --source-dir ./dist/firefox/
-            --artifacts-dir ./release/firefox/
+            --source-dir ./dist/firefox/ \
+            --artifacts-dir ./release/firefox/ \
             --api-key ${{ secrets.WEB_EXT_API_KEY }} \
             --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
