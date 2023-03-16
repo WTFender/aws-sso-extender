@@ -24,11 +24,11 @@ jobs:
       
       - id: manifest
         run: echo "version=$(jq -r '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
-        
+
       - name: Upload Mozilla Store
         run: |
           npx web-ext-submit \
             --source-dir ./dist/firefox/
             --artifacts-dir ./release/firefox/
-            --api-key=${{ secrets.WEB_EXT_API_KEY }} \
-            --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
+            --api-key ${{ secrets.WEB_EXT_API_KEY }} \
+            --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
