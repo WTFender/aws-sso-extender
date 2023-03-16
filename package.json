@@ -49,6 +49,7 @@
     "vue-cli": "^2.9.6",
     "vue-cli-plugin-chrome-extension-cli": "^1.1.4",
     "vue-eslint-parser": "^9.1.0",
-    "web-ext": "^7.5.0"
+    "web-ext": "^7.5.0",
+    "web-ext-submit": "^7.5.0"
   }
 }

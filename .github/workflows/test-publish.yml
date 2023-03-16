@@ -15,22 +15,20 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
+      
       - name: Setup
         run: |
           npm ci
           sudo apt-get install jq zip
           mkdir -p release/chrome release/firefox
+      
       - id: manifest
         run: echo "version=$(jq -r '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
-      - name: Build Chrome Extension
+        
+      - name: Upload Mozilla Store
         run: |
-          npm run build:chrome
-          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip .  
-      - name: Upload Chrome Store
-        run: |
-          npx chrome-webstore-upload upload \
-            --extension-id ${{ secrets.EXTENSION_ID }} \
-            --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
-            --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
-            --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-            --source release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
+          npx web-ext-submit \
+            --source-dir ./dist/firefox/
+            --artifacts-dir ./release/firefox/
+            --api-key=${{ secrets.WEB_EXT_API_KEY }} \
+            --api-secret=${{ secrets.WEB_EXT_API_SECRET }}
