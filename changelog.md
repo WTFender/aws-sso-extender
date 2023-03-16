@@ -1,6 +1,6 @@
-# 1.1.0 - 03-15-2023
+## 1.1.0
 - Firefox compatibility 🦊
 - Discover AWS SSO login URLs from browser history
 
-# 1.0.0 - 02-13-2023
+## 1.0.0
 - 🎂
