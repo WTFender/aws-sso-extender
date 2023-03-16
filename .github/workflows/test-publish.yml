@@ -24,7 +24,10 @@ jobs:
       
       - id: manifest
         run: echo "version=$(jq -r '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
-
+      
+      - name: Build Firefox Extension
+        run: npm run build:firefox
+      
       - name: Upload Mozilla Store
         run: |
           npx web-ext-submit \
