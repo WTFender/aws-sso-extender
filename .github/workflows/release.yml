@@ -57,5 +57,12 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./release/firefox/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
           asset_name: aws_sso_extender-${{ steps.manifest.outputs.version }}-firefox.zip
-          asset_content_type: application/zip
-       
+          asset_content_type: application/zip      
+      - name: Upload Chrome Store
+        run: |
+          npx chrome-webstore-upload upload \
+            --extension-id ${{ secrets.EXTENSION_ID }} \
+            --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
+            --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
+            --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
+            --source release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
