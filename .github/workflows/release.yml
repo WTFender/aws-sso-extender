@@ -19,6 +19,7 @@ jobs:
         run: |
           npm ci
           sudo apt-get install jq zip
+          mkdir release/chrome && mkdir release/firefox
       - id: manifest
         run: echo "version=$(jq '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
       - name: Build Chrome Extension
