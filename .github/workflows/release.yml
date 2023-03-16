@@ -15,49 +15,53 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Setup
+      - id: setup
         run: |
           npm ci
           sudo apt-get install jq zip
           mkdir -p release/chrome release/firefox
-      - id: manifest
-        run: echo "version=$(jq -r '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
+          echo "version=$(jq -r '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
+      
       - name: Build Chrome Extension
         run: |
           npm run build:chrome
-          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip .
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
+      
       - name: Build Firefox Extension
         run: npm run build:firefox
-      - run: zip -r 
+      
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.manifest.outputs.version }}
-          release_name: Release ${{ steps.manifest.outputs.version }}
+          tag_name: v${{ steps.setup.outputs.version }}
+          release_name: Release ${{ steps.setup.outputs.version }}
           body_path: changelog.md
           draft: false
           prerelease: false
+      
       - name: Upload Chrome Package
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
-          asset_name: aws_sso_extender-${{ steps.manifest.outputs.version }}-chrome.zip
+          asset_path: ./release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+          asset_name: aws_sso_extender-${{ steps.setup.outputs.version }}-chrome.zip
           asset_content_type: application/zip 
+      
       - name: Upload Firefox Package
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./release/firefox/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
-          asset_name: aws_sso_extender-${{ steps.manifest.outputs.version }}-firefox.zip
+          asset_path: ./release/firefox/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+          asset_name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
           asset_content_type: application/zip
+      
       - name: Publish Chrome Store
         run: |
           npx chrome-webstore-upload upload \
@@ -66,4 +70,12 @@ jobs:
             --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
             --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
             --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-            --source release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip \
+            --source release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip \
+      
+      - name: Publish Mozilla Store
+        run: |
+          npx web-ext-submit \
+            --source-dir ./dist/firefox/ \
+            --artifacts-dir ./release/firefox/ \
+            --api-key ${{ secrets.WEB_EXT_API_KEY }} \
+            --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
