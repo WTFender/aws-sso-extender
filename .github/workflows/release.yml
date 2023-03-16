@@ -13,8 +13,8 @@ jobs:
       - name: Load Manifest
         id: manifest
         run: |
-          apt-get install jq
-          echo "version=$(jq '.version' src/manifest/chrome.json)"
+          sudo apt-get install jq
+          echo "version=$(jq '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
       - name: Create Release
         uses: actions/create-release@v1
         env:
