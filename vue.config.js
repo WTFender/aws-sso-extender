@@ -1,4 +1,6 @@
 /* eslint-disable */
+const MergeJsonWebpackPlugin = require("merge-jsons-webpack-plugin");
+
 const isDevMode = process.env.NODE_ENV === 'development'
 const platform = process.env.PLATFORM
 
@@ -8,14 +10,14 @@ const fs = require('fs')
 // Generate pages object
 const pages = {}
 
-function getEntryFile (entryPath) {
+function getEntryFile(entryPath) {
   let files = fs.readdirSync(entryPath)
   return files
 }
 
 const chromeName = getEntryFile(path.resolve(`src/entry`))
 
-function getFileExtension (filename) {
+function getFileExtension(filename) {
   return /[.]/.exec(filename) ? /[^.]+$/.exec(filename)[0] : undefined
 }
 chromeName.forEach((name) => {
@@ -28,6 +30,20 @@ chromeName.forEach((name) => {
     filename: `${fileName}.html`
   }
 })
+
+function buildManifest() {
+  const env = isDevMode ? 'dev' : 'prod'
+  return new MergeJsonWebpackPlugin({
+    files: [
+      "./src/manifest/default.json",
+      `./src/manifest/${platform}.json`,
+      `./src/manifest/${env}.json`,
+    ],
+    output: {
+      fileName: "manifest.json",
+    },
+  });
+}
 
 
 module.exports = {
@@ -51,6 +67,9 @@ module.exports = {
     ])
   },
   configureWebpack: {
+    plugins: [
+      buildManifest(),
+    ],
     module: {
       rules: [
         {

@@ -16,12 +16,8 @@
       >
       Setup
     </h2>
-    <Accordion
-      style="padding-right: 20px; padding-bottom: 20px;"
-    >
-      <AccordionTab
-        :disabled="permissions.origins"
-      >
+    <Accordion style="padding-right: 20px; padding-bottom: 20px;">
+      <AccordionTab :disabled="permissions.origins">
         <template #header>
           <div style="width: 90%">
             <span style="margin-left: 5px;">Required Permissions</span>
@@ -51,9 +47,7 @@
         />
       </AccordionTab>
 
-      <AccordionTab
-        :disabled="loaded"
-      >
+      <AccordionTab :disabled="loaded">
         <template #header>
           <div style="width: 90%">
             <span style="margin-left: 5px;">Login to AWS SSO</span>
@@ -68,9 +62,9 @@
         </template>
         <p>Login to AWS SSO to populate your profiles. Your login link typically looks like this:</p>
         <pre>
-companyName.awsapps.com/start#/
-directoryId.awsapps.com/start#/
-        </pre>
+  companyName.awsapps.com/start#/
+  directoryId.awsapps.com/start#/
+          </pre>
         <Divider
           v-if="!permissions.history"
           align="left"
@@ -78,9 +72,7 @@ directoryId.awsapps.com/start#/
         >
           <small>Optional</small>
         </Divider>
-        <LoginLinks
-          :permissions="permissions"
-        />
+        <LoginLinks :permissions="permissions" />
       </AccordionTab>
     </Accordion>
   </div>
@@ -117,9 +109,7 @@ directoryId.awsapps.com/start#/
         </div>
         <br>
         <div>
-          <LoginLinks
-            :permissions="permissions"
-          />
+          <LoginLinks :permissions="permissions" />
         </div>
       </div>
 
@@ -128,8 +118,8 @@ directoryId.awsapps.com/start#/
         v-if="page === 'json' && config.debug"
         class="json"
       >
-        {{ '\n'+dataJson }}
-      </pre>
+          {{ '\n' + dataJson }}
+        </pre>
 
       <!--- Footer -->
       <div class="footer" />
@@ -225,6 +215,7 @@ export default {
       origins: false,
       history: false,
     };
+    this.$browser.permissions.onAdded.addListener(this.handlePermissions);
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {
       this.permissions = perms;
@@ -251,6 +242,13 @@ export default {
     });
   },
   methods: {
+    handlePermissions(permissions) {
+      this.$ext.log(permissions);
+      if (permissions.permissions.includes('history')) {
+        this.$ext.log('new history permissions');
+        this.$ext.log(permissions.permissions);
+      }
+    },
     requestPermissions() {
       this.$ext.requestOrigins();
       window.close();
@@ -315,25 +313,28 @@ export default {
 
 <style lang="scss" scoped>
 .p-rowgroup-footer td {
-    font-weight: 700;
+  font-weight: 700;
 }
 
 ::v-deep(.p-rowgroup-header) {
-    span {
-        font-weight: 700;
-    }
+  span {
+    font-weight: 700;
+  }
 
-    .p-row-toggler {
-        vertical-align: middle;
-        margin-right: .25rem;
-    }
+  .p-row-toggler {
+    vertical-align: middle;
+    margin-right: .25rem;
+  }
 }
+
 .setup-done {
   color: green;
 }
+
 .setup-pending {
   color: orange;
 }
+
 .card {
   width: 500px !important;
   display: inline-block;
@@ -341,60 +342,74 @@ export default {
   padding: 0px;
   border: none;
 }
+
 .page-icon {
   font-size: 1.75rem;
   color: #dee2e6;
   position: absolute;
   top: 15px;
 }
+
 .page-active {
   color: #343a40;
 }
-.page-icon:hover{
+
+.page-icon:hover {
   color: #343a40;
   cursor: pointer;
 }
+
 .page-back {
   left: 450px;
 }
+
 .page-profiles {
   left: 450px;
 }
+
 .page-favorites {
   left: 410px;
 }
+
 .page-settings {
   left: 370px;
 }
+
 .footer {
   color: #343a40;
   border-top: 1px solid #dee2e6;
   background: #f8f9fa;
-  position:fixed;
-  bottom:0px;
+  position: fixed;
+  bottom: 0px;
   height: 5px;
-  left:0px;
-  right:0px;
-  overflow:hidden;
+  left: 0px;
+  right: 0px;
+  overflow: hidden;
   text-align: center;
 }
+
 .status-icon {
   position: fixed;
   left: 5px;
   bottom: 5px;
 }
+
 .status-icon.status-unknown {
   color: #dee2e6;
 }
+
 .status-icon.status-unhealthy {
   color: #eb6060;
 }
+
 .status-icon.status-stale {
   color: #f7e463;
 }
+
 .status-icon.status-healthy {
   color: #7cd992;
 }
+
 .status-text {
   position: fixed;
   left: 25px;
@@ -402,20 +417,25 @@ export default {
   padding: 0px;
   margin: 0px;
 }
+
 .pi-code {
   position: fixed;
   left: 5px;
   bottom: 5px;
   left: 430px;
 }
+
 .footer-icon {
   color: #dee2e6;
 }
+
 .footer-icon:hover {
   color: #343a40;
   cursor: pointer;
 }
-.json, .settings {
+
+.json,
+.settings {
   margin: 15px;
   padding: 15px;
 }
