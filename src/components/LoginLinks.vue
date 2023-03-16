@@ -11,7 +11,12 @@
     />
   </div>
   <div v-else-if="foundDirs">
-    <h3>Detected Login Links</h3>
+    <p v-if="foundDirs.length === 0">
+      No login links found in browser history.
+    </p>
+    <h3 v-else>
+      Detected Login Links
+    </h3>
     <div
       v-for="dir in foundDirs"
       :key="dir"
@@ -21,9 +26,6 @@
         :href="`https://${dir}.awsapps.com/start#/`"
       >{{ `https://${dir}.awsapps.com/start#/` }}</a>
     </div>
-    <p v-if="foundDirs.length === 0">
-      No login links found in browser history.
-    </p>
   </div>
 </template>
 
