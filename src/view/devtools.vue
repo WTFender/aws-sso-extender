@@ -1,20 +1,34 @@
 <template>
-  <pre>{{ data }}</pre>
+  <p>Config</p>
+  <json-viewer
+    :value="$ext.config"
+    :expand-depth="1"
+    copyable
+    sort
+  />
+  <p>Data</p>
+  <json-viewer
+    :value="data"
+    :expand-depth="1"
+    copyable
+    sort
+  />
 </template>
 
 <script>
-import extension from '../extension';
-
 export default {
   name: 'DevtoolsView',
   data() {
     return {
       data: {},
+      dataStr: '',
     };
   },
   created() {
-    extension.loadData().then((data) => {
-      this.data = JSON.stringify(data, null, 2);
+    this.configStr = JSON.stringify(this.$ext.config, null, 2);
+    this.$ext.loadData().then((data) => {
+      this.data = data;
+      this.dataStr = JSON.stringify(data, null, 2);
     });
   },
 };

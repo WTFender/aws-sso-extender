@@ -23,10 +23,8 @@ import 'primeicons/primeicons.css';
 
 const app = createApp(App);
 app.use(PrimeVue);
-
 app.config.globalProperties.$browser = browser;
 app.config.globalProperties.$ext = extension;
-
 app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
 app.component('DataTable', DataTable);

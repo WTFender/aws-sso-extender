@@ -6,8 +6,6 @@ class Extension {
 
   ssoUrl: string;
 
-  ssoUrlRegex: RegExp;
-
   user: UserData;
 
   apps: AppData[];
