@@ -1,0 +1,36 @@
+on:
+  workflow_dispatch
+
+name: Create Release
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Setup
+        run: |
+          npm ci
+          sudo apt-get install jq zip
+          mkdir -p release/chrome release/firefox
+      - id: manifest
+        run: echo "version=$(jq -r '.version' src/manifest/chrome.json)" >> $GITHUB_OUTPUT
+      - name: Build Chrome Extension
+        run: |
+          npm run build:chrome
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip .  
+      - name: Upload Chrome Store
+        run: |
+          npx chrome-webstore-upload upload \
+            --extension-id ${{ secrets.EXTENSION_ID }} \
+            --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
+            --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
+            --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
+            --source release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip
