@@ -1,7 +1,7 @@
 <!-- eslint-disable max-len -->
 <template>
   <div
-    v-if="!permissions"
+    v-if="!permissions.history"
   >
     <PrimeButton
       size="small"
@@ -11,7 +11,7 @@
     />
   </div>
   <div v-else-if="foundDirs">
-    <h3>Login Links</h3>
+    <h3>Detected Login Links</h3>
     <div
       v-for="dir in foundDirs"
       :key="dir"
@@ -28,41 +28,32 @@
 </template>
 
 <script>
-import extension from '../extension';
-
 export default {
   name: 'LoginLinks',
-  props: {
-    permissions: {
-      type: Object,
-      default() {
-        return { origins: false, history: false };
-      },
-    },
-  },
   data() {
     return {
+      permissions: {},
       foundDirs: null,
     };
   },
   created() {
-    extension.log(this.permissions);
-    if (this.permissions) {
-      extension.log('PERMS');
-      extension.findDirectories(this.setDirectories);
-    } else {
-      extension.log('NOOOOOPERMS');
-    }
+    this.$ext.checkPermissions().then((perms) => {
+      this.permissions = perms;
+      if (perms.history) {
+        this.$ext.searchHistory().then((dirs) => {
+          this.setDirectories(dirs);
+        });
+      }
+    });
   },
   methods: {
     setDirectories(dirs) {
-      extension.log('dirs');
-      extension.log(dirs);
+      this.$ext.log('dirs');
       this.foundDirs = dirs;
     },
     requestHistory() {
-      extension.requestPermsHistory();
-      extension.close();
+      this.$browser.permissions.request({ permissions: ['history'] });
+      window.close();
     },
   },
 };

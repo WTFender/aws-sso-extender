@@ -1,4 +1,10 @@
+/* eslint-disable import/order */
+/* eslint-disable import/first */
 /* eslint-disable vue/multi-word-component-names */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const browser = require('webextension-polyfill');
+
+import extension from '../extension';
 import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
 import Accordion from 'primevue/accordion';
@@ -17,6 +23,10 @@ import 'primeicons/primeicons.css';
 
 const app = createApp(App);
 app.use(PrimeVue);
+
+app.config.globalProperties.$browser = browser;
+app.config.globalProperties.$ext = extension;
+
 app.component('Accordion', Accordion);
 app.component('AccordionTab', AccordionTab);
 app.component('DataTable', DataTable);

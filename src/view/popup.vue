@@ -72,6 +72,7 @@ companyName.awsapps.com/start#/
 directoryId.awsapps.com/start#/
         </pre>
         <Divider
+          v-if="!permissions.history"
           align="left"
           type="solid"
         >
@@ -175,8 +176,6 @@ directoryId.awsapps.com/start#/
   </div>
 </template>
 <script>
-import extension from '../extension';
-
 export default {
   name: 'PopupView',
   data() {
@@ -221,16 +220,16 @@ export default {
     },
   },
   created() {
-    this.config = extension.config;
+    this.config = this.$ext.config;
     this.permissions = {
       origins: false,
       history: false,
     };
     // eslint-disable-next-line func-names
-    extension.checkPermissions().then((perms) => {
+    this.$ext.checkPermissions().then((perms) => {
       this.permissions = perms;
     });
-    extension.loadData().then((data) => {
+    this.$ext.loadData().then((data) => {
       this.dataJson = JSON.stringify(data, null, 2);
       this.updatedAt = new Date(data.updatedAt);
       this.user = data.user;
@@ -253,8 +252,8 @@ export default {
   },
   methods: {
     requestPermissions() {
-      extension.requestPermissions();
-      extension.close();
+      this.$ext.requestOrigins();
+      window.close();
     },
     setPage(page) {
       this.lastPage = this.page;
@@ -278,26 +277,32 @@ export default {
       this.custom = {};
       this.appProfiles = [];
       this.user = {};
-      extension.reset();
-      this.setPage('profiles');
+      this.$ext.resetData();
+      this.$browser.permissions.remove({
+        permissions: ['history'],
+      });
+      this.$browser.permissions.remove({
+        origins: this.config.origins,
+      });
+      window.close();
     },
     resetCustom() {
       this.custom = {};
-      extension.saveCustom(this.custom);
-      extension.loadData().then((data) => {
+      this.$ext.saveCustom(this.custom);
+      this.$ext.loadData().then((data) => {
         this.appProfiles = this.customizeProfiles(data.appProfiles);
       });
       this.setPage('profiles');
     },
     updateProfile(appProfile) {
       this.custom[appProfile.profile.id] = appProfile.profile.custom;
-      extension.saveCustom(this.custom);
-      extension.loadData().then((data) => {
+      this.$ext.saveCustom(this.custom);
+      this.$ext.loadData().then((data) => {
         this.appProfiles = this.customizeProfiles(data.appProfiles);
       });
     },
     updateProfileLabel(event) {
-      extension.log(event);
+      this.$ext.log(event);
       const { newData } = event;
       if ('profile.custom.label' in newData) {
         newData.profile.custom.label = newData['profile.custom.label'];
