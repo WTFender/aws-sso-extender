@@ -25,7 +25,7 @@ jobs:
       - name: Build Chrome Extension
         run: |
           npm run build:chrome
-          cd dist/chrome/ && zip -r release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip .
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.manifest.outputs.version }}.zip .
       - name: Build Firefox Extension
         run: npm run build:firefox
       - run: zip -r 
