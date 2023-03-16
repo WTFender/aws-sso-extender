@@ -12,11 +12,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Load manifest
+      - name: Load Manifest
         id: manifest
-        uses: zoexx/github-action-json-file-properties@release
-        with:
-          file_path: "src/manifest/chrome.json"
+        run: |
+          apt-get install jq
+          echo "version=$(jq '.version' src/manifest/chrome.json)"
       - name: Create Release
         uses: actions/create-release@v1
         env:
