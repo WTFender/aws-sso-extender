@@ -21,7 +21,7 @@
         <i class="pi pi-search" />
         <InputText
           v-model="filterProfiles['global'].value"
-          style="width: 80%"
+          style="width: 70%"
           placeholder="Search Profiles"
         />
       </span>

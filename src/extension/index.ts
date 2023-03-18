@@ -156,20 +156,20 @@ class Extension {
   async loadData() {
     this.log('func:loadData');
     const customKey = `${this.config.name}-custom`;
-    const customData = await chrome.storage.sync.get(customKey);
+    const customData = await browser.storage.sync.get(customKey);
     const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
     const userKey = `${this.config.name}-user`;
-    const userData = await chrome.storage.sync.get(userKey);
+    const userData = await browser.storage.sync.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
     const profilesKey = `${this.config.name}-profiles`;
-    const profilesData = await chrome.storage.sync.get(profilesKey);
+    const profilesData = await browser.storage.sync.get(profilesKey);
     // eslint-disable-next-line max-len
     const profiles = profilesData[profilesKey] === undefined ? {} : JSON.parse(profilesData[profilesKey]);
     const { updatedAt } = profiles;
     const appProfiles = [];
     this.log(profiles);
     profiles?.appProfileIds?.forEach((apId) => {
-      appProfiles.push(chrome.storage.sync.get(apId));
+      appProfiles.push(browser.storage.sync.get(apId));
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
       custom,
@@ -190,11 +190,6 @@ class Extension {
           profile,
         };
         delete appProfile.profiles;
-        /* TODO do i need this
-        if (!('favorite' in appProfile)) {
-          appProfile.favorite = false;
-        }
-        */
         appProfiles.push(appProfile);
       });
     });
@@ -218,7 +213,7 @@ class Extension {
     dataObj[dataKey] = JSON.stringify(
       typeof data === 'object' ? { ...data, updatedAt: Date.now() } : data,
     );
-    chrome.storage.sync.set(dataObj);
+    browser.storage.sync.set(dataObj);
   }
 
   saveAppProfiles() {
