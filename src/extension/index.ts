@@ -264,7 +264,7 @@ const extensionConfig = {
   display: 'AWS SSO Extender',
   debug: true,
   origins: ['https://*.awsapps.com/start*'],
-  ssoUrlRegex: /^https:\/\/(?<directoryId>.+)\.awsapps\.com\/start\/?#\/$/,
+  ssoUrlRegex: /^https:\/\/(?<directoryId>.+)\.awsapps\.com\/start\/?#?\/?$/,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
