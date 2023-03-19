@@ -158,6 +158,10 @@ class Extension {
     const userKey = `${this.config.name}-user-${userId}`;
     const userData = await browser.storage.sync.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
+    const customKey = `${this.config.name}-custom-${userId}`;
+    const customData = await browser.storage.sync.get(customKey);
+    const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
+    user.custom = custom;
     return user;
   }
 
@@ -174,26 +178,33 @@ class Extension {
     return data;
   }
 
-  async loadCustom() {
-    // TODO depend on user loading
-    const customKey = `${this.config.name}-custom`;
-    const customData = await browser.storage.sync.get(customKey);
-    const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
-    return custom;
+  saveSettings(settings) {
+    this.saveData(`${this.config.name}-settings`, settings);
+  }
+
+  async loadSettings() {
+    const defaultSettings = {
+      defaultUser: 'lastUserId',
+      lastUserId: null,
+    };
+    const setKey = `${this.config.name}-settings`;
+    const setData = await browser.storage.sync.get(setKey);
+    const settings = setData[setKey] === undefined ? defaultSettings : JSON.parse(setData[setKey]);
+    return settings;
   }
 
   async loadData() {
     this.log('func:loadData');
+    const settings = await this.loadSettings();
     const users = await this.loadUsers();
-    const custom = await this.loadCustom();
-    const userProfileIds = users.map((user) => user.appProfileIds);
-    const uniqProfileIds = [...new Set(userProfileIds.flat(1))];
+    const appProfileIds = users.map((user) => user.appProfileIds);
+    const uniqProfileIds = [...new Set(appProfileIds.flat(1))];
     const appProfiles = [];
     uniqProfileIds.forEach((apId) => {
       appProfiles.push(browser.storage.sync.get(apId));
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
-      custom,
+      settings,
       users,
       appProfiles: aps.map((ap) => JSON.parse(ap[Object.keys(ap)[0]])),
     }));
@@ -216,11 +227,6 @@ class Extension {
     return appProfiles;
   }
 
-  saveCustom(custom) {
-    this.log('func:saveCustom');
-    this.saveData(`${this.config.name}-custom`, custom);
-  }
-
   resetData() {
     this.log('func:resetData');
     return browser.storage.sync.clear();
@@ -235,6 +241,17 @@ class Extension {
     browser.storage.sync.set(dataObj);
   }
 
+  saveUser(user) {
+    if ('custom' in user) {
+      this.saveData(`${this.config.name}-custom-${user.userId}`, user.custom);
+      const userData = user;
+      delete userData.custom;
+      this.saveData(`${this.config.name}-user-${user.userId}`, userData);
+    } else {
+      this.saveData(`${this.config.name}-user-${user.userId}`, user);
+    }
+  }
+
   saveAppProfiles() {
     this.log('func:saveAppProfiles');
     const appProfiles = this.parseAppProfiles();
@@ -243,14 +260,12 @@ class Extension {
     });
     const appProfileIds = appProfiles.map((ap) => ap.profile.id);
     const data = { ...this.user, appProfileIds };
-    this.saveData(`${this.config.name}-user-${this.user.userId}`, data);
+    this.saveUser(data);
   }
 
   async update() {
     this.log('func:updateData');
     this.loadData().then((data) => {
-      this.log('dataaaaaaaaaaa');
-      this.log(data);
       const userIds = [this.user.userId, ...data.users.map((user) => user.userId)];
       this.saveData(`${this.config.name}-users`, { users: [...new Set(userIds)] });
       this.saveAppProfiles();
@@ -264,7 +279,7 @@ const extensionConfig = {
   display: 'AWS SSO Extender',
   debug: true,
   origins: ['https://*.awsapps.com/start*'],
-  ssoUrlRegex: /^https:\/\/(?<directoryId>.+)\.awsapps\.com\/start\/?#?\/?$/,
+  ssoUrlRegex: /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

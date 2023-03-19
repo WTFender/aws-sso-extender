@@ -36,6 +36,7 @@ type AppData = {
 };
 
 type UserData = {
+  custom: object;
   appProfileIds: string[];
   accountId: string;
   adGUID: string;

@@ -30,7 +30,7 @@
             class="p-button-warning reset-button"
             label="Reset Preferences"
             style="margin-right: 15px"
-            @click="resetCustom()"
+            @click="resetUser()"
           />
           <PrimeButton
             class="p-button-danger reset-button"
@@ -69,7 +69,6 @@
         alt="JSON Data"
         @click="setPage('json')"
       />
-      {{ user.subject }}
     </div>
 
     <!--- Menu Icons -->
@@ -85,15 +84,25 @@
       @click="switchUser($event)"
     />
     <OverlayPanel ref="op">
+      <h3>Default User</h3>
+      <Dropdown
+        v-model="defaultUser"
+        :options="userOptions"
+        option-label="label"
+        :placeholder="defaultUserPlaceholder"
+        class="w-full md:w-14rem"
+      />
+      <h3>Switch User</h3>
       <div
         v-for="u in data.data.users"
         :key="u.userId"
         style="padding-bottom: 5px;"
       >
         <PrimeButton
+          :disabled="u.userId === user.userId"
           :class="u.userId === user.userId ? 'p-button-primary' : 'p-button-secondary'"
           :label="u.subject +' @ '+u.managedActiveDirectoryId"
-          @click="setUser(u)"
+          @click="user = u"
         />
         <br>
       </div>
@@ -122,6 +131,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      defaultUser: 'lastUserId',
       permissions: {},
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
@@ -144,6 +154,23 @@ export default {
     };
   },
   computed: {
+    defaultUserPlaceholder() {
+      if (this.data.data.settings.defaultUser === 'lastUserId') {
+        return 'Last sign-in activity';
+      }
+      const user = this.getUser(this.data.data.settings.defaultUser);
+      return `${user.subject} @ ${user.managedActiveDirectoryId}`;
+    },
+    userOptions() {
+      let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
+      options = options.concat(
+        this.data.data.users.map((user) => ({
+          ...user,
+          label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
+        })),
+      );
+      return options;
+    },
     staleData() {
       const limit = this.staleHours * 1000 * 60 * 60;
       if ((Date.now() - limit) > this.updatedAt) {
@@ -170,6 +197,12 @@ export default {
       return userProfiles;
     },
   },
+  watch: {
+    defaultUser(user) {
+      this.data.data.settings.defaultUser = user.userId;
+      this.$ext.saveSettings(this.data.data.settings);
+    },
+  },
   created() {
     this.permissions = {
       origins: false,
@@ -180,33 +213,53 @@ export default {
     this.$ext.checkPermissions().then((perms) => {
       this.permissions = perms;
     });
-    this.$ext.loadData().then((data) => {
-      this.data.data = data;
-      this.dataJson = JSON.stringify(data, null, 2);
-      this.updatedAt = new Date(data.updatedAt);
-      // eslint-disable-next-line prefer-destructuring
-      this.user = data.users[0];
-      this.custom = data.custom;
-      this.appProfiles = this.customizeProfiles(data.appProfiles);
-      if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
-      if (this.staleData) {
-        this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
-      } else {
-        this.status = { status: 'healthy', message: '' };
-      }
-      if (Object.keys(this.user).length > 1) {
-        // if only 1 key (e.g. updatedAt), no data is loaded
-        this.loaded = true;
-      }
-    }).catch((error) => {
-      this.status = { status: 'unhealthy', message: 'failed to load data' };
-      throw error;
-    });
+    this.reload();
   },
   methods: {
-    setUser(user) {
-      this.user = user;
-      window.close();
+    getUser(userId) {
+      const user = this.data.data.users.filter((u) => u.userId === userId)[0];
+      return user;
+    },
+    setUser(userId = null) {
+      if (userId !== null) {
+        this.data.data.settings.defaultUser = userId;
+      }
+      if (this.data.data.settings.defaultUser === 'lastUserId') {
+        // most recent updatedAt
+        this.data.data.users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
+        // eslint-disable-next-line prefer-destructuring
+        this.user = this.data.data.users[0];
+      } else {
+        // find lastUserId in users
+        this.user = this.getUser(this.data.data.settings.defaultUser);
+      }
+      this.data.data.settings.lastUserId = this.user.userId;
+      this.$ext.saveSettings(this.data.data.settings);
+    },
+    reload() {
+      this.$ext.loadData().then((data) => {
+        this.data.data = data;
+        this.dataJson = JSON.stringify(data, null, 2);
+        if (data.users.length > 0) {
+          this.updatedAt = new Date(data.updatedAt);
+          this.setUser();
+          // eslint-disable-next-line prefer-destructuring
+          this.appProfiles = this.customizeProfiles(data.appProfiles);
+          if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
+          if (this.staleData) {
+            this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
+          } else {
+            this.status = { status: 'healthy', message: '' };
+          }
+          if (Object.keys(this.user).length > 1) {
+            // if only 1 key (e.g. updatedAt), no data is loaded
+            this.loaded = true;
+          }
+        }
+      }).catch((error) => {
+        this.status = { status: 'unhealthy', message: 'failed to load data' };
+        throw error;
+      });
     },
     switchUser(e) {
       this.$refs.op.toggle(e);
@@ -235,13 +288,12 @@ export default {
       appProfiles.forEach((ap) => {
         const profile = { ...ap };
         // eslint-disable-next-line max-len
-        profile.profile.custom = ap.profile.id in this.custom ? this.custom[ap.profile.id] : defaults;
+        profile.profile.custom = ap.profile.id in this.user.custom ? this.user.custom[ap.profile.id] : defaults;
         customProfiles.push(profile);
       });
       return customProfiles;
     },
     reset() {
-      this.custom = {};
       this.appProfiles = [];
       this.user = {};
       this.$ext.resetData();
@@ -253,18 +305,27 @@ export default {
       });
       window.close();
     },
-    resetCustom() {
+    resetUser() {
+      const { user } = this;
+      delete user.custom;
+      this.$ext.saveUser(user);
+      // TODO fix custom
+      /*
       this.custom = {};
       this.$ext.saveCustom(this.custom);
       this.$ext.loadData().then((data) => {
         this.appProfiles = this.customizeProfiles(data.appProfiles);
       });
+      */
       this.setPage('profiles');
     },
     updateProfile(appProfile) {
-      this.custom[appProfile.profile.id] = appProfile.profile.custom;
-      this.$ext.saveCustom(this.custom);
+      this.$ext.log(appProfile);
+      this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
+      this.$ext.saveUser(this.user);
       this.$ext.loadData().then((data) => {
+        // eslint-disable-next-line prefer-destructuring
+        this.user = data.users[0];
         this.appProfiles = this.customizeProfiles(data.appProfiles);
       });
     },
