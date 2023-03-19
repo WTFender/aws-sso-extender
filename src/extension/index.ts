@@ -32,13 +32,14 @@ class Extension {
           profiles.push(
             this.getAppProfiles(app).then((appProfiles) => {
               const appWithProfiles = app;
+              appWithProfiles.userId = this.user.userId;
               appWithProfiles.profiles = appProfiles;
               this.apps.push(appWithProfiles);
             }),
           );
         });
         Promise.all(profiles).then(() => {
-          this.updateData();
+          this.update();
           this.loaded = true;
         });
       });
@@ -153,28 +154,47 @@ class Extension {
     return appProfiles.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
   }
 
-  async loadData() {
-    this.log('func:loadData');
+  async loadUser(userId): Promise<UserData> {
+    const userKey = `${this.config.name}-user-${userId}`;
+    const userData = await browser.storage.sync.get(userKey);
+    const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
+    return user;
+  }
+
+  async loadUsers(): Promise<Array<UserData>> {
+    const users = [];
+    const usersKey = `${this.config.name}-users`;
+    const usersData = await browser.storage.sync.get(usersKey);
+    const userIds = usersData[usersKey] === undefined ? [] : JSON.parse(usersData[usersKey]).users;
+    userIds.forEach((userId) => {
+      users.push(this.loadUser(userId));
+    });
+    await Promise.all(users);
+    const data = await Promise.all(users).then((x) => (x));
+    return data;
+  }
+
+  async loadCustom() {
+    // TODO depend on user loading
     const customKey = `${this.config.name}-custom`;
     const customData = await browser.storage.sync.get(customKey);
     const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
-    const userKey = `${this.config.name}-user`;
-    const userData = await browser.storage.sync.get(userKey);
-    const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
-    const profilesKey = `${this.config.name}-profiles`;
-    const profilesData = await browser.storage.sync.get(profilesKey);
-    // eslint-disable-next-line max-len
-    const profiles = profilesData[profilesKey] === undefined ? {} : JSON.parse(profilesData[profilesKey]);
-    const { updatedAt } = profiles;
+    return custom;
+  }
+
+  async loadData() {
+    this.log('func:loadData');
+    const users = await this.loadUsers();
+    const custom = await this.loadCustom();
+    const userProfileIds = users.map((user) => user.appProfileIds);
+    const uniqProfileIds = [...new Set(userProfileIds.flat(1))];
     const appProfiles = [];
-    this.log(profiles);
-    profiles?.appProfileIds?.forEach((apId) => {
+    uniqProfileIds.forEach((apId) => {
       appProfiles.push(browser.storage.sync.get(apId));
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
       custom,
-      user,
-      updatedAt,
+      users,
       appProfiles: aps.map((ap) => JSON.parse(ap[Object.keys(ap)[0]])),
     }));
     this.log(data);
@@ -202,9 +222,8 @@ class Extension {
   }
 
   resetData() {
-    this.saveData(`${this.config.name}-user`, {});
-    this.saveData(`${this.config.name}-custom`, {});
-    this.saveData(`${this.config.name}-profiles`, {});
+    this.log('func:resetData');
+    return browser.storage.sync.clear();
   }
 
   saveData(dataKey, data) {
@@ -223,14 +242,19 @@ class Extension {
       this.saveData(appProfile.profile.id, appProfile);
     });
     const appProfileIds = appProfiles.map((ap) => ap.profile.id);
-    this.log(appProfileIds);
-    this.saveData(`${this.config.name}-profiles`, { appProfileIds });
+    const data = { ...this.user, appProfileIds };
+    this.saveData(`${this.config.name}-user-${this.user.userId}`, data);
   }
 
-  updateData() {
+  async update() {
     this.log('func:updateData');
-    this.saveAppProfiles();
-    this.saveData(`${this.config.name}-user`, this.user);
+    this.loadData().then((data) => {
+      this.log('dataaaaaaaaaaa');
+      this.log(data);
+      const userIds = [this.user.userId, ...data.users.map((user) => user.userId)];
+      this.saveData(`${this.config.name}-users`, { users: [...new Set(userIds)] });
+      this.saveAppProfiles();
+    });
   }
 }
 
@@ -238,7 +262,7 @@ const extensionConfig = {
   id: 'hoibkegkkiolnikaihpdphegmbpeilfg',
   name: 'aws-sso-ext',
   display: 'AWS SSO Extender',
-  debug: false,
+  debug: true,
   origins: ['https://*.awsapps.com/start*'],
   ssoUrlRegex: /^https:\/\/(?<directoryId>.+)\.awsapps\.com\/start\/?#\/$/,
 };

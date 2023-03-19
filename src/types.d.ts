@@ -27,6 +27,7 @@ type AppData = {
   name: string;
   profiles: AppProfileData[];
   profile?: AppProfileData;
+  userId: string;
   searchMetadata: {
     AccountId: string;
     AccountName: string;
@@ -35,6 +36,7 @@ type AppData = {
 };
 
 type UserData = {
+  appProfileIds: string[];
   accountId: string;
   adGUID: string;
   adImmutableId: string;
@@ -62,6 +64,6 @@ type UserData = {
 };
 
 type ExtensionData = {
-  user: UserData;
+  users: UserData;
   apps: AppData[];
 }

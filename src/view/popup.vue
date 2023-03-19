@@ -14,7 +14,7 @@
       <!--- Profiles/Favorites page -->
       <ProfileTable
         v-if="page === 'favorites' || page === 'profiles'"
-        :app-profiles="page === 'favorites' ? faveProfiles : appProfiles"
+        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles"
         :user="user"
         @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel"
@@ -69,6 +69,7 @@
         alt="JSON Data"
         @click="setPage('json')"
       />
+      {{ user.subject }}
     </div>
 
     <!--- Menu Icons -->
@@ -77,6 +78,26 @@
       class="pi pi-chevron-right page-icon page-back"
       @click="setPage('profiles')"
     />
+    <i
+      v-if="page !== 'settings'"
+      class="pi switch-user page-icon"
+      :class="data.data.users.length > 1 ? 'pi-users': 'pi-user'"
+      @click="switchUser($event)"
+    />
+    <OverlayPanel ref="op">
+      <div
+        v-for="u in data.data.users"
+        :key="u.userId"
+        style="padding-bottom: 5px;"
+      >
+        <PrimeButton
+          :class="u.userId === user.userId ? 'p-button-primary' : 'p-button-secondary'"
+          :label="u.subject +' @ '+u.managedActiveDirectoryId"
+          @click="setUser(u)"
+        />
+        <br>
+      </div>
+    </OverlayPanel>
     <i
       v-if="page !== 'settings'"
       class="pi pi-list page-icon page-profiles"
@@ -107,7 +128,8 @@ export default {
         { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
       ],
       loaded: false,
-      dataJson: {},
+      data: {},
+      dataJson: '',
       staleHours: 1,
       status: {
         message: '',
@@ -131,12 +153,21 @@ export default {
     },
     faveProfiles() {
       const faveProfiles = [];
-      this.appProfiles.forEach((ap) => {
+      this.userProfiles.forEach((ap) => {
         if (ap.profile.custom.favorite) {
           faveProfiles.push(ap);
         }
       });
       return faveProfiles;
+    },
+    userProfiles() {
+      const userProfiles = [];
+      this.appProfiles.forEach((ap) => {
+        if (ap.userId === this.user.userId) {
+          userProfiles.push(ap);
+        }
+      });
+      return userProfiles;
     },
   },
   created() {
@@ -150,9 +181,11 @@ export default {
       this.permissions = perms;
     });
     this.$ext.loadData().then((data) => {
+      this.data.data = data;
       this.dataJson = JSON.stringify(data, null, 2);
       this.updatedAt = new Date(data.updatedAt);
-      this.user = data.user;
+      // eslint-disable-next-line prefer-destructuring
+      this.user = data.users[0];
       this.custom = data.custom;
       this.appProfiles = this.customizeProfiles(data.appProfiles);
       if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
@@ -171,6 +204,13 @@ export default {
     });
   },
   methods: {
+    setUser(user) {
+      this.user = user;
+      window.close();
+    },
+    switchUser(e) {
+      this.$refs.op.toggle(e);
+    },
     handlePermissions(permissions) {
       this.$ext.log(permissions);
       if (permissions.permissions.includes('history')) {
@@ -292,16 +332,20 @@ export default {
   left: 450px;
 }
 
-.page-profiles {
-  left: 450px;
+.switch-user {
+  left: 330px;
+}
+
+.page-settings {
+  left: 370px;
 }
 
 .page-favorites {
   left: 410px;
 }
 
-.page-settings {
-  left: 370px;
+.page-profiles {
+  left: 450px;
 }
 
 .footer {
