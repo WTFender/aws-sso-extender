@@ -157,15 +157,6 @@ export default {
       const appProfileName = this.encodeUriPlusParens(appProfile.name);
       return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
     },
-    removeFave(event) {
-      const faveProfiles = [];
-      this.favorites.forEach((profile) => {
-        if (profile.profile.id !== event.data.profile.id) {
-          faveProfiles.push(profile);
-        }
-      });
-      this.favorites = faveProfiles;
-    },
     fave(event) {
       const appProfile = event.data;
       appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
