@@ -57,15 +57,6 @@ class Extension {
     }
   }
 
-  async requestOrigins(directoryId = null) {
-    const { origins } = this.config;
-    if (directoryId !== null) {
-      // TODO support granular directory permissions
-      // origins = [`'https://${directoryId}.awsapps.com/start*'`];
-    }
-    browser.permissions.request({ origins });
-  }
-
   async checkPermissions() {
     this.log('func:checkPermissions');
     const origins = browser.permissions.contains({

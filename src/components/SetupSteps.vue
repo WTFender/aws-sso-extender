@@ -102,8 +102,13 @@ export default {
   },
   emits: ['skipSetup', 'demoMode'],
   methods: {
-    requestPermissions() {
-      this.$ext.requestOrigins();
+    requestPermissions(directoryId = null) {
+      const { origins } = this.$ext.config;
+      if (directoryId !== null) {
+      // TODO support granular directory permissions
+      // origins = [`'https://${directoryId}.awsapps.com/start*'`];
+      }
+      this.$browser.permissions.request({ origins });
       window.close();
     },
   },
