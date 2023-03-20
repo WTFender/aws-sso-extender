@@ -205,6 +205,7 @@ export default {
       this.permissions = perms;
     });
     this.reload();
+    if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
   },
   methods: {
     demoMode() {
@@ -277,7 +278,6 @@ export default {
           this.setUser();
           // eslint-disable-next-line prefer-destructuring
           this.appProfiles = this.customizeProfiles(data.appProfiles);
-          if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
           if (this.staleData) {
             this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
           } else {
@@ -340,6 +340,7 @@ export default {
     updateProfile(appProfile) {
       this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
       this.$ext.saveUser(this.user);
+      this.reload();
     },
     updateProfileLabel(event) {
       this.$ext.log(event);

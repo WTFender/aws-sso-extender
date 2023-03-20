@@ -50,7 +50,6 @@ export default {
   },
   methods: {
     setDirectories(dirs) {
-      this.$ext.log('dirs');
       this.foundDirs = dirs;
     },
     requestHistory() {
