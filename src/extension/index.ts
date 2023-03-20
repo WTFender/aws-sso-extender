@@ -32,7 +32,6 @@ class Extension {
           profiles.push(
             this.getAppProfiles(app).then((appProfiles) => {
               const appWithProfiles = app;
-              appWithProfiles.userId = this.user.userId;
               appWithProfiles.profiles = appProfiles;
               this.apps.push(appWithProfiles);
             }),

@@ -179,22 +179,11 @@ export default {
       return false;
     },
     faveProfiles() {
-      const faveProfiles = [];
-      this.userProfiles.forEach((ap) => {
-        if (ap.profile.custom.favorite) {
-          faveProfiles.push(ap);
-        }
-      });
-      return faveProfiles;
+      return this.userProfiles.filter((ap) => ap.profile.custom.favorite);
     },
     userProfiles() {
-      const userProfiles = [];
-      this.appProfiles.forEach((ap) => {
-        if (ap.userId === this.user.userId) {
-          userProfiles.push(ap);
-        }
-      });
-      return userProfiles;
+      // eslint-disable-next-line max-len
+      return this.appProfiles.filter((ap) => this.user.appProfileIds.includes(ap.profile.id));
     },
   },
   watch: {
@@ -306,28 +295,14 @@ export default {
       window.close();
     },
     resetUser() {
-      const { user } = this;
-      delete user.custom;
-      this.$ext.saveUser(user);
-      // TODO fix custom
-      /*
-      this.custom = {};
-      this.$ext.saveCustom(this.custom);
-      this.$ext.loadData().then((data) => {
-        this.appProfiles = this.customizeProfiles(data.appProfiles);
-      });
-      */
+      this.user.custom = {};
+      this.$ext.saveUser(this.user);
       this.setPage('profiles');
+      this.reload();
     },
     updateProfile(appProfile) {
-      this.$ext.log(appProfile);
       this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
       this.$ext.saveUser(this.user);
-      this.$ext.loadData().then((data) => {
-        // eslint-disable-next-line prefer-destructuring
-        this.user = data.users[0];
-        this.appProfiles = this.customizeProfiles(data.appProfiles);
-      });
     },
     updateProfileLabel(event) {
       this.$ext.log(event);

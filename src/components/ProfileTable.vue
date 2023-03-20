@@ -158,6 +158,7 @@ export default {
       return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
     },
     fave(event) {
+      // TODO fix favorite issue for multi users
       const appProfile = event.data;
       appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
       this.$emit('updateProfile', appProfile);
