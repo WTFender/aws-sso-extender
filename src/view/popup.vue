@@ -189,6 +189,13 @@ export default {
     },
   },
   watch: {
+    loaded(v) {
+      if (v === true) {
+        if (this.faveProfiles.length > 0) {
+          this.setPage('favorites');
+        }
+      }
+    },
     defaultUser(user) {
       this.data.data.settings.defaultUser = user.userId;
       this.$ext.saveSettings(this.data.data.settings);
@@ -205,7 +212,6 @@ export default {
       this.permissions = perms;
     });
     this.reload();
-    if (this.faveProfiles.length > 0) { this.setPage('favorites'); }
   },
   methods: {
     demoMode() {
@@ -297,9 +303,16 @@ export default {
       this.$refs.op.toggle(e);
     },
     handlePermissions(permissions) {
+      this.$ext.log(permissions);
       if (permissions.permissions.includes('history')) {
-        this.$ext.log(permissions.permissions);
+        this.$ext.log(permissions);
+        this.permissions.history = true;
       }
+      permissions.origins.forEach((origin) => {
+        if (this.$ext.config.origins.includes(origin)) {
+          this.permissions.origins = true;
+        }
+      });
     },
     setPage(page) {
       this.lastPage = this.page;
