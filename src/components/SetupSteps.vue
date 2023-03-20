@@ -65,6 +65,20 @@
         <LoginLinks :permissions="permissions" />
       </AccordionTab>
     </Accordion>
+    <PrimeButton
+      size="small"
+      class="p-button-primary"
+      label="Demo Mode"
+      style="margin-right: 5px;"
+      @click="$emit('demoMode')"
+    />
+    <PrimeButton
+      v-if="$ext.config.debug"
+      size="small"
+      class="p-button-secondary"
+      label="Skip Setup"
+      @click="$emit('skipSetup')"
+    />
   </div>
 </template>
 
@@ -86,6 +100,7 @@ export default {
       }),
     },
   },
+  emits: ['skipSetup', 'demoMode'],
   methods: {
     requestPermissions() {
       this.$ext.requestOrigins();

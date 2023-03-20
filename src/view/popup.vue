@@ -6,6 +6,8 @@
     v-if="permissions === false || loaded === false"
     :permissions="permissions"
     :loaded="loaded"
+    @skipSetup="skipSetup()"
+    @demoMode="demoMode()"
   />
 
   <!--- Post-setup -->
@@ -205,6 +207,47 @@ export default {
     this.reload();
   },
   methods: {
+    demoMode() {
+      const demoData = {
+        users: [
+          {
+            userId: 'demoUserId',
+            subject: 'demoUser',
+            managedActiveDirectoryId: 'd-demoDirectoryId',
+            preferredUsername: 'demoUser',
+            accountId: 'demoAccountId',
+            appProfileIds: [
+              'p-demoProfileId',
+            ],
+            custom: {},
+          }],
+        appProfiles: [{
+          id: 'ins-demoAppId',
+          name: 'demoAppName',
+          description: 'Demo Application',
+          profile: {
+            id: 'p-demoProfileId',
+            name: 'demoProfileName',
+          },
+        }],
+        settings: {
+          defaultUser: 'lastUserId',
+          lastUserId: null,
+        },
+      };
+      this.data.data = demoData;
+      // eslint-disable-next-line prefer-destructuring
+      this.user = demoData.users[0];
+      this.appProfiles = demoData.appProfiles;
+      this.skipSetup();
+    },
+    skipSetup() {
+      this.loaded = true;
+      this.permissions = {
+        history: false,
+        origins: false,
+      };
+    },
     getUser(userId) {
       const user = this.data.data.users.filter((u) => u.userId === userId)[0];
       return user;
@@ -254,9 +297,7 @@ export default {
       this.$refs.op.toggle(e);
     },
     handlePermissions(permissions) {
-      this.$ext.log(permissions);
       if (permissions.permissions.includes('history')) {
-        this.$ext.log('new history permissions');
         this.$ext.log(permissions.permissions);
       }
     },
