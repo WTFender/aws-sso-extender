@@ -260,10 +260,6 @@ export default {
         this.$ext.log(permissions.permissions);
       }
     },
-    requestPermissions() {
-      this.$ext.requestOrigins();
-      window.close();
-    },
     setPage(page) {
       this.lastPage = this.page;
       this.page = page;

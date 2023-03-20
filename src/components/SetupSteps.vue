@@ -35,13 +35,6 @@
           @click="requestPermissions()"
         />
         <!--- TODO add granular site perms options --->
-        <PrimeButton
-          style="margin-left: 20px; display: none;"
-          size="small"
-          class="p-button-warning"
-          label="Advanced"
-          @click="requestPermissions()"
-        />
       </AccordionTab>
 
       <AccordionTab :disabled="loaded">
@@ -91,6 +84,12 @@ export default {
         origins: false,
         history: false,
       }),
+    },
+  },
+  methods: {
+    requestPermissions() {
+      this.$ext.requestOrigins();
+      window.close();
     },
   },
 };
