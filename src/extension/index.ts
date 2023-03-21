@@ -267,7 +267,7 @@ const extensionConfig = {
   id: 'hoibkegkkiolnikaihpdphegmbpeilfg',
   name: 'aws-sso-ext',
   display: 'AWS SSO Extender',
-  debug: true,
+  debug: false,
   origins: ['https://*.awsapps.com/start*'],
   ssoUrlRegex: /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/,
 };
