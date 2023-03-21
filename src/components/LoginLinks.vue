@@ -5,6 +5,7 @@
   >
     <PrimeButton
       size="small"
+      icon="pi pi-search"
       class="p-button-primary"
       label="Find Login Links"
       @click="requestHistory()"
@@ -14,17 +15,19 @@
     <p v-if="foundDirs.length === 0">
       No login links found in browser history.
     </p>
-    <h3 v-else>
+    <h2 v-else>
       Detected Login Links
-    </h3>
+    </h2>
     <div
       v-for="dir in foundDirs"
       :key="dir"
     >
-      <a
-        target="_blank"
-        :href="`https://${dir}.awsapps.com/start#/`"
-      >{{ `https://${dir}.awsapps.com/start#/` }}</a>
+      <PrimeButton
+        class="p-button-primary"
+        :label="dir"
+        style="margin-top: 5px"
+        @click="openLink(`https://${dir}.awsapps.com/start#/`)"
+      />
     </div>
   </div>
 </template>
@@ -49,6 +52,9 @@ export default {
     });
   },
   methods: {
+    openLink(link) {
+      window.open(link, '_blank');
+    },
     setDirectories(dirs) {
       this.foundDirs = dirs;
     },
