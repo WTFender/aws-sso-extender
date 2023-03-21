@@ -62,20 +62,20 @@ jobs:
           asset_name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
           asset_content_type: application/zip
       
-      - name: Publish Chrome Store
-        run: |
-          npx chrome-webstore-upload upload \
-            --auto-publish
-            --extension-id ${{ secrets.EXTENSION_ID }} \
-            --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
-            --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
-            --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-            --source release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip \
-      
-      - name: Publish Mozilla Store
-        run: |
-          npx web-ext-submit \
-            --source-dir ./dist/firefox/ \
-            --artifacts-dir ./release/firefox/ \
-            --api-key ${{ secrets.WEB_EXT_API_KEY }} \
-            --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
+#     - name: Publish Chrome Store
+#       run: |
+#         npx chrome-webstore-upload upload \
+#           --auto-publish
+#           --extension-id ${{ secrets.EXTENSION_ID }} \
+#           --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
+#           --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
+#           --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
+#           --source release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip \
+#     
+#     - name: Publish Mozilla Store
+#       run: |
+#         npx web-ext-submit \
+#           --source-dir ./dist/firefox/ \
+#           --artifacts-dir ./release/firefox/ \
+#           --api-key ${{ secrets.WEB_EXT_API_KEY }} \
+#           --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
