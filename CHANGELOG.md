@@ -1,3 +1,6 @@
+## 1.1.4
+- Bug fixes
+
 ## 1.1.3
 - Support for multiple users
 - Demo mode
