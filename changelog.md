@@ -1,5 +1,7 @@
-## 1.1.2
-- 
+## 1.1.3
+- Support for multiple users
+- Demo mode
+- UX fixes and improvements
 
 ## 1.1.1
 - UX fixes to permissions
