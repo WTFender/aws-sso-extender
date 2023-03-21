@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/chrome": "^0.0.198",
     "@types/firefox-webext-browser": "^111.0.0",
+    "@types/node": "^18.15.5",
     "@types/webextension-polyfill": "^0.10.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",

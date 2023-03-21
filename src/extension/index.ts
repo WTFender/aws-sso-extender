@@ -1,3 +1,5 @@
+import extensionConfig from '../config';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const browser = require('webextension-polyfill');
 
@@ -263,16 +265,4 @@ class Extension {
   }
 }
 
-const extensionConfig = {
-  id: 'hoibkegkkiolnikaihpdphegmbpeilfg',
-  name: 'aws-sso-ext',
-  display: 'AWS SSO Extender',
-  debug: false,
-  origins: ['https://*.awsapps.com/start*'],
-  ssoUrlRegex: /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/,
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const extension = new Extension(extensionConfig);
-
-export default extension;
+export default new Extension(extensionConfig);
