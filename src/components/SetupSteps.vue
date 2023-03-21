@@ -13,7 +13,10 @@
       >
       Setup
     </h2>
-    <Accordion style="padding-right: 20px; padding-bottom: 20px;">
+    <Accordion
+      :active-index="permissions.origins === false ? 0 : 1"
+      style="padding-right: 20px; padding-bottom: 20px;"
+    >
       <AccordionTab :disabled="permissions.origins">
         <template #header>
           <div style="width: 90%">
@@ -30,6 +33,7 @@
         <p>This extension requires access to awsapps.com.</p>
         <PrimeButton
           size="small"
+          icon="pi pi-lock"
           class="p-button-success"
           label="Request Permissions"
           @click="requestPermissions()"
@@ -50,34 +54,28 @@
             />
           </div>
         </template>
-        <p>Login to AWS SSO to populate your profiles. Your login link typically looks like this:</p>
-        <pre>
-  companyName.awsapps.com/start#/
-  directoryId.awsapps.com/start#/
-          </pre>
+        <div v-if="permissions.history === false">
+          <p>Login to AWS SSO to populate your profiles. Your login link typically looks like this:</p>
+          <code>companyName.awsapps.com/start#/</code>
+          <br>
+          <code>directoryId.awsapps.com/start#/</code>
+        </div>
         <Divider
           v-if="!permissions.history"
-          align="left"
           type="solid"
         >
-          <small>Optional</small>
+          <small>Optional - Find login links in browser history</small>
         </Divider>
         <LoginLinks :permissions="permissions" />
       </AccordionTab>
     </Accordion>
     <PrimeButton
       size="small"
-      class="p-button-primary"
+      icon="pi pi-play"
+      class="p-button-success"
       label="Demo Mode"
-      style="margin-right: 5px;"
-      @click="$emit('demoMode')"
-    />
-    <PrimeButton
-      v-if="$ext.config.debug"
-      size="small"
-      class="p-button-secondary"
-      label="Skip Setup"
-      @click="$emit('skipSetup')"
+      style="margin-bottom: 15px;"
+      @click="$emit('demo')"
     />
   </div>
 </template>
@@ -100,7 +98,7 @@ export default {
       }),
     },
   },
-  emits: ['skipSetup', 'demoMode'],
+  emits: ['demo'],
   methods: {
     requestPermissions(directoryId = null) {
       const { origins } = this.$ext.config;

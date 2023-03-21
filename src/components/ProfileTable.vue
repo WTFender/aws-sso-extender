@@ -16,12 +16,14 @@
     <template #header>
       <span
         class="p-input-icon-left"
-        style="width: 90%"
+        style="width: 90%;"
       >
-        <i class="pi pi-search" />
+        <i
+          class="pi pi-search"
+        />
         <InputText
           v-model="filterProfiles['global'].value"
-          style="width: 70%"
+          style="width: 80%;"
           placeholder="Search Profiles"
         />
       </span>
