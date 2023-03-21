@@ -1,0 +1,173 @@
+{
+    "settings": {
+        "defaultUser": "lastUserId",
+        "lastUserId": "demoUserId1",
+        "updatedAt": 1679353666104
+    },
+    "users": [
+        {
+            "managedActiveDirectoryId": "d-demoDirId2",
+            "directoryType": "UserPool",
+            "preferredUsername": "Demo User",
+            "authContextClass": null,
+            "subject": "demouser",
+            "accountId": "demoAccountId",
+            "userId": "demoUserId2",
+            "ssoInstanceId": "ssoins-demoInstanceId",
+            "appProfileIds": [
+                "p-demoProfileId5",
+                "p-demoProfileId6"
+            ],
+            "updatedAt": 1679353642181,
+            "custom": {}
+        },
+        {
+            "managedActiveDirectoryId": "d-demoDirId1",
+            "directoryType": "UserPool",
+            "preferredUsername": "Demo User",
+            "authContextClass": null,
+            "subject": "demouser",
+            "accountId": "demoAccountId",
+            "userId": "demoUserId1",
+            "ssoInstanceId": "ssoins-demoInstanceId",
+            "appProfileIds": [
+                "p-demoProfileId1",
+                "p-demoProfileId2",
+                "p-demoProfileId3",
+                "p-demoProfileId4"
+            ],
+            "updatedAt": 1679353642190,
+            "custom": {}
+        }
+    ],
+    "appProfiles": [
+        {
+            "id": "ins-instanceId",
+            "name": "123412341234 (Production)",
+            "description": "AWS administrative console",
+            "applicationId": "app-demoAppId",
+            "applicationName": "AWS Account",
+            "icon": "https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png",
+            "searchMetadata": {
+                "AccountId": "123412341234",
+                "AccountName": "Production",
+                "AccountEmail": "demouser@localhost"
+            },
+            "profile": {
+                "id": "p-demoProfileId1",
+                "name": "AdministratorAccess",
+                "description": "",
+                "url": "",
+                "protocol": "SAML",
+                "relayState": null
+            },
+            "updatedAt": 1679353642181
+        },
+        {
+            "id": "ins-instanceId",
+            "name": "123412341234 (Production)",
+            "description": "AWS administrative console",
+            "applicationId": "app-demoAppId",
+            "applicationName": "AWS Account",
+            "icon": "https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png",
+            "searchMetadata": {
+                "AccountId": "123412341234",
+                "AccountName": "Production",
+                "AccountEmail": "demouser@localhost"
+            },
+            "profile": {
+                "id": "p-demoProfileId2",
+                "name": "ViewerAccess",
+                "description": "",
+                "url": "",
+                "protocol": "SAML",
+                "relayState": null
+            },
+            "updatedAt": 1679353642181
+        },
+        {
+            "id": "ins-instanceId",
+            "name": "432143214321 (Development)",
+            "description": "AWS administrative console",
+            "applicationId": "app-demoAppId",
+            "applicationName": "AWS Account",
+            "icon": "https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png",
+            "searchMetadata": {
+                "AccountId": "432143214321",
+                "AccountName": "Development",
+                "AccountEmail": "demouser@localhost"
+            },
+            "profile": {
+                "id": "p-demoProfileId3",
+                "name": "AdministratorAccess",
+                "description": "",
+                "url": "",
+                "protocol": "SAML",
+                "relayState": null
+            },
+            "updatedAt": 1679353642181
+        },
+        {
+            "id": "ins-instanceId3",
+            "name": "Github",
+            "description": "Github Application",
+            "applicationId": "app-demoAppId3",
+            "applicationName": "Github",
+            "icon": "https://static.global.sso.amazonaws.com/app-47372dcfae82a1db/icons/default.png",
+            "searchMetadata": null,
+            "profile": {
+                "id": "p-demoProfileId4",
+                "name": "Default",
+                "description": "",
+                "url": "",
+                "protocol": "SAML",
+                "relayState": null
+            },
+            "updatedAt": 1679352411435
+        },
+        {
+            "id": "ins-instanceId",
+            "name": "123456123456 (Production)",
+            "description": "AWS administrative console",
+            "applicationId": "app-demoAppId",
+            "applicationName": "AWS Account",
+            "icon": "https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png",
+            "searchMetadata": {
+                "AccountId": "123412341234",
+                "AccountName": "Production",
+                "AccountEmail": "demouser@localhost"
+            },
+            "profile": {
+                "id": "p-demoProfileId5",
+                "name": "AdministratorAccess",
+                "description": "",
+                "url": "",
+                "protocol": "SAML",
+                "relayState": null
+            },
+            "updatedAt": 1679353642181
+        },
+        {
+            "id": "ins-instanceId",
+            "name": "654321654321 (Development)",
+            "description": "AWS administrative console",
+            "applicationId": "app-demoAppId",
+            "applicationName": "AWS Account",
+            "icon": "https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png",
+            "searchMetadata": {
+                "AccountId": "123412341234",
+                "AccountName": "Development",
+                "AccountEmail": "demouser@localhost"
+            },
+            "profile": {
+                "id": "p-demoProfileId6",
+                "name": "AdministratorAccess",
+                "description": "",
+                "url": "",
+                "protocol": "SAML",
+                "relayState": null
+            },
+            "updatedAt": 1679353642181
+        }
+    ]
+}

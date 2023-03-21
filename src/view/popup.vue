@@ -1,3 +1,4 @@
+<!-- eslint-disable prefer-destructuring -->
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
@@ -6,8 +7,7 @@
     v-if="permissions === false || loaded === false"
     :permissions="permissions"
     :loaded="loaded"
-    @skipSetup="skipSetup()"
-    @demoMode="demoMode()"
+    @demo="demo()"
   />
 
   <!--- Post-setup -->
@@ -22,6 +22,43 @@
         @updateProfileLabel="updateProfileLabel"
       />
 
+      <!--- User page -->
+      <div
+        v-if="page === 'user'"
+        class="settings"
+      >
+        <h2>Current User</h2>
+        <Dropdown
+          v-model="user"
+          :disabled="data.data.users.length === 1"
+          :options="userOptions"
+          option-label="label"
+          :placeholder="`${user.subject} @ ${user.managedActiveDirectoryId}`"
+          class="w-full md:w-14rem"
+        />
+        <br>
+        <PrimeButton
+          class="p-button-warning reset-button"
+          label="Reset Preferences"
+          style="margin-top: 15px"
+          @click="resetUser()"
+        />
+        <h2>Default User</h2>
+        <Dropdown
+          v-model="defaultUser"
+          :options="defaultUserOptions"
+          option-label="label"
+          :placeholder="defaultUserPlaceholder"
+          class="w-full md:w-14rem"
+        />
+        <div
+          v-if="!demoMode"
+          style="margin-top: 15px;"
+        >
+          <LoginLinks :permissions="permissions" />
+        </div>
+      </div>
+
       <!--- Settings page -->
       <div
         v-if="page === 'settings'"
@@ -29,21 +66,12 @@
       >
         <div>
           <PrimeButton
-            class="p-button-warning reset-button"
-            label="Reset Preferences"
-            style="margin-right: 15px"
-            @click="resetUser()"
-          />
-          <PrimeButton
             class="p-button-danger reset-button"
             label="Reset All Data"
             @click="reset()"
           />
         </div>
         <br>
-        <div>
-          <LoginLinks :permissions="permissions" />
-        </div>
       </div>
 
       <!--- Debug JSON page -->
@@ -75,64 +103,33 @@
 
     <!--- Menu Icons -->
     <i
-      v-if="page === 'settings'"
-      class="pi pi-chevron-right page-icon page-back"
-      @click="setPage('profiles')"
-    />
-    <i
-      v-if="page !== 'settings'"
-      class="pi switch-user page-icon"
-      :class="data.data.users.length > 1 ? 'pi-users': 'pi-user'"
-      @click="switchUser($event)"
-    />
-    <OverlayPanel ref="op">
-      <h3>Default User</h3>
-      <Dropdown
-        v-model="defaultUser"
-        :options="userOptions"
-        option-label="label"
-        :placeholder="defaultUserPlaceholder"
-        class="w-full md:w-14rem"
-      />
-      <h3>Switch User</h3>
-      <div
-        v-for="u in data.data.users"
-        :key="u.userId"
-        style="padding-bottom: 5px;"
-      >
-        <PrimeButton
-          :disabled="u.userId === user.userId"
-          :class="u.userId === user.userId ? 'p-button-primary' : 'p-button-secondary'"
-          :label="u.subject +' @ '+u.managedActiveDirectoryId"
-          @click="user = u"
-        />
-        <br>
-      </div>
-    </OverlayPanel>
-    <i
       v-if="page !== 'settings'"
       class="pi pi-list page-icon page-profiles"
-      :class="page === 'profiles' ? 'page-active' : ''"
+      :class="{'page-active': page === 'profiles'}"
       @click="setPage('profiles')"
     />
     <i
       v-if="page !== 'settings'"
       class="pi pi-star-fill page-icon page-favorites"
-      :class="page === 'favorites' ? 'page-active' : ''"
-      @click="setPage('favorites')"
+      :class="{'page-active': page === 'favorites', disabled: faveProfiles.length === 0}"
+      @click="faveProfiles.length !== 0 ? setPage('favorites') : function(){}"
     />
     <i
       v-if="page !== 'settings'"
-      class="pi pi-cog page-icon page-settings"
-      @click="setPage('settings')"
+      class="pi page-user page-icon"
+      :class="{'page-active': page === 'user', 'pi-users': data.data.users.length > 1, 'pi-user': data.data.users.length >= 1}"
+      @click="setPage('user')"
     />
   </div>
 </template>
 <script>
+import demoData from '../demo/data.json';
+
 export default {
   name: 'PopupView',
   data() {
     return {
+      demoMode: false,
       defaultUser: 'lastUserId',
       permissions: {},
       setupSteps: [
@@ -163,14 +160,16 @@ export default {
       const user = this.getUser(this.data.data.settings.defaultUser);
       return `${user.subject} @ ${user.managedActiveDirectoryId}`;
     },
-    userOptions() {
+    defaultUserOptions() {
       let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
-      options = options.concat(
-        this.data.data.users.map((user) => ({
-          ...user,
-          label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
-        })),
-      );
+      options = options.concat(this.userOptions);
+      return options;
+    },
+    userOptions() {
+      const options = this.data.data.users.map((user) => ({
+        ...user,
+        label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
+      }));
       return options;
     },
     staleData() {
@@ -189,6 +188,10 @@ export default {
     },
   },
   watch: {
+    user() {
+      this.loaded = false;
+      this.loaded = true;
+    },
     loaded(v) {
       if (v === true) {
         if (this.faveProfiles.length > 0) {
@@ -198,7 +201,9 @@ export default {
     },
     defaultUser(user) {
       this.data.data.settings.defaultUser = user.userId;
-      this.$ext.saveSettings(this.data.data.settings);
+      if (!this.data.demoMode) {
+        this.$ext.saveSettings(this.data.data.settings);
+      }
     },
   },
   created() {
@@ -214,46 +219,15 @@ export default {
     this.reload();
   },
   methods: {
-    demoMode() {
-      const demoData = {
-        users: [
-          {
-            userId: 'demoUserId',
-            subject: 'demoUser',
-            managedActiveDirectoryId: 'd-demoDirectoryId',
-            preferredUsername: 'demoUser',
-            accountId: 'demoAccountId',
-            appProfileIds: [
-              'p-demoProfileId',
-            ],
-            custom: {},
-          }],
-        appProfiles: [{
-          id: 'ins-demoAppId',
-          name: 'demoAppName',
-          description: 'Demo Application',
-          profile: {
-            id: 'p-demoProfileId',
-            name: 'demoProfileName',
-          },
-        }],
-        settings: {
-          defaultUser: 'lastUserId',
-          lastUserId: null,
-        },
-      };
-      this.data.data = demoData;
-      // eslint-disable-next-line prefer-destructuring
-      this.user = demoData.users[0];
-      this.appProfiles = demoData.appProfiles;
-      this.skipSetup();
-    },
-    skipSetup() {
+    demo() {
+      this.$ext.log('demoMode');
+      this.data.demoMode = true;
       this.loaded = true;
       this.permissions = {
         history: false,
         origins: false,
       };
+      this.load(demoData);
     },
     getUser(userId) {
       const user = this.data.data.users.filter((u) => u.userId === userId)[0];
@@ -273,34 +247,46 @@ export default {
         this.user = this.getUser(this.data.data.settings.defaultUser);
       }
       this.data.data.settings.lastUserId = this.user.userId;
-      this.$ext.saveSettings(this.data.data.settings);
+      if (!this.data.demoMode) {
+        this.$ext.saveSettings(this.data.data.settings);
+      }
+      this.$ext.log(this.user);
+    },
+    load(data) {
+      this.data.data = data;
+      this.dataJson = JSON.stringify(data, null, 2);
+      if (data.users.length > 0) {
+        this.updatedAt = new Date(data.updatedAt);
+        this.setUser();
+        // eslint-disable-next-line prefer-destructuring
+        this.appProfiles = this.customizeProfiles(data.appProfiles);
+        if (this.staleData) {
+          this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
+        } else {
+          this.status = { status: 'healthy', message: '' };
+        }
+        if (Object.keys(this.user).length > 1) {
+          // if only 1 key (e.g. updatedAt), no data is loaded
+          this.loaded = true;
+        }
+      }
     },
     reload() {
-      this.$ext.loadData().then((data) => {
-        this.data.data = data;
-        this.dataJson = JSON.stringify(data, null, 2);
-        if (data.users.length > 0) {
-          this.updatedAt = new Date(data.updatedAt);
-          this.setUser();
+      if (this.data.demoMode) {
+        this.data.data = demoData;
+        if (this.user.userId !== 'demoUserId1') {
           // eslint-disable-next-line prefer-destructuring
-          this.appProfiles = this.customizeProfiles(data.appProfiles);
-          if (this.staleData) {
-            this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
-          } else {
-            this.status = { status: 'healthy', message: '' };
-          }
-          if (Object.keys(this.user).length > 1) {
-            // if only 1 key (e.g. updatedAt), no data is loaded
-            this.loaded = true;
-          }
+          this.data.user = demoData.users[0];
         }
-      }).catch((error) => {
-        this.status = { status: 'unhealthy', message: 'failed to load data' };
-        throw error;
-      });
-    },
-    switchUser(e) {
-      this.$refs.op.toggle(e);
+        this.data.appProfiles = demoData.appProfiles;
+      } else {
+        this.$ext.loadData().then((data) => {
+          this.load(data);
+        }).catch((error) => {
+          this.status = { status: 'unhealthy', message: 'failed to load data' };
+          throw error;
+        });
+      }
     },
     handlePermissions(permissions) {
       this.$ext.log(permissions);
@@ -351,12 +337,21 @@ export default {
       this.reload();
     },
     updateProfile(appProfile) {
+      this.$ext.log(this.user);
+      this.$ext.log(appProfile);
+      if (!('custom' in this.user)) {
+        this.user.custom = {};
+      }
       this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
-      this.$ext.saveUser(this.user);
+      if (this.faveProfiles.length === 0) {
+        this.setPage('profiles');
+      }
+      if ((!this.data.demoMode) && this.user.userId !== 'demoUserId1') {
+        this.$ext.saveUser(this.user);
+      }
       this.reload();
     },
     updateProfileLabel(event) {
-      this.$ext.log(event);
       const { newData } = event;
       if ('profile.custom.label' in newData) {
         newData.profile.custom.label = newData['profile.custom.label'];
@@ -403,7 +398,7 @@ export default {
   font-size: 1.75rem;
   color: #dee2e6;
   position: absolute;
-  top: 15px;
+  top: 20px;
 }
 
 .page-active {
@@ -415,15 +410,12 @@ export default {
   cursor: pointer;
 }
 
-.page-back {
-  left: 450px;
+.page-icon.disabled:hover {
+  color: #dee2e6;
+  cursor: inherit;
 }
 
-.switch-user {
-  left: 330px;
-}
-
-.page-settings {
+.page-user {
   left: 370px;
 }
 
