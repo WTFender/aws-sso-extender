@@ -1,3 +1,6 @@
+## 1.1.5
+- Bug fixes
+
 ## 1.1.4
 - Bug fixes
 

@@ -73,7 +73,7 @@
       size="small"
       icon="pi pi-play"
       class="p-button-success"
-      label="Demo Mode"
+      label="Demo"
       style="margin-bottom: 15px;"
       @click="$emit('demo')"
     />
