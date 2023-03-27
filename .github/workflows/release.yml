@@ -1,5 +1,10 @@
-on:
-  workflow_dispatch
+on:  
+  push:
+    branches:
+      - release
+  pull_request:
+    branches:
+      - release
 
 name: Create Release
 
@@ -29,9 +34,22 @@ jobs:
       
       - name: Build Firefox Extension
         run: npm run build:firefox
-      
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: aws_sso_extender-${{ steps.setup.outputs.version }}-chrome.zip
+          path: ./release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
+          path: ./release/firefox/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+
       - name: Create Release
         id: create_release
+        if: ${{ github.event_name == 'push' }}
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,6 +61,7 @@ jobs:
           prerelease: false
       
       - name: Upload Chrome Package
+        if: ${{ github.event_name == 'push' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -53,6 +72,7 @@ jobs:
           asset_content_type: application/zip 
       
       - name: Upload Firefox Package
+        if: ${{ github.event_name == 'push' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
