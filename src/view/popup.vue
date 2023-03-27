@@ -241,7 +241,8 @@ export default {
     },
     // eslint-disable-next-line func-names
     defaultUser(userId) {
-      this.setUser(userId);
+      this.setDefaultUser(userId);
+      this.setUser();
       if (!this.demoMode) {
         this.$ext.saveSettings(this.settings);
       }
@@ -287,7 +288,7 @@ export default {
       this.settings.defaultUser = userId;
     },
     setUser(userId = null) {
-      this.$ext.log(`popup:setUser:${userId}`);
+      this.$ext.log(`popup:setUser:${userId === null ? 'default' : userId}`);
       if (userId !== null) {
         this.user = this.getUser(userId);
       } else if (this.settings.defaultUser === 'lastUserId') {
@@ -298,7 +299,6 @@ export default {
       } else {
         this.user = this.getUser(this.settings.defaultUser);
       }
-      this.$ext.log(this.user);
       this.settings.lastUserId = this.user.userId;
       this.activeUserId = this.user.userId;
       if (!this.demoMode) {
