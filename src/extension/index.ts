@@ -226,6 +226,7 @@ class Extension {
 
   saveData(dataKey, data) {
     this.log(`func:saveData:${dataKey}`);
+    this.log(data);
     const dataObj = {};
     dataObj[dataKey] = JSON.stringify(
       typeof data === 'object' ? { ...data, updatedAt: Date.now() } : data,

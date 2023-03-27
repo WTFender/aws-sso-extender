@@ -27,15 +27,37 @@
         v-if="page === 'user'"
         class="settings"
       >
-        <h2>Current User</h2>
-        <Dropdown
+        <h2>Users</h2>
+        <Listbox
           v-model="user"
-          :disabled="data.data.users.length === 1"
-          :options="userOptions"
-          option-label="label"
-          :placeholder="`${user.subject} @ ${user.managedActiveDirectoryId}`"
+          :options="users"
           class="w-full md:w-14rem"
-        />
+        >
+          <template #option="slotProps">
+            <div class="flex align-items-center">
+              <div>
+                {{ slotProps.option.subject + ' @ ' + slotProps.option.managedActiveDirectoryId }}
+              </div>
+              <!---
+              <Badge
+                v-if="slotProps.option.userId === user.userId"
+                value="active"
+              />
+              <Badge
+                class="p-badge-secondary"
+                value="info"
+              />
+              <json-viewer
+                v-if="expandedUsers.includes(slotProps.option.userId)"
+                :value="slotProps.option"
+                :expand-depth="1"
+                copyable
+                sort
+              />
+              --->
+            </div>
+          </template>
+        </Listbox>
         <br>
         <PrimeButton
           class="p-button-warning reset-button"
@@ -44,13 +66,19 @@
           @click="resetUser()"
         />
         <h2>Default User</h2>
-        <Dropdown
-          v-model="defaultUser"
-          :options="defaultUserOptions"
-          option-label="label"
-          :placeholder="defaultUserPlaceholder"
-          class="w-full md:w-14rem"
-        />
+        <select
+          id="defaultUserSelect"
+          name="defaultUserSelect"
+          @change="defaultUser = $event.target.value"
+        >
+          <option
+            v-for="u in defaultUserOptions"
+            :key="u.userId"
+            :label="u.label"
+            :value="u.userId"
+            :selected="u.userId === settings.defaultUser"
+          />
+        </select>
         <div
           v-if="!demoMode"
           style="margin-top: 15px;"
@@ -94,7 +122,7 @@
       />
       <i
         v-if="$ext.config.debug"
-        class="pi pi-code footer-icon"
+        class="pi pi-code debug-icon"
         :class="'status-' + status.status"
         alt="JSON Data"
         @click="setPage('json')"
@@ -117,7 +145,7 @@
     <i
       v-if="page !== 'settings'"
       class="pi page-user page-icon"
-      :class="{'page-active': page === 'user', 'pi-users': data.data.users.length > 1, 'pi-user': data.data.users.length >= 1}"
+      :class="{'page-active': page === 'user', 'pi-users': users.length > 1, 'pi-user': users.length >= 1}"
       @click="setPage('user')"
     />
   </div>
@@ -129,15 +157,20 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      activeUserId: '',
+      defaultUser: '',
+      expandedUsers: [],
       demoMode: false,
-      defaultUser: 'lastUserId',
       permissions: {},
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
         { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
       ],
       loaded: false,
-      data: {},
+      user: {},
+      users: [],
+      settings: {},
+      appProfiles: [],
       dataJson: '',
       staleHours: 1,
       status: {
@@ -146,27 +179,26 @@ export default {
       },
       lastPage: 'profiles',
       page: 'profiles', // profiles, favorites, settings
-      custom: {},
-      appProfiles: [],
-      user: {},
       updatedAt: null,
     };
   },
   computed: {
+    /*
     defaultUserPlaceholder() {
-      if (this.data.data.settings.defaultUser === 'lastUserId') {
+      if (this.settings.defaultUser === 'lastUserId') {
         return 'Last sign-in activity';
       }
-      const user = this.getUser(this.data.data.settings.defaultUser);
+      const user = this.getUser(this.settings.defaultUser);
       return `${user.subject} @ ${user.managedActiveDirectoryId}`;
     },
+    */
     defaultUserOptions() {
       let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
       options = options.concat(this.userOptions);
       return options;
     },
     userOptions() {
-      const options = this.data.data.users.map((user) => ({
+      const options = this.users.map((user) => ({
         ...user,
         label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
       }));
@@ -183,13 +215,21 @@ export default {
       return this.userProfiles.filter((ap) => ap.profile.custom.favorite);
     },
     userProfiles() {
+      this.$ext.log(this.user);
+      if (this.user === null) { return []; }
       // eslint-disable-next-line max-len
       return this.appProfiles.filter((ap) => this.user.appProfileIds.includes(ap.profile.id));
     },
   },
   watch: {
     user() {
-      this.loaded = false;
+      this.$ext.log('user change');
+      if (this.user === null) {
+        this.setUser(this.activeUserId);
+      } else {
+        this.setUser(this.user.userId);
+      }
+      this.$ext.log(this.user);
       this.loaded = true;
     },
     loaded(v) {
@@ -199,10 +239,11 @@ export default {
         }
       }
     },
-    defaultUser(user) {
-      this.data.data.settings.defaultUser = user.userId;
-      if (!this.data.demoMode) {
-        this.$ext.saveSettings(this.data.data.settings);
+    // eslint-disable-next-line func-names
+    defaultUser(userId) {
+      this.setUser(userId);
+      if (!this.demoMode) {
+        this.$ext.saveSettings(this.settings);
       }
     },
   },
@@ -219,9 +260,18 @@ export default {
     this.reload();
   },
   methods: {
+    toggleUserData(userId) {
+      if (this.expandedUsers.includes(userId)) {
+        // remove user
+        this.expandedUsers = this.expandedUsers.filter((user) => user.userId !== userId);
+      } else {
+        // add user
+        this.expandedUsers.push(userId);
+      }
+    },
     demo() {
       this.$ext.log('demoMode');
-      this.data.demoMode = true;
+      this.demoMode = true;
       this.loaded = true;
       this.permissions = {
         history: false,
@@ -230,32 +280,38 @@ export default {
       this.load(demoData);
     },
     getUser(userId) {
-      const user = this.data.data.users.filter((u) => u.userId === userId)[0];
+      const user = this.users.filter((u) => u.userId === userId)[0];
       return user;
     },
+    setDefaultUser(userId) {
+      this.settings.defaultUser = userId;
+    },
     setUser(userId = null) {
+      this.$ext.log(`popup:setUser:${userId}`);
       if (userId !== null) {
-        this.data.data.settings.defaultUser = userId;
-      }
-      if (this.data.data.settings.defaultUser === 'lastUserId') {
+        this.user = this.getUser(userId);
+      } else if (this.settings.defaultUser === 'lastUserId') {
         // most recent updatedAt
-        this.data.data.users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
+        this.users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
         // eslint-disable-next-line prefer-destructuring
-        this.user = this.data.data.users[0];
+        this.user = this.users[0];
       } else {
-        // find lastUserId in users
-        this.user = this.getUser(this.data.data.settings.defaultUser);
+        this.user = this.getUser(this.settings.defaultUser);
       }
-      this.data.data.settings.lastUserId = this.user.userId;
-      if (!this.data.demoMode) {
-        this.$ext.saveSettings(this.data.data.settings);
+      this.$ext.log(this.user);
+      this.settings.lastUserId = this.user.userId;
+      this.activeUserId = this.user.userId;
+      if (!this.demoMode) {
+        this.$ext.saveSettings(this.settings);
       }
       this.$ext.log(this.user);
     },
     load(data) {
-      this.data.data = data;
+      this.raw = data;
       this.dataJson = JSON.stringify(data, null, 2);
-      if (data.users.length > 0) {
+      this.settings = data.settings;
+      this.users = data.users;
+      if (this.users.length > 0) {
         this.updatedAt = new Date(data.updatedAt);
         this.setUser();
         // eslint-disable-next-line prefer-destructuring
@@ -265,20 +321,23 @@ export default {
         } else {
           this.status = { status: 'healthy', message: '' };
         }
+        /*
         if (Object.keys(this.user).length > 1) {
           // if only 1 key (e.g. updatedAt), no data is loaded
           this.loaded = true;
         }
+        */
       }
     },
     reload() {
-      if (this.data.demoMode) {
-        this.data.data = demoData;
+      if (this.demoMode) {
+        this.settings = demoData.settings;
+        this.users = demoData.users;
+        this.appProfiles = demoData.appProfiles;
         if (this.user.userId !== 'demoUserId1') {
           // eslint-disable-next-line prefer-destructuring
-          this.data.user = demoData.users[0];
+          this.user = demoData.users[0];
         }
-        this.data.appProfiles = demoData.appProfiles;
       } else {
         this.$ext.loadData().then((data) => {
           this.load(data);
@@ -346,7 +405,7 @@ export default {
       if (this.faveProfiles.length === 0) {
         this.setPage('profiles');
       }
-      if ((!this.data.demoMode) && this.user.userId !== 'demoUserId1') {
+      if ((!this.demoMode) && this.user.userId !== 'demoUserId1') {
         this.$ext.saveUser(this.user);
       }
       this.reload();
@@ -470,18 +529,18 @@ export default {
   margin: 0px;
 }
 
-.pi-code {
+.debug-icon {
   position: fixed;
   left: 5px;
   bottom: 5px;
   left: 430px;
 }
 
-.footer-icon {
+.debug-icon {
   color: #dee2e6;
 }
 
-.footer-icon:hover {
+.debug-icon:hover {
   color: #343a40;
   cursor: pointer;
 }
