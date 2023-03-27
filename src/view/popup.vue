@@ -131,22 +131,20 @@
 
     <!--- Menu Icons -->
     <i
-      v-if="page !== 'settings'"
+      class="pi page-user page-icon"
+      :class="{'page-active': page === 'user', 'pi-users': users.length > 1, 'pi-user': users.length >= 1}"
+      @click="setPage('user')"
+    />
+    <i
       class="pi pi-list page-icon page-profiles"
       :class="{'page-active': page === 'profiles'}"
       @click="setPage('profiles')"
     />
     <i
-      v-if="page !== 'settings'"
+      v-if="faveProfiles.length > 0"
       class="pi pi-star-fill page-icon page-favorites"
-      :class="{'page-active': page === 'favorites', disabled: faveProfiles.length === 0}"
+      :class="{'page-active': page === 'favorites'}"
       @click="faveProfiles.length !== 0 ? setPage('favorites') : function(){}"
-    />
-    <i
-      v-if="page !== 'settings'"
-      class="pi page-user page-icon"
-      :class="{'page-active': page === 'user', 'pi-users': users.length > 1, 'pi-user': users.length >= 1}"
-      @click="setPage('user')"
     />
   </div>
 </template>
@@ -479,11 +477,11 @@ export default {
 }
 
 .page-favorites {
-  left: 410px;
+  left: 450px;
 }
 
 .page-profiles {
-  left: 450px;
+  left: 410px;
 }
 
 .footer {
