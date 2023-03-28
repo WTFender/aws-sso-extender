@@ -16,8 +16,8 @@
     "commands": {
         "_execute_action": {
           "suggested_key": {
-            "default": "Ctrl+Shift+Z",
-            "mac": "MacCtrl+Shift+Z"
+            "default": "Ctrl+Shift+F",
+            "mac": "MacCtrl+Shift+F"
           }
         }
       },
