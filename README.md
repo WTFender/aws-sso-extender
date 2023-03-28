@@ -17,25 +17,24 @@ https://user-images.githubusercontent.com/12001399/224067799-c3a9a3d0-c0cf-44e2-
 ## Dev & Build
 
 ### Chrome 
-Load unpacked extension from `dist/chrome/`
-
+Dev - Load unpacked extension from `dist/chrome/`
 ```
 npm install
 npm run watch:chrome
 ```
+Build
 ```
 npm run build:chrome
 ```
 
 ### Firefox
-A new window will open with the extension installed.
-
+Dev - a new window will open with the extension installed.
 ```
 npm install
 npm run watch:firefox # terminal 1
 npm run serve:firefox # terminal 2
 ```
-
+Build
 ```
 npm run build:firefox
 ```
