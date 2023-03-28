@@ -115,6 +115,42 @@
         />
       </template>
     </Column>
+    <!--- Hidden searchable fields --->
+    <Column
+      field="id"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="applicationId"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="description"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.custom.label"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.id"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.description"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.protocol"
+      style="display: none;"
+      header-style="display: none;"
+    />
     <Column
       :style="{'width':'10px'}"
       header-style="display: none;"
