@@ -13,6 +13,14 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "commands": {
+        "_execute_action": {
+          "suggested_key": {
+            "default": "Ctrl+Shift+Z",
+            "mac": "MacCtrl+Shift+Z"
+          }
+        }
+      },
     "content_scripts": [
         {
             "matches": [
