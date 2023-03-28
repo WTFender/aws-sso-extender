@@ -3,6 +3,8 @@
   <DataTable
     v-model:editingRows="editingRows"
     v-model:filters="filterProfiles"
+    v-model:selection="selectedProfile"
+    selection-mode="single"
     edit-mode="row"
     class="p-datatable-sm"
     scroll-height="400px"
@@ -12,6 +14,7 @@
     sort-field="name"
     responsive-layout="scroll"
     @row-edit-save="updateProfileLabel"
+    @keydown.enter="navSelectedProfile()"
   >
     <template #header>
       <span
@@ -137,6 +140,7 @@ export default {
   emits: ['updateProfileLabel', 'updateProfile'],
   data() {
     return {
+      selectedProfile: null,
       editingRows: [],
       filterProfiles: {},
     };
@@ -151,6 +155,10 @@ export default {
     this.$refs.searchBox.$el.focus();
   },
   methods: {
+    navSelectedProfile() {
+      const profileUrl = this.createUrl(this.selectedProfile);
+      window.open(profileUrl, '_blank');
+    },
     updateProfileLabel(event) {
       this.$emit('updateProfileLabel', event);
     },
