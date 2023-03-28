@@ -23,6 +23,7 @@
         />
         <InputText
           v-model="filterProfiles['global'].value"
+          autofocus
           style="width: 80%;"
           placeholder="Search Profiles"
         />
