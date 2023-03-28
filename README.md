@@ -43,5 +43,5 @@ npm run build:firefox
 ## Releases
 1. Update `CHANGELOG.md`
 2. Update version in `manifest/default.json`
-3. Run `Create Release` Action to build packages
+3. Open PR to `release` branch to build packages
 4. Upload packages to publishers

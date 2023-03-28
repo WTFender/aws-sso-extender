@@ -3,6 +3,8 @@
   <DataTable
     v-model:editingRows="editingRows"
     v-model:filters="filterProfiles"
+    v-model:selection="selectedProfile"
+    selection-mode="single"
     edit-mode="row"
     class="p-datatable-sm"
     scroll-height="400px"
@@ -12,6 +14,7 @@
     sort-field="name"
     responsive-layout="scroll"
     @row-edit-save="updateProfileLabel"
+    @keydown.enter="navSelectedProfile()"
   >
     <template #header>
       <span
@@ -22,6 +25,7 @@
           class="pi pi-search"
         />
         <InputText
+          ref="searchBox"
           v-model="filterProfiles['global'].value"
           style="width: 80%;"
           placeholder="Search Profiles"
@@ -111,6 +115,42 @@
         />
       </template>
     </Column>
+    <!--- Hidden searchable fields --->
+    <Column
+      field="id"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="applicationId"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="description"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.custom.label"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.id"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.description"
+      style="display: none;"
+      header-style="display: none;"
+    />
+    <Column
+      field="profile.protocol"
+      style="display: none;"
+      header-style="display: none;"
+    />
     <Column
       :style="{'width':'10px'}"
       header-style="display: none;"
@@ -136,6 +176,7 @@ export default {
   emits: ['updateProfileLabel', 'updateProfile'],
   data() {
     return {
+      selectedProfile: null,
       editingRows: [],
       filterProfiles: {},
     };
@@ -146,7 +187,14 @@ export default {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
   },
+  mounted() {
+    this.$refs.searchBox.$el.focus();
+  },
   methods: {
+    navSelectedProfile() {
+      const profileUrl = this.createUrl(this.selectedProfile);
+      window.open(profileUrl, '_blank');
+    },
     updateProfileLabel(event) {
       this.$emit('updateProfileLabel', event);
     },

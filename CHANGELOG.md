@@ -1,3 +1,11 @@
+## 1.1.6
+- Keyboard support ⌨️
+  - Search profiles hotkey (default: Ctrl+Shift+F)
+  - Browse profiles w/ tab & arrow keys, press enter to open
+- UX fixes
+
+Thanks to @marcelmindemann for UX feedback.
+
 ## 1.1.5
 - Bug fixes
 

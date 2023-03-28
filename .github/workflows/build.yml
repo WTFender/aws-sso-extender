@@ -1,0 +1,43 @@
+on:  
+  pull_request:
+    branches:
+      - release
+
+name: Build Packages
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - id: setup
+        run: |
+          npm ci
+          sudo apt-get install jq zip
+          mkdir -p release/chrome release/firefox
+          echo "version=$(jq -r '.version' src/manifest/default.json)" >> $GITHUB_OUTPUT
+      
+      - name: Build Chrome Extension
+        run: |
+          npm run build:chrome
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
+      
+      - name: Build Firefox Extension
+        run: npm run build:firefox
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aws_sso_extender-${{ steps.setup.outputs.version }}-chrome.zip
+          path: ./release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
+          path: ./release/firefox/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
