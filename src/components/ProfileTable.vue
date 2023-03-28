@@ -22,8 +22,8 @@
           class="pi pi-search"
         />
         <InputText
+          ref="searchBox"
           v-model="filterProfiles['global'].value"
-          autofocus
           style="width: 80%;"
           placeholder="Search Profiles"
         />
@@ -146,6 +146,9 @@ export default {
     this.filterProfiles = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
+  },
+  mounted() {
+    this.$refs.searchBox.$el.focus();
   },
   methods: {
     updateProfileLabel(event) {
