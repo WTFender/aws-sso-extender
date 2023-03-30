@@ -27,7 +27,7 @@ jobs:
       - name: Build Chrome Extension
         run: |
           npm run build:chrome
-          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
+          cd dist/chrome/ && zip -r ../../release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip .
       
       - name: Build Firefox Extension
         run: npm run build:firefox
@@ -50,8 +50,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
-          asset_name: aws_sso_extender-${{ steps.setup.outputs.version }}-chrome.zip
+          asset_path: ./release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip
+          asset_name: aws-sso-extender-${{ steps.setup.outputs.version }}-chrome.zip
           asset_content_type: application/zip 
       
       - name: Upload Firefox Package
@@ -61,8 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./release/firefox/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
-          asset_name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
+          asset_path: ./release/firefox/aws-sso-extender-${{ steps.setup.outputs.version }}.zip
+          asset_name: aws-sso-extender-${{ steps.setup.outputs.version }}-firefox.zip
           asset_content_type: application/zip
       
 #     - name: Publish Chrome Store
@@ -73,7 +73,7 @@ jobs:
 #           --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
 #           --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
 #           --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-#           --source release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip \
+#           --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip \
 #     
 #     - name: Publish Mozilla Store
 #       run: |
