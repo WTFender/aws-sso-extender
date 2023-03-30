@@ -23,7 +23,10 @@ jobs:
           sudo apt-get install jq zip
           mkdir -p release/chrome release/firefox
           echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
-      
+          
+      - id: lint
+        run: npm run lint
+     
       - name: Build Chrome Extension
         run: |
           npm run build:chrome
