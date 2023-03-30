@@ -1,3 +1,8 @@
+## 1.1.7 - internal
+- Hot/live reloading for chrome/firefox
+- Added types
+- Refactoring
+
 ## 1.1.6
 - Keyboard support ⌨️
   - Search profiles hotkey (default: Ctrl+Shift+F)

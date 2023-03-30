@@ -16,30 +16,18 @@ https://user-images.githubusercontent.com/12001399/224067799-c3a9a3d0-c0cf-44e2-
 
 ## Dev & Build
 
-### Chrome 
-Load unpacked extension from `dist/chrome/`
-
+### Chrome
 ```
 npm install
-npm run watch:chrome
+npm run watch:chrome # dev
+npm run build:chrome # prod
 ```
-```
-npm run build:chrome
-```
-
 ### Firefox
-A new window will open with the extension installed.
-
 ```
 npm install
-npm run watch:firefox # terminal 1
-npm run serve:firefox # terminal 2
+npm run watch:firefox # dev
+npm run build:firefox # prod
 ```
-
-```
-npm run build:firefox
-```
-
 ## Releases
 1. Update `CHANGELOG.md`
 2. Update version in `manifest/default.json`

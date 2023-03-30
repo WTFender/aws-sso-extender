@@ -7,7 +7,7 @@
     <h2>
       <img
         alt="AWS SSO Extender"
-        src="icons/128.png"
+        src="../../public/icons/128.png"
         width="25"
         style="vertical-align:middle;"
       >
@@ -66,7 +66,7 @@
         >
           <small>Optional - Find login links in browser history</small>
         </Divider>
-        <LoginLinks :permissions="permissions" />
+        <LoginLinks />
       </AccordionTab>
     </Accordion>
     <PrimeButton
@@ -80,37 +80,37 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'SetupSteps',
   props: {
     loaded: {
       required: true,
       type: Boolean,
-      default: false,
+      default: false
     },
     permissions: {
       required: true,
       type: Object,
       default: () => ({
         origins: false,
-        history: false,
-      }),
-    },
+        history: false
+      })
+    }
   },
   emits: ['demo'],
   methods: {
-    requestPermissions(directoryId = null) {
-      const { origins } = this.$ext.config;
+    requestPermissions (directoryId = null) {
+      const { origins } = this.$ext.config
       if (directoryId !== null) {
       // TODO support granular directory permissions
       // origins = [`'https://${directoryId}.awsapps.com/start*'`];
       }
-      this.$browser.permissions.request({ origins });
-      window.close();
-    },
-  },
-};
+      this.$browser.permissions.request({ origins })
+      window.close()
+    }
+  }
+}
 </script>
 
   <style lang="scss" scoped>
