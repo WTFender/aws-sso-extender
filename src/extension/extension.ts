@@ -21,31 +21,6 @@ class Extension {
     this.log(this)
   }
 
-  run (): void {
-    // getUser > getApps > getProfiles > resolve promises > saveData
-    this.log('func:run')
-    this.ssoUrl = `https://portal.sso.${this.getRegion()}.amazonaws.com`
-    void this.getUserData().then((user) => {
-      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-      const profiles: Array<Promise<ProfileData | void>> = []
-      void this.getApps().then((apps) => {
-        apps.forEach((app) => {
-          profiles.push(
-            this.getAppProfiles(app).then((appProfiles) => {
-              const appWithProfiles = app
-              appWithProfiles.profiles = appProfiles
-              this.apps.push(appWithProfiles)
-            })
-          )
-        })
-        void Promise.all(profiles).then(() => {
-          void this.update(user)
-          this.loaded = true
-        })
-      })
-    })
-  }
-
   log (v: unknown): void {
     if (this.config.debug) {
       if (typeof v !== 'string') {
@@ -92,55 +67,6 @@ class Extension {
       const uniqDirs = [...new Set(dirs)]
       this.log(uniqDirs)
       return uniqDirs
-    })
-  }
-
-  getRegion (): string {
-    const region = (
-      document.head.querySelector('[name~=region][content]') as HTMLMetaElement
-    ).content
-    this.log(`func:getRegion:${region}`)
-    return region
-  }
-
-  getToken (): string {
-    const ssoKey = 'x-amz-sso_authn'
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const cookies = Object.fromEntries(
-      document.cookie
-        .split('; ')
-        .map((v) => v.split(/=(.*)/s).map(decodeURIComponent))
-    )
-    this.log('func:getToken')
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return cookies[ssoKey]
-  }
-
-  async getUserData (): Promise<UserData> {
-    return await (this.api('/user') as unknown as Promise<UserData>)
-  }
-
-  async getApps (): Promise<AppData[]> {
-    return await (this.api('/instance/appinstances').then(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      (data) => data.result
-    ) as Promise<AppData[]>)
-  }
-
-  async getAppProfiles (app: AppData): Promise<ProfileData[]> {
-    return await (this.api(`/instance/appinstance/${app.id}/profiles`).then(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      (data) => data.result
-    ) as Promise<ProfileData[]>)
-  }
-
-  async api (path: string): Promise<ApiData> {
-    this.log(`func:api:${path}`)
-    return await fetch(`${this.ssoUrl}${path}`, {
-      headers: { 'x-amz-sso_bearer_token': this.getToken() }
-    }).then(async (response) => {
-      this.log(`func:api:${path}:results`)
-      return await response.json() as ApiData
     })
   }
 
