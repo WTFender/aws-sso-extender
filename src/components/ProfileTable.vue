@@ -83,7 +83,7 @@
             class="sso-link"
             target="_blank"
             rel="noopener noreferrer"
-            :href="createUrl(slotProps.data)"
+            :href="$ext.createProfileUrl(user, slotProps.data)"
           ><i class="pi pi-external-link" />
             {{ label(slotProps.data) }}</a>
         </div>
@@ -129,37 +129,8 @@
     </Column>
     <!--- Hidden searchable fields --->
     <Column
-      field="id"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="applicationId"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="description"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.custom.label"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.id"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.description"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.protocol"
+      v-for="field in ['id', 'applicationId', 'description', 'profile.custom.label', 'profile.id', 'profile.description', 'profile.protocol']"
+      :field="field"
       style="display: none;"
       header-style="display: none;"
     />
@@ -220,7 +191,7 @@ export default {
       return appProfile.profile.name;
     },
     navSelectedProfile() {
-      const profileUrl = this.createUrl(this.selectedProfile);
+      const profileUrl = this.$ext.createProfileUrl(this.user, this.selectedProfile);
       window.open(profileUrl, '_blank');
     },
     updateProfileLabel(event) {
@@ -228,12 +199,6 @@ export default {
     },
     encodeUriPlusParens(str) {
       return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
-    },
-    createUrl(appProfile) {
-      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
-      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
-      const appProfileName = this.encodeUriPlusParens(appProfile.name);
-      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
     },
     fave(event) {
       // TODO fix favorite issue for multi users
