@@ -10,7 +10,7 @@
     "watch:chrome": "VITE_EXT_DEBUG=true vite --mode watch:chrome --watch build",
     "watch:firefox": "VITE_EXT_DEBUG=true vite --mode watch:firefox --watch build",
     "build:chrome": "vue-tsc && vite --mode build:chrome build",
-    "build:firefox": "vue-tsc && vite --mode build:firefox build"
+    "build:firefox": "vue-tsc && vite --mode build:firefox build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest"
   },
   "dependencies": {
     "primeicons": "^6.0.1",
@@ -32,6 +32,7 @@
     "typescript": "^4.9.5",
     "vite": "^4.1.4",
     "vite-plugin-web-extension": "^3.0.1",
-    "vue-tsc": "^1.2.0"
+    "vue-tsc": "^1.2.0",
+    "web-ext": "^7.6.0"
   }
 }
