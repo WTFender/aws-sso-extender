@@ -4,7 +4,7 @@
   "author": "WTFender",
   "url": "https://wtfender.com/posts/aws-sso-extender",
   "private": true,
-  "version": "1.1.6",
+  "version": "1.1.7",
   "type": "module",
   "scripts": {
     "watch:chrome": "VITE_EXT_DEBUG=true vite --mode watch:chrome --watch build",
