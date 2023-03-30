@@ -1,6 +1,8 @@
 import extension from '../extension';
 import { AppData } from '../types';
 
+/* redirect SSO users to IAM roles */
+
 function findAccountId(): string {
   const accountMenu = document.getElementById('menu--account');
   const accountId = accountMenu!

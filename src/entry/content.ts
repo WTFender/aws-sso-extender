@@ -15,13 +15,7 @@ function getRegion(): string {
 
 function getToken(): string {
   const ssoKey = 'x-amz-sso_authn';
-  const cookies = Object.fromEntries(
-    document.cookie
-      .split('; ')
-      .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
-  );
-  extension.log('func:getToken');
-  return cookies[ssoKey];
+  return extension.getCookie(ssoKey);
 }
 
 async function api(path: string): Promise<ApiData> {
@@ -40,14 +34,12 @@ async function getUserData(): Promise<UserData> {
 
 async function getApps(): Promise<AppData[]> {
   return (api('/instance/appinstances').then(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     (data) => data.result,
   ) as Promise<AppData[]>);
 }
 
 async function getAppProfiles(app: AppData): Promise<ProfileData[]> {
   return (api(`/instance/appinstance/${app.id}/profiles`).then(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     (data) => data.result,
   ) as Promise<ProfileData[]>);
 }

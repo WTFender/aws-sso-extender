@@ -87,6 +87,17 @@
           ><i class="pi pi-external-link" />
             {{ label(slotProps.data) }}</a>
         </div>
+        <div v-if="'iamRoles' in slotProps.data.profile.custom">
+          <Badge
+            v-for="(role, idx) in slotProps.data.profile.custom.iamRoles"
+            :key="idx"
+            :value="role.roleName"
+            class="role-link"
+            severity="success"
+            style="margin: 5px"
+            @click="assumeIamRole(role, slotProps.data)"
+          />
+        </div>
       </template>
       <template #editor="{ data, field }">
         <InputText
@@ -195,6 +206,13 @@ export default {
     searchBox.focus();
   },
   methods: {
+    assumeIamRole(iamRole, appProfile) {
+      // TODO notify on silent failure switching role
+      this.$ext.queueIamLogin(iamRole).then(() => {
+        const profileUrl = this.$ext.createProfileUrl(this.user, appProfile);
+        window.open(profileUrl, '_blank');
+      });
+    },
     label(appProfile) {
       if (appProfile.profile.custom.label !== null) {
         return appProfile.profile.custom.label;

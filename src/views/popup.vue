@@ -131,6 +131,11 @@
       @click="faveProfiles.length !== 0 ? setPage('favorites') : function(){}"
     />
   </div>
+
+  <IamRoles
+    :app-profiles="appProfiles"
+    @updateProfile="updateProfile"
+  />
 </template>
 <script lang="ts">
 import demoData from '../demo.json';

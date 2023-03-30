@@ -24,6 +24,14 @@
       "js": [
         "src/entry/content.ts"
       ]
+    },
+    {
+      "matches": [
+        "https://*.console.aws.amazon.com/console/home?region*"
+      ],
+      "js": [
+        "aws-console.js"
+      ]
     }
   ],
   "content_security_policy": {

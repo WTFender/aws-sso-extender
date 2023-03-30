@@ -1,7 +1,16 @@
 import browser from 'webextension-polyfill';
 import {
-  type ExtensionConfig, type UserData, type AppData, type ExtensionData, type ExtensionSettings,
+  type ExtensionConfig,
+  type UserData,
+  type AppData,
+  type ExtensionData,
+  type ExtensionSettings,
+  type IamRole,
 } from '../types';
+
+function encodeUriPlusParens(str) {
+  return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
+}
 
 class Extension {
   config: ExtensionConfig;
@@ -33,6 +42,16 @@ class Extension {
         console.log(`${this.config.name}:${v}`);
       }
     }
+  }
+
+  getCookie(name) {
+    const cookies = Object.fromEntries(
+      document.cookie
+        .split('; ')
+        .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
+    );
+    this.log(`func:getCookie:${name in cookies}`);
+    return cookies[name];
   }
 
   async checkPermissions(): Promise<object> {
@@ -75,6 +94,43 @@ class Extension {
   checkProfiles(appProfiles: AppData[]): AppData[] {
     this.log(appProfiles);
     return appProfiles.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
+  }
+
+  static calculateChecksum(c) {
+    let a = 1;
+    let b = 0;
+    if (!c) { return 0; }
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < c.length; ++i) {
+      a = (a + c.charCodeAt(i)) % 65521;
+      b = (b + a) % 65521;
+    }
+    // eslint-disable-next-line no-bitwise
+    return (b << 15) | a;
+  }
+
+  async loadIamLogins(): Promise<IamRole[]> {
+    const loginsKey = `${this.config.name}-iam-logins`;
+    const loginsData = await browser.storage.sync.get(loginsKey);
+    const logins = loginsData[loginsKey] === undefined ? {} : JSON.parse(loginsData[loginsKey]);
+    return logins;
+  }
+
+  async removeIamLogin(profileId: string): Promise<void> {
+    this.log(`func:removeIamLogin:${profileId}`);
+    const logins = await this.loadIamLogins();
+    delete logins[profileId];
+    this.log(logins);
+    return this.saveData(`${this.config.name}-iam-logins`, logins);
+  }
+
+  queueIamLogin(iamLogin): Promise<void> {
+    this.log('func:queueIamLogin');
+    return this.loadIamLogins().then((logins) => {
+      const iamLogins = logins;
+      iamLogins[iamLogin.profileId] = iamLogin;
+      this.saveData(`${this.config.name}-iam-logins`, iamLogins);
+    });
   }
 
   async loadUser(userId: string): Promise<UserData> {
@@ -126,6 +182,7 @@ class Extension {
 
   async loadData(): Promise<ExtensionData> {
     this.log('func:loadData');
+    const iamLogins = await this.loadIamLogins();
     const settings = await this.loadSettings();
     let users = await this.loadUsers();
     users = users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
@@ -141,10 +198,19 @@ class Extension {
       appProfiles: aps.map((ap) => JSON.parse(ap[Object.keys(ap)[0]])),
       settings,
       users,
+      iamLogins,
     }));
     data.appProfiles = this.customizeProfiles(this.getDefaultUser(data), data.appProfiles);
     this.log(data);
     return data;
+  }
+
+  createProfileUrl(user: UserData, appProfile: AppData) {
+    this.log('func:createProfileUrl');
+    const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
+    const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+    const appProfileName = encodeUriPlusParens(appProfile.name);
+    return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
   }
 
   parseAppProfiles(): AppData[] {
@@ -222,6 +288,33 @@ class Extension {
       const userIds = [user.userId, ...data.users.map((u) => u.userId)];
       this.saveData(`${this.config.name}-users`, { users: [...new Set(userIds)] });
       this.saveAppProfiles(user);
+    });
+  }
+
+  async switchRole(iamRole: IamRole) {
+    const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
+    return this.removeIamLogin(iamRole.profileId).then(() => {
+      fetch('https://signin.aws.amazon.com/switchrole', {
+        method: 'POST',
+        mode: 'no-cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow',
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        body: [
+          `displayName=${iamRole.label}`,
+          `roleName=${iamRole.roleName}`,
+          `account=${iamRole.accountId}`,
+          `color=${iamRole.color}`,
+          `csrf=${csrfToken}`,
+          'action=switchFromBasis',
+          'mfaNeeded=0',
+          'src=nav',
+          `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
+        ].join('&'),
+      });
     });
   }
 }
