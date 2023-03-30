@@ -1,3 +1,4 @@
+<!-- eslint-disable vuejs-accessibility/form-control-has-label -->
 <!-- eslint-disable prefer-destructuring -->
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
@@ -115,29 +116,29 @@
     <!--- Menu Icons -->
     <i
       class="pi page-user page-icon"
-      :class="{'page-active': page === 'user', 'pi-users': users.length > 1, 'pi-user': users.length >= 1}"
+      :class="{ 'page-active': page === 'user', 'pi-users': users.length > 1, 'pi-user': users.length >= 1 }"
       @click="setPage('user')"
     />
     <i
       class="pi pi-list page-icon page-profiles"
-      :class="{'page-active': page === 'profiles'}"
+      :class="{ 'page-active': page === 'profiles' }"
       @click="setPage('profiles')"
     />
     <i
       v-if="faveProfiles.length > 0"
       class="pi pi-star-fill page-icon page-favorites"
-      :class="{'page-active': page === 'favorites'}"
+      :class="{ 'page-active': page === 'favorites' }"
       @click="faveProfiles.length !== 0 ? setPage('favorites') : function(){}"
     />
   </div>
 </template>
 <script lang="ts">
-import demoData from '../demo.json'
-import { AppData, ExtensionData, UserData } from '../types'
+import demoData from '../demo.json';
+import { AppData, ExtensionData, UserData } from '../types';
 
 export default {
   name: 'PopupView',
-  data () {
+  data() {
     return {
       raw: {},
       activeUserId: '',
@@ -145,32 +146,32 @@ export default {
       demoMode: false,
       permissions: {
         origins: false,
-        history: false
+        history: false,
       },
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
-        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded }
+        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
       ],
       loaded: false,
       user: {
-        custom: {}
+        custom: {},
       } as UserData,
       users: [] as UserData[],
       settings: {
         defaultUser: 'lastUserId',
-        lastUserId: ''
+        lastUserId: '',
       },
       appProfiles: [] as AppData[],
       dataJson: '',
       staleHours: 1,
       status: {
         message: '',
-        status: 'unknown'
+        status: 'unknown',
       },
       lastPage: 'profiles',
       page: 'profiles', // profiles, favorites, settings
-      updatedAt: 0
-    }
+      updatedAt: 0,
+    };
   },
   computed: {
     /*
@@ -182,108 +183,108 @@ export default {
       return `${user.subject} @ ${user.managedActiveDirectoryId}`;
     },
     */
-    defaultUserOptions () {
-      let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }]
-      options = options.concat(this.userOptions)
-      return options
+    defaultUserOptions() {
+      let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
+      options = options.concat(this.userOptions);
+      return options;
     },
-    userOptions () {
+    userOptions() {
       const options = this.users.map((user: UserData) => ({
         ...user,
-        label: `${user.subject} @ ${user.managedActiveDirectoryId}`
-      }))
-      return options
+        label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
+      }));
+      return options;
     },
-    staleData () {
-      const limit = this.staleHours * 1000 * 60 * 60
+    staleData() {
+      const limit = this.staleHours * 1000 * 60 * 60;
       if ((Date.now() - limit) > this.updatedAt) {
-        return true
+        return true;
       }
-      return false
+      return false;
     },
-    faveProfiles (): AppData[] {
-      return this.userProfiles.filter((ap: AppData) => ap.profile.custom?.favorite === true)
+    faveProfiles(): AppData[] {
+      return this.userProfiles.filter((ap: AppData) => ap.profile.custom?.favorite === true);
     },
-    userProfiles () {
-      this.$ext.log(this.user)
-      if (this.user === null) { return [] }
-      // eslint-disable-next-line max-len
-      return this.appProfiles.filter((ap: AppData) => this.user.appProfileIds.includes(ap.profile.id))
-    }
+    userProfiles() {
+      this.$ext.log(this.user);
+      if (this.user === null) { return []; }
+      // eslint-disable-next-line vue/max-len
+      return this.appProfiles.filter((ap: AppData) => this.user.appProfileIds.includes(ap.profile.id));
+    },
   },
   watch: {
-    user () {
-      this.$ext.log('user change')
+    user() {
+      this.$ext.log('user change');
       if (this.user === null) {
-        this.setUser(this.getUser(this.activeUserId))
+        this.setUser(this.getUser(this.activeUserId));
       } else {
-        this.setUser(this.getUser(this.user.userId))
+        this.setUser(this.getUser(this.user.userId));
       }
-      this.$ext.log(this.user)
-      this.loaded = true
+      this.$ext.log(this.user);
+      this.loaded = true;
     },
-    loaded (v) {
+    loaded(v) {
       if (v === true) {
         if (this.faveProfiles.length > 0) {
-          this.setPage('favorites')
+          this.setPage('favorites');
         }
       }
-    }
+    },
   },
-  created () {
-    this.$browser.permissions.onAdded.addListener(this.handlePermissions)
+  created() {
+    this.$browser.permissions.onAdded.addListener(this.handlePermissions);
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {
-      this.permissions = perms
-    })
-    this.reload()
+      this.permissions = perms;
+    });
+    this.reload();
   },
   methods: {
-    demo () {
-      this.$ext.log('demoMode')
-      this.demoMode = true
-      this.loaded = true
+    demo() {
+      this.$ext.log('demoMode');
+      this.demoMode = true;
+      this.loaded = true;
       this.permissions = {
         history: false,
-        origins: false
-      }
-      this.load(demoData)
+        origins: false,
+      };
+      this.load(demoData);
     },
-    getUser (userId: string) {
-      const user = this.users.filter((u) => u.userId === userId)[0]
-      return user
+    getUser(userId: string) {
+      const user = this.users.filter((u) => u.userId === userId)[0];
+      return user;
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setDefaultUser (userId: any) {
+    setDefaultUser(userId: any) {
       if (userId.target instanceof Element) {
-        this.settings.defaultUser = userId.target.value
+        this.settings.defaultUser = userId.target.value;
       } else {
-        this.settings.defaultUser = userId
+        this.settings.defaultUser = userId;
       }
       if (!this.demoMode) {
         this.$ext.saveSettings(this.settings).then(() => {
-          this.setUser(this.$ext.getDefaultUser(this.raw))
-        })
+          this.setUser(this.$ext.getDefaultUser(this.raw));
+        });
       }
     },
-    setUser (user: UserData) {
-      this.user = user
-      this.settings.lastUserId = this.user.userId
-      this.activeUserId = this.user.userId
+    setUser(user: UserData) {
+      this.user = user;
+      this.settings.lastUserId = this.user.userId;
+      this.activeUserId = this.user.userId;
       if (!this.demoMode) {
-        this.$ext.saveSettings(this.settings)
+        this.$ext.saveSettings(this.settings);
       }
-      this.$ext.log(this.user)
+      this.$ext.log(this.user);
     },
-    load (data: ExtensionData) {
-      this.raw = data
-      this.dataJson = JSON.stringify(data, null, 2)
-      this.settings = data.settings
-      this.users = data.users
+    load(data: ExtensionData) {
+      this.raw = data;
+      this.dataJson = JSON.stringify(data, null, 2);
+      this.settings = data.settings;
+      this.users = data.users;
       if (this.users.length > 0) {
-        this.updatedAt = data.updatedAt as number
-        this.setUser(this.$ext.getDefaultUser(data))
-        this.appProfiles = data.appProfiles
+        this.updatedAt = data.updatedAt as number;
+        this.setUser(this.$ext.getDefaultUser(data));
+        this.appProfiles = data.appProfiles;
         // handled in Extension class
         // this.appProfiles = this.customizeProfiles(data.appProfiles);
         /* not in use yet
@@ -299,71 +300,71 @@ export default {
         */
       }
     },
-    reload () {
+    reload() {
       if (this.demoMode) {
-        this.settings = demoData.settings
-        this.users = demoData.users
-        this.appProfiles = demoData.appProfiles
+        this.settings = demoData.settings;
+        this.users = demoData.users;
+        this.appProfiles = demoData.appProfiles;
         if (this.user.userId !== 'demoUserId1') {
           // eslint-disable-next-line prefer-destructuring
-          this.user = demoData.users[0]
+          this.user = demoData.users[0];
         }
       } else {
         this.$ext.loadData().then((data) => {
-          this.load(data)
+          this.load(data);
         }).catch((error) => {
-          this.status = { status: 'unhealthy', message: 'failed to load data' }
-          throw error
-        })
+          this.status = { status: 'unhealthy', message: 'failed to load data' };
+          throw error;
+        });
       }
     },
-    handlePermissions () {
+    handlePermissions() {
       this.$ext.checkPermissions().then((perms) => {
-        this.permissions = perms
-      })
+        this.permissions = perms;
+      });
     },
-    setPage (page) {
-      this.lastPage = this.page
-      this.page = page
+    setPage(page) {
+      this.lastPage = this.page;
+      this.page = page;
     },
-    reset () {
-      this.appProfiles = []
-      this.$ext.resetData()
+    reset() {
+      this.appProfiles = [];
+      this.$ext.resetData();
       this.$browser.permissions.remove({
-        permissions: ['history']
-      })
+        permissions: ['history'],
+      });
       this.$browser.permissions.remove({
-        origins: this.$ext.config.origins
-      })
-      window.close()
+        origins: this.$ext.config.origins,
+      });
+      window.close();
     },
-    resetUser () {
-      this.user.custom = {}
-      this.$ext.saveUser(this.user)
-      this.setPage('profiles')
-      this.reload()
+    resetUser() {
+      this.user.custom = {};
+      this.$ext.saveUser(this.user);
+      this.setPage('profiles');
+      this.reload();
     },
-    updateProfile (appProfile) {
-      this.$ext.log(this.user)
-      this.$ext.log(appProfile)
-      this.user.custom[appProfile.profile.id] = appProfile.profile.custom
+    updateProfile(appProfile) {
+      this.$ext.log(this.user);
+      this.$ext.log(appProfile);
+      this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
       if (this.faveProfiles.length === 0) {
-        this.setPage('profiles')
+        this.setPage('profiles');
       }
       if ((!this.demoMode) && this.user.userId !== 'demoUserId1') {
-        this.$ext.saveUser(this.user)
+        this.$ext.saveUser(this.user);
       }
-      this.reload()
+      this.reload();
     },
-    updateProfileLabel (event) {
-      const { newData } = event
+    updateProfileLabel(event) {
+      const { newData } = event;
       if ('profile.custom.label' in newData) {
-        newData.profile.custom.label = newData['profile.custom.label']
-        this.updateProfile(newData)
+        newData.profile.custom.label = newData['profile.custom.label'];
+        this.updateProfile(newData);
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

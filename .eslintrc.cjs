@@ -4,11 +4,6 @@ module.exports = {
     browser: true,
     es2021: true
   },
-  extends: [
-    'plugin:vue/vue3-recommended',
-    'plugin:@typescript-eslint/recommended',
-    'standard-with-typescript'
-  ],
   parser: 'vue-eslint-parser',
   parserOptions: {
     parser: '@typescript-eslint/parser',
@@ -19,14 +14,16 @@ module.exports = {
     'vue',
     '@typescript-eslint'
   ],
+  ignorePatterns: ["*.cjs"],
   overrides: [
     {
       files: [
-        'src/*.ts'
+        'src/**/*.ts',
+        'src/**/*.d.ts'
       ],
       extends: [
-        'plugin:@typescript-eslint/recommended',
-        'plugin:@typescript-eslint/recommended-requiring-type-checking'
+        'plugin:vue/vue3-recommended',
+        '@vue/eslint-config-airbnb-with-typescript'
       ],
       parserOptions: {
         project: [
@@ -35,5 +32,7 @@ module.exports = {
       }
     }
   ],
-  rules: {}
+  rules: {
+    'vuejs-accessibility/click-events-have-key-events': 'off'
+  }
 }

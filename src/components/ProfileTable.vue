@@ -36,7 +36,7 @@
       header-style="display: none;"
       field="name"
       body-style="text-align: center;"
-      :style="{'min-width':'120px'}"
+      :style="{ 'min-width': '120px' }"
     >
       <template #body="slotProps">
         <div>
@@ -72,7 +72,7 @@
       <template #body="" />
     </Column>
     <Column
-      :style="{'min-width':'220px'}"
+      :style="{ 'min-width': '220px' }"
       field="profile.custom.label"
       header-style="display: none;"
       body-class="sso-profile"
@@ -82,9 +82,10 @@
           <a
             class="sso-link"
             target="_blank"
+            rel="noopener noreferrer"
             :href="createUrl(slotProps.data)"
           ><i class="pi pi-external-link" />
-            {{ slotProps.data.profile.custom.label !== null ? slotProps.data.profile.custom.label : slotProps.data.profile.name }}</a>
+            {{ label(slotProps.data) }}</a>
         </div>
       </template>
       <template #editor="{ data, field }">
@@ -100,7 +101,7 @@
       header-style="display: none;"
     />
     <Column
-      :style="{'width':'20px'}"
+      :style="{ width: '20px' }"
       header-style="display: none;"
       body-class="sso-favorite"
     >
@@ -109,7 +110,7 @@
           class="pi"
           :class="{
             'pi-star-fill': slotProps.data.profile.custom.favorite,
-            'pi-star': !slotProps.data.profile.custom.favorite
+            'pi-star': !slotProps.data.profile.custom.favorite,
           }"
           @click="fave(slotProps)"
         />
@@ -152,15 +153,15 @@
       header-style="display: none;"
     />
     <Column
-      :style="{'width':'10px'}"
+      :style="{ width: '10px' }"
       header-style="display: none;"
     />
   </DataTable>
 </template>
 
 <script lang="ts">
-import { FilterMatchMode } from 'primevue/api'
-import { UserData } from '../types'
+import { FilterMatchMode } from 'primevue/api';
+import { UserData } from '../types';
 
 export default {
   name: 'ProfileTable',
@@ -168,56 +169,62 @@ export default {
     user: {
       required: true,
       type: Object,
-      default: () => ({} as UserData)
+      default: () => ({} as UserData),
     },
     appProfiles: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
   },
   emits: ['updateProfileLabel', 'updateProfile'],
-  data () {
+  data() {
     return {
       selectedProfile: null,
       editingRows: [],
-      filterProfiles: {}
-    }
+      filterProfiles: {},
+    };
   },
-  created () {
+  created() {
     this.filterProfiles = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-    }
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    };
   },
-  mounted () {
+  mounted() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement
-    searchBox.focus()
+    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement;
+    searchBox.focus();
   },
   methods: {
-    navSelectedProfile () {
-      const profileUrl = this.createUrl(this.selectedProfile)
-      window.open(profileUrl, '_blank')
+    label(appProfile) {
+      if (appProfile.profile.custom.label !== null) {
+        return appProfile.profile.custom.label;
+      }
+      return appProfile.profile.name;
     },
-    updateProfileLabel (event) {
-      this.$emit('updateProfileLabel', event)
+    navSelectedProfile() {
+      const profileUrl = this.createUrl(this.selectedProfile);
+      window.open(profileUrl, '_blank');
     },
-    encodeUriPlusParens (str) {
-      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`)
+    updateProfileLabel(event) {
+      this.$emit('updateProfileLabel', event);
     },
-    createUrl (appProfile) {
-      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`
-      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`))
-      const appProfileName = this.encodeUriPlusParens(appProfile.name)
-      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`
+    encodeUriPlusParens(str) {
+      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
     },
-    fave (event) {
+    createUrl(appProfile) {
+      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
+      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+      const appProfileName = this.encodeUriPlusParens(appProfile.name);
+      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
+    },
+    fave(event) {
       // TODO fix favorite issue for multi users
-      const appProfile = event.data
-      appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite
-      this.$emit('updateProfile', appProfile)
-    }
-  }
-}
+      const appProfile = event.data;
+      appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
+      this.$emit('updateProfile', appProfile);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

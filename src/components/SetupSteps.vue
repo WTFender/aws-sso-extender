@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/max-len -->
 <!-- eslint-disable max-len -->
 <template>
   <div
@@ -87,30 +88,30 @@ export default {
     loaded: {
       required: true,
       type: Boolean,
-      default: false
+      default: false,
     },
     permissions: {
       required: true,
       type: Object,
       default: () => ({
         origins: false,
-        history: false
-      })
-    }
+        history: false,
+      }),
+    },
   },
   emits: ['demo'],
   methods: {
-    requestPermissions (directoryId = null) {
-      const { origins } = this.$ext.config
+    requestPermissions(directoryId = null) {
+      const { origins } = this.$ext.config;
       if (directoryId !== null) {
       // TODO support granular directory permissions
       // origins = [`'https://${directoryId}.awsapps.com/start*'`];
       }
-      this.$browser.permissions.request({ origins })
-      window.close()
-    }
-  }
-}
+      this.$browser.permissions.request({ origins });
+      window.close();
+    },
+  },
+};
 </script>
 
   <style lang="scss" scoped>

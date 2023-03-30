@@ -35,38 +35,38 @@
 <script lang="ts">
 export default {
   name: 'LoginLinks',
-  data () {
+  data() {
     return {
       permissions: {
         origins: false,
-        history: false
+        history: false,
       },
-      foundDirs: []
-    }
+      foundDirs: [],
+    };
   },
-  created () {
+  created() {
     this.$ext.checkPermissions().then((perms) => {
-      this.permissions = perms
+      this.permissions = perms;
       if (perms.history) {
         this.$ext.searchHistory().then((dirs) => {
-          this.setDirectories(dirs)
-        })
+          this.setDirectories(dirs);
+        });
       }
-    })
+    });
   },
   methods: {
-    openLink (link) {
-      window.open(link, '_blank')
+    openLink(link) {
+      window.open(link, '_blank');
     },
-    setDirectories (dirs) {
-      this.foundDirs = dirs
+    setDirectories(dirs) {
+      this.foundDirs = dirs;
     },
-    requestHistory () {
-      this.$browser.permissions.request({ permissions: ['history'] })
-      window.close()
-    }
-  }
-}
+    requestHistory() {
+      this.$browser.permissions.request({ permissions: ['history'] });
+      window.close();
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

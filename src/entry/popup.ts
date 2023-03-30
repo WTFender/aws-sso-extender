@@ -1,6 +1,5 @@
-import browser from "webextension-polyfill";
-import extension from "../extension";
-import Popup from "../views/popup.vue";
+/* eslint-disable vue/multi-word-component-names */
+import browser from 'webextension-polyfill';
 import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
 import Accordion from 'primevue/accordion';
@@ -13,6 +12,8 @@ import Column from 'primevue/column';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Listbox from 'primevue/listbox';
+import Popup from '../views/popup.vue';
+import extension from '../extension';
 import ProfileTable from '../components/ProfileTable.vue';
 import SetupSteps from '../components/SetupSteps.vue';
 import LoginLinks from '../components/LoginLinks.vue';

@@ -1,6 +1,5 @@
 export interface ExtensionConfig {
   id: string
-  env: string
   name: string
   display: string
   debug: boolean

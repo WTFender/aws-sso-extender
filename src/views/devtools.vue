@@ -8,19 +8,19 @@
 <script lang="ts">
 export default {
   name: 'DevtoolsView',
-  data () {
+  data() {
     return {
       data: {},
       dataStr: '',
-      configStr: ''
-    }
+      configStr: '',
+    };
   },
-  created () {
-    this.configStr = JSON.stringify(this.$ext.config, null, 2)
+  created() {
+    this.configStr = JSON.stringify(this.$ext.config, null, 2);
     this.$ext.loadData().then((data) => {
-      this.data = data
-      this.dataStr = JSON.stringify(data, null, 2)
-    })
-  }
-}
+      this.data = data;
+      this.dataStr = JSON.stringify(data, null, 2);
+    });
+  },
+};
 </script>
