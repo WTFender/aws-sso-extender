@@ -1,10 +1,6 @@
-/* eslint-disable import/order */
-/* eslint-disable import/first */
-/* eslint-disable vue/multi-word-component-names */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const browser = require('webextension-polyfill');
-
-import extension from '../extension';
+import browser from "webextension-polyfill";
+import extension from "../extension";
+import Popup from "../views/popup.vue";
 import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
 import Accordion from 'primevue/accordion';
@@ -20,13 +16,11 @@ import Listbox from 'primevue/listbox';
 import ProfileTable from '../components/ProfileTable.vue';
 import SetupSteps from '../components/SetupSteps.vue';
 import LoginLinks from '../components/LoginLinks.vue';
-import App from '../view/popup.vue';
-import JsonViewer from 'vue-json-viewer';
 import 'primevue/resources/themes/lara-light-indigo/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
 
-const app = createApp(App);
+const app = createApp(Popup);
 app.use(PrimeVue);
 app.config.globalProperties.$browser = browser;
 app.config.globalProperties.$ext = extension;
@@ -40,7 +34,6 @@ app.component('Listbox', Listbox);
 app.component('Column', Column);
 app.component('InputText', InputText);
 app.component('PrimeButton', Button);
-app.component('JsonViewer', JsonViewer);
 app.component('ProfileTable', ProfileTable);
 app.component('SetupSteps', SetupSteps);
 app.component('LoginLinks', LoginLinks);
