@@ -33,6 +33,7 @@ module.exports = {
     }
   ],
   rules: {
+    'linebreak-style': 'off',
     'vuejs-accessibility/click-events-have-key-events': 'off'
   }
 }
