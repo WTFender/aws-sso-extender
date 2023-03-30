@@ -30,7 +30,7 @@
         "https://*.console.aws.amazon.com/console/home?region*"
       ],
       "js": [
-        "aws-console.js"
+        "src/entry/aws-console.ts"
       ]
     }
   ],

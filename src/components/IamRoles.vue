@@ -37,7 +37,9 @@
   />
 </template>
 
-<script>
+<script lang="ts">
+import { AppData } from '../types';
+
 export default {
   name: 'IamRoles',
   props: {
@@ -50,12 +52,12 @@ export default {
   data() {
     return {
       newIamRole: null,
-      selectedProfiles: null,
+      selectedProfiles: [],
     };
   },
   computed: {
-    awsAppProfiles() {
-      const appProfiles = this.appProfiles.filter((ap) => ap.applicationName === 'AWS Account');
+    awsAppProfiles(): AppData[] {
+      const appProfiles = this.appProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
       // eslint-disable-next-line no-param-reassign
       appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata.AccountId} (${ap.searchMetadata.AccountName}) - ${ap.profile.name}`; });
       this.$ext.log(appProfiles);
@@ -67,11 +69,11 @@ export default {
   },
   methods: {
     addIamRole() {
-      const role = document.getElementById('iamRoleArn');
-      if (role.value.startsWith('arn:aws:iam::')) {
-        const accountId = role.value.split(':')[4];
-        const roleName = role.value.split('/')[1];
-        this.selectedProfiles.forEach((appProfile) => {
+      var role = (<HTMLInputElement>document.getElementById('iamRoleArn')).value;
+      if (role.startsWith('arn:aws:iam::')) {
+        const accountId = role.split(':')[4];
+        const roleName = role.split('/')[1];
+        this.selectedProfiles.forEach((appProfile: AppData) => {
           const iamRole = {
             profileId: appProfile.profile.id,
             accountId,
@@ -79,19 +81,19 @@ export default {
             color: 'ffffff',
             label: 'test',
           };
-          if ('iamRoles' in appProfile.profile.custom) {
-            appProfile.profile.custom.iamRoles.push(iamRole);
+          if ('iamRoles' in appProfile.profile.custom!) {
+            appProfile.profile.custom.iamRoles!.push(iamRole);
           } else {
             // eslint-disable-next-line no-param-reassign
-            appProfile.profile.custom.iamRoles = [iamRole];
+            appProfile.profile.custom!.iamRoles = [iamRole];
           }
           this.$emit('updateProfile', appProfile);
         });
       } else {
         throw Error('Bad ARN format');
       }
-      role.value = '';
-      this.selectedProfiles = null;
+      role = '';
+      this.selectedProfiles = [];
     },
   },
 };

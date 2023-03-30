@@ -59,6 +59,7 @@ export interface UserData {
 }
 
 export interface AppData {
+  label?: string
   applicationId: string
   applicationName: string
   description: string
@@ -88,6 +89,7 @@ export interface ProfileData {
 export interface CustomData {
   favorite?: boolean
   label?: string | null
+  iamRoles: IamRole[]
 }
 
 export interface IamRole {

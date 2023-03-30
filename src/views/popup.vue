@@ -29,7 +29,7 @@
         class="settings"
       >
         <h2>Users</h2>
-        <Listbox
+        <PrimeListbox
           v-model="user"
           :options="users"
           class="w-full md:w-14rem"
@@ -41,7 +41,7 @@
               </div>
             </div>
           </template>
-        </Listbox>
+        </PrimeListbox>
         <br>
         <PrimeButton
           class="p-button-warning reset-button"
