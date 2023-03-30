@@ -1,70 +1,92 @@
-type ExtensionConfig = {
-  id: string;
-  name: string;
-  display: string;
-  debug: boolean;
-  origins: string[];
-  ssoUrlRegex: RegExp;
-};
+export interface ExtensionConfig {
+  id: string
+  env: string
+  name: string
+  display: string
+  debug: boolean
+  origins: string[]
+}
 
-type AppProfileData = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  profiles?: Array<any>;
-  description: string;
-  id: string;
-  name: string;
-  protocol: string;
-  relayState: string;
-  url: string;
-};
+export interface ExtensionSettings {
+  defaultUser: string
+  lastUserId: string
+}
 
-type AppData = {
-  applicationId: string;
-  applicationName: string;
-  description: string;
-  icon: string;
-  id: string;
-  name: string;
-  profiles: AppProfileData[];
-  profile?: AppProfileData;
-  userId: string;
+export interface ExtensionPermissions {
+  origins: string[]
+  history: boolean
+}
+
+export interface ExtensionData {
+  users: UserData[]
+  appProfiles: AppData[]
+  settings: ExtensionSettings
+  updatedAt?: number
+}
+
+export interface ApiData {
+  result: AppData[] | ProfileData[]
+}
+
+export interface UserData {
+  updatedAt: number
+  custom: Record<string, CustomData>
+  appProfileIds: string[]
+  accountId: string
+  adGUID: string
+  adImmutableId: string
+  authContextClass: object
+  awsAccessAttributes: object
+  awsFederationNotReadyReasonDetails: object
+  awsFederationStatus: string
+  directoryType: string
+  email: string
+  employeeId: string
+  externalAttributes: object
+  familyName: string
+  givenName: string
+  groups: string[]
+  identityStoreUserId: string
+  managedActiveDirectoryId: string
+  middleName: string
+  name: string
+  originSessionId: string
+  preferredUsername: string
+  sourceGUID: string
+  ssoInstanceId: string
+  subject: string
+  userId: string
+}
+
+export interface AppData {
+  applicationId: string
+  applicationName: string
+  description: string
+  icon: string
+  id: string
+  name: string
+  profiles?: ProfileData[]
+  profile: ProfileData
   searchMetadata: {
-    AccountId: string;
-    AccountName: string;
-    AccountEmail: string;
-  };
-};
+    AccountId: string
+    AccountName: string
+    AccountEmail: string
+  }
+}
 
-type UserData = {
-  custom: object;
-  appProfileIds: string[];
-  accountId: string;
-  adGUID: string;
-  adImmutableId: string;
-  authContextClass: object;
-  awsAccessAttributes: object;
-  awsFederationNotReadyReasonDetails: object;
-  awsFederationStatus: string;
-  directoryType: string;
-  email: string;
-  employeeId: string;
-  externalAttributes: object;
-  familyName: string;
-  givenName: string;
-  groups: string[];
-  identityStoreUserId: string;
-  managedActiveDirectoryId: string;
-  middleName: string;
-  name: string;
-  originSessionId: string;
-  preferredUsername: string;
-  sourceGUID: string;
-  ssoInstanceId: string;
-  subject: string;
-  userId: string;
-};
+export interface ProfileData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  profiles?: any[]
+  description: string
+  id: string
+  name: string
+  protocol: string
+  relayState: string
+  url: string
+  custom?: CustomData
+}
 
-type ExtensionData = {
-  users: UserData;
-  apps: AppData[];
+export interface CustomData {
+  favorite?: boolean
+  label?: string | null
 }

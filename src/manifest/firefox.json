@@ -1,9 +1,0 @@
-{
-  "optional_permissions": ["https://*.awsapps.com/start*", "history"],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{21906314-1856-4536-9f12-471921a8abb8}",
-      "strict_min_version": "109.0"
-    }
-  }
-}

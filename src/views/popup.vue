@@ -4,7 +4,7 @@
 <template>
   <!--- Setup -->
   <SetupSteps
-    v-if="permissions === false || loaded === false"
+    v-if="permissions.origins === false || loaded === false"
     :permissions="permissions"
     :loaded="loaded"
     @demo="demo()"
@@ -38,23 +38,6 @@
               <div>
                 {{ slotProps.option.subject + ' @ ' + slotProps.option.managedActiveDirectoryId }}
               </div>
-              <!---
-              <Badge
-                v-if="slotProps.option.userId === user.userId"
-                value="active"
-              />
-              <Badge
-                class="p-badge-secondary"
-                value="info"
-              />
-              <json-viewer
-                v-if="expandedUsers.includes(slotProps.option.userId)"
-                :value="slotProps.option"
-                :expand-depth="1"
-                copyable
-                sort
-              />
-              --->
             </div>
           </template>
         </Listbox>
@@ -69,7 +52,7 @@
         <select
           id="defaultUserSelect"
           name="defaultUserSelect"
-          @change="defaultUser = $event.target.value"
+          @change="setDefaultUser($event)"
         >
           <option
             v-for="u in defaultUserOptions"
@@ -83,7 +66,7 @@
           v-if="!demoMode"
           style="margin-top: 15px;"
         >
-          <LoginLinks :permissions="permissions" />
+          <LoginLinks />
         </div>
       </div>
 
@@ -148,37 +131,46 @@
     />
   </div>
 </template>
-<script>
-import demoData from '../demo/data.json';
+<script lang="ts">
+import demoData from '../demo.json'
+import { AppData, ExtensionData, UserData } from '../types'
 
 export default {
   name: 'PopupView',
-  data() {
+  data () {
     return {
+      raw: {},
       activeUserId: '',
       defaultUser: '',
-      expandedUsers: [],
       demoMode: false,
-      permissions: {},
+      permissions: {
+        origins: false,
+        history: false
+      },
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
-        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
+        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded }
       ],
       loaded: false,
-      user: {},
-      users: [],
-      settings: {},
-      appProfiles: [],
+      user: {
+        custom: {}
+      } as UserData,
+      users: [] as UserData[],
+      settings: {
+        defaultUser: 'lastUserId',
+        lastUserId: ''
+      },
+      appProfiles: [] as AppData[],
       dataJson: '',
       staleHours: 1,
       status: {
         message: '',
-        status: 'unknown',
+        status: 'unknown'
       },
       lastPage: 'profiles',
       page: 'profiles', // profiles, favorites, settings
-      updatedAt: null,
-    };
+      updatedAt: 0
+    }
   },
   computed: {
     /*
@@ -190,136 +182,116 @@ export default {
       return `${user.subject} @ ${user.managedActiveDirectoryId}`;
     },
     */
-    defaultUserOptions() {
-      let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
-      options = options.concat(this.userOptions);
-      return options;
+    defaultUserOptions () {
+      let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }]
+      options = options.concat(this.userOptions)
+      return options
     },
-    userOptions() {
-      const options = this.users.map((user) => ({
+    userOptions () {
+      const options = this.users.map((user: UserData) => ({
         ...user,
-        label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
-      }));
-      return options;
+        label: `${user.subject} @ ${user.managedActiveDirectoryId}`
+      }))
+      return options
     },
-    staleData() {
-      const limit = this.staleHours * 1000 * 60 * 60;
+    staleData () {
+      const limit = this.staleHours * 1000 * 60 * 60
       if ((Date.now() - limit) > this.updatedAt) {
-        return true;
+        return true
       }
-      return false;
+      return false
     },
-    faveProfiles() {
-      return this.userProfiles.filter((ap) => ap.profile.custom.favorite);
+    faveProfiles (): AppData[] {
+      return this.userProfiles.filter((ap: AppData) => ap.profile.custom?.favorite === true)
     },
-    userProfiles() {
-      this.$ext.log(this.user);
-      if (this.user === null) { return []; }
+    userProfiles () {
+      this.$ext.log(this.user)
+      if (this.user === null) { return [] }
       // eslint-disable-next-line max-len
-      return this.appProfiles.filter((ap) => this.user.appProfileIds.includes(ap.profile.id));
-    },
+      return this.appProfiles.filter((ap: AppData) => this.user.appProfileIds.includes(ap.profile.id))
+    }
   },
   watch: {
-    user() {
-      this.$ext.log('user change');
+    user () {
+      this.$ext.log('user change')
       if (this.user === null) {
-        this.setUser(this.activeUserId);
+        this.setUser(this.getUser(this.activeUserId))
       } else {
-        this.setUser(this.user.userId);
+        this.setUser(this.getUser(this.user.userId))
       }
-      this.$ext.log(this.user);
-      this.loaded = true;
+      this.$ext.log(this.user)
+      this.loaded = true
     },
-    loaded(v) {
+    loaded (v) {
       if (v === true) {
         if (this.faveProfiles.length > 0) {
-          this.setPage('favorites');
+          this.setPage('favorites')
         }
       }
-    },
-    // eslint-disable-next-line func-names
-    defaultUser(userId) {
-      this.setDefaultUser(userId);
-      this.setUser();
-      if (!this.demoMode) {
-        this.$ext.saveSettings(this.settings);
-      }
-    },
+    }
   },
-  created() {
-    this.permissions = {
-      origins: false,
-      history: false,
-    };
-    this.$browser.permissions.onAdded.addListener(this.handlePermissions);
+  created () {
+    this.$browser.permissions.onAdded.addListener(this.handlePermissions)
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {
-      this.permissions = perms;
-    });
-    this.reload();
+      this.permissions = perms
+    })
+    this.reload()
   },
   methods: {
-    toggleUserData(userId) {
-      if (this.expandedUsers.includes(userId)) {
-        // remove user
-        this.expandedUsers = this.expandedUsers.filter((user) => user.userId !== userId);
-      } else {
-        // add user
-        this.expandedUsers.push(userId);
-      }
-    },
-    demo() {
-      this.$ext.log('demoMode');
-      this.demoMode = true;
-      this.loaded = true;
+    demo () {
+      this.$ext.log('demoMode')
+      this.demoMode = true
+      this.loaded = true
       this.permissions = {
         history: false,
-        origins: false,
-      };
-      this.load(demoData);
+        origins: false
+      }
+      this.load(demoData)
     },
-    getUser(userId) {
-      const user = this.users.filter((u) => u.userId === userId)[0];
-      return user;
+    getUser (userId: string) {
+      const user = this.users.filter((u) => u.userId === userId)[0]
+      return user
     },
-    setDefaultUser(userId) {
-      this.settings.defaultUser = userId;
-    },
-    setUser(userId = null) {
-      this.$ext.log(`popup:setUser:${userId === null ? 'default' : userId}`);
-      if (userId !== null) {
-        this.user = this.getUser(userId);
-      } else if (this.settings.defaultUser === 'lastUserId') {
-        // most recent updatedAt
-        this.users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
-        // eslint-disable-next-line prefer-destructuring
-        this.user = this.users[0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setDefaultUser (userId: any) {
+      if (userId.target instanceof Element) {
+        this.settings.defaultUser = userId.target.value
       } else {
-        this.user = this.getUser(this.settings.defaultUser);
+        this.settings.defaultUser = userId
       }
-      this.settings.lastUserId = this.user.userId;
-      this.activeUserId = this.user.userId;
       if (!this.demoMode) {
-        this.$ext.saveSettings(this.settings);
+        this.$ext.saveSettings(this.settings).then(() => {
+          this.setUser(this.$ext.getDefaultUser(this.raw))
+        })
       }
-      this.$ext.log(this.user);
     },
-    load(data) {
-      this.raw = data;
-      this.dataJson = JSON.stringify(data, null, 2);
-      this.settings = data.settings;
-      this.users = data.users;
+    setUser (user: UserData) {
+      this.user = user
+      this.settings.lastUserId = this.user.userId
+      this.activeUserId = this.user.userId
+      if (!this.demoMode) {
+        this.$ext.saveSettings(this.settings)
+      }
+      this.$ext.log(this.user)
+    },
+    load (data: ExtensionData) {
+      this.raw = data
+      this.dataJson = JSON.stringify(data, null, 2)
+      this.settings = data.settings
+      this.users = data.users
       if (this.users.length > 0) {
-        this.updatedAt = new Date(data.updatedAt);
-        this.setUser();
-        // eslint-disable-next-line prefer-destructuring
-        this.appProfiles = this.customizeProfiles(data.appProfiles);
+        this.updatedAt = data.updatedAt as number
+        this.setUser(this.$ext.getDefaultUser(data))
+        this.appProfiles = data.appProfiles
+        // handled in Extension class
+        // this.appProfiles = this.customizeProfiles(data.appProfiles);
+        /* not in use yet
         if (this.staleData) {
           this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
         } else {
           this.status = { status: 'healthy', message: '' };
         }
-        /*
         if (Object.keys(this.user).length > 1) {
           // if only 1 key (e.g. updatedAt), no data is loaded
           this.loaded = true;
@@ -327,96 +299,71 @@ export default {
         */
       }
     },
-    reload() {
+    reload () {
       if (this.demoMode) {
-        this.settings = demoData.settings;
-        this.users = demoData.users;
-        this.appProfiles = demoData.appProfiles;
+        this.settings = demoData.settings
+        this.users = demoData.users
+        this.appProfiles = demoData.appProfiles
         if (this.user.userId !== 'demoUserId1') {
           // eslint-disable-next-line prefer-destructuring
-          this.user = demoData.users[0];
+          this.user = demoData.users[0]
         }
       } else {
         this.$ext.loadData().then((data) => {
-          this.load(data);
+          this.load(data)
         }).catch((error) => {
-          this.status = { status: 'unhealthy', message: 'failed to load data' };
-          throw error;
-        });
+          this.status = { status: 'unhealthy', message: 'failed to load data' }
+          throw error
+        })
       }
     },
-    handlePermissions(permissions) {
-      this.$ext.log(permissions);
-      if (permissions.permissions.includes('history')) {
-        this.$ext.log(permissions);
-        this.permissions.history = true;
-      }
-      permissions.origins.forEach((origin) => {
-        if (this.$ext.config.origins.includes(origin)) {
-          this.permissions.origins = true;
-        }
-      });
+    handlePermissions () {
+      this.$ext.checkPermissions().then((perms) => {
+        this.permissions = perms
+      })
     },
-    setPage(page) {
-      this.lastPage = this.page;
-      this.page = page;
+    setPage (page) {
+      this.lastPage = this.page
+      this.page = page
     },
-    customizeProfiles(appProfiles) {
-      const defaults = {
-        favorite: false,
-        label: null,
-      };
-      const customProfiles = [];
-      appProfiles.forEach((ap) => {
-        const profile = { ...ap };
-        // eslint-disable-next-line max-len
-        profile.profile.custom = ap.profile.id in this.user.custom ? this.user.custom[ap.profile.id] : defaults;
-        customProfiles.push(profile);
-      });
-      return customProfiles;
-    },
-    reset() {
-      this.appProfiles = [];
-      this.user = {};
-      this.$ext.resetData();
+    reset () {
+      this.appProfiles = []
+      this.$ext.resetData()
       this.$browser.permissions.remove({
-        permissions: ['history'],
-      });
+        permissions: ['history']
+      })
       this.$browser.permissions.remove({
-        origins: this.$ext.config.origins,
-      });
-      window.close();
+        origins: this.$ext.config.origins
+      })
+      window.close()
     },
-    resetUser() {
-      this.user.custom = {};
-      this.$ext.saveUser(this.user);
-      this.setPage('profiles');
-      this.reload();
+    resetUser () {
+      this.user.custom = {}
+      this.$ext.saveUser(this.user)
+      this.setPage('profiles')
+      this.reload()
     },
-    updateProfile(appProfile) {
-      this.$ext.log(this.user);
-      this.$ext.log(appProfile);
-      if (!('custom' in this.user)) {
-        this.user.custom = {};
-      }
-      this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
+    updateProfile (appProfile) {
+      this.$ext.log(this.user)
+      this.$ext.log(appProfile)
+      this.user.custom[appProfile.profile.id] = appProfile.profile.custom
       if (this.faveProfiles.length === 0) {
-        this.setPage('profiles');
+        this.setPage('profiles')
       }
       if ((!this.demoMode) && this.user.userId !== 'demoUserId1') {
-        this.$ext.saveUser(this.user);
+        this.$ext.saveUser(this.user)
       }
-      this.reload();
+      this.reload()
     },
-    updateProfileLabel(event) {
-      const { newData } = event;
+    updateProfileLabel (event) {
+      const { newData } = event
       if ('profile.custom.label' in newData) {
-        newData.profile.custom.label = newData['profile.custom.label'];
-        this.updateProfile(newData);
+        newData.profile.custom.label = newData['profile.custom.label']
+        this.updateProfile(newData)
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>

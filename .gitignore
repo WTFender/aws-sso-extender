@@ -3,6 +3,7 @@ todo
 **/web-ext-artifacts
 .npmrc
 release/
+.vscode/
 
 # Built files
 dist/

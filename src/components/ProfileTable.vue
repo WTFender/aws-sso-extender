@@ -158,63 +158,66 @@
   </DataTable>
 </template>
 
-<script>
-import { FilterMatchMode } from 'primevue/api';
+<script lang="ts">
+import { FilterMatchMode } from 'primevue/api'
+import { UserData } from '../types'
 
 export default {
   name: 'ProfileTable',
   props: {
     user: {
-      type: Object,
       required: true,
+      type: Object,
+      default: () => ({} as UserData)
     },
     appProfiles: {
       type: Array,
-      required: true,
-    },
+      required: true
+    }
   },
   emits: ['updateProfileLabel', 'updateProfile'],
-  data() {
+  data () {
     return {
       selectedProfile: null,
       editingRows: [],
-      filterProfiles: {},
-    };
+      filterProfiles: {}
+    }
   },
-  created() {
-    // eslint-disable-next-line no-console
+  created () {
     this.filterProfiles = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    };
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
   },
-  mounted() {
-    this.$refs.searchBox.$el.focus();
+  mounted () {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement
+    searchBox.focus()
   },
   methods: {
-    navSelectedProfile() {
-      const profileUrl = this.createUrl(this.selectedProfile);
-      window.open(profileUrl, '_blank');
+    navSelectedProfile () {
+      const profileUrl = this.createUrl(this.selectedProfile)
+      window.open(profileUrl, '_blank')
     },
-    updateProfileLabel(event) {
-      this.$emit('updateProfileLabel', event);
+    updateProfileLabel (event) {
+      this.$emit('updateProfileLabel', event)
     },
-    encodeUriPlusParens(str) {
-      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
+    encodeUriPlusParens (str) {
+      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`)
     },
-    createUrl(appProfile) {
-      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
-      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
-      const appProfileName = this.encodeUriPlusParens(appProfile.name);
-      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
+    createUrl (appProfile) {
+      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`
+      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`))
+      const appProfileName = this.encodeUriPlusParens(appProfile.name)
+      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`
     },
-    fave(event) {
+    fave (event) {
       // TODO fix favorite issue for multi users
-      const appProfile = event.data;
-      appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
-      this.$emit('updateProfile', appProfile);
-    },
-  },
-};
+      const appProfile = event.data
+      appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite
+      this.$emit('updateProfile', appProfile)
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
