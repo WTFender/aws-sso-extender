@@ -20,6 +20,7 @@ export interface ExtensionData {
   users: UserData[]
   appProfiles: AppData[]
   settings: ExtensionSettings
+  iamLogins: IamRole[]
   updatedAt?: number
 }
 
@@ -74,7 +75,6 @@ export interface AppData {
 }
 
 export interface ProfileData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profiles?: any[]
   description: string
   id: string
@@ -88,4 +88,12 @@ export interface ProfileData {
 export interface CustomData {
   favorite?: boolean
   label?: string | null
+}
+
+export interface IamRole {
+  profileId: string
+  accountId: string
+  roleName: string
+  label: string
+  color: string
 }
