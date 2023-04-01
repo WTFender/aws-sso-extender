@@ -40,7 +40,8 @@
               @click="resetUser()" />
           </TabPanel>
           <TabPanel header="IAM Roles">
-            <IamRoles :app-profiles="userProfiles" @updateProfiles="updateProfiles" @updateProfile="updateProfile" @setPage="setPage" />
+            <IamRoles :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
+              @setPage="setPage" @saveUser="saveUser" />
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
             <LoginLinks :permissions="permissions" />
@@ -76,7 +77,7 @@
 </template>
 <script lang="ts">
 import demoData from '../demo';
-import { AppData, CustomData, ExtensionData, UserData } from '../types';
+import { AppData, CustomData, ExtensionData, IamRole, UserData } from '../types';
 
 export default {
   name: 'PopupView',
@@ -157,8 +158,9 @@ export default {
     user() {
       this.$ext.log('user change');
       this.settings.lastUserId = this.user.userId;
-      if (!this.demoMode) { this.$ext.saveSettings(this.settings) };
-      this.reload();
+      if (!this.demoMode) { this.$ext.saveSettings(this.settings).then() };
+      this.refreshProfiles();
+      // this.reload();
     },
     loaded(v) {
       if (v === true) {
@@ -177,7 +179,7 @@ export default {
     this.reload();
   },
   methods: {
-    refreshProfiles(){
+    refreshProfiles() {
       this.appProfiles = [];
       this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
     },
@@ -217,19 +219,8 @@ export default {
         } else {
           this.user = data.users.filter((u) => u.userId === this.user.userId)[0]
         }
-        this.refreshProfiles()
+        // profiles are refreshed/customized on user change
         this.loaded = true;
-        /* not in use yet
-        if (this.staleData) {
-          this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
-        } else {
-          this.status = { status: 'healthy', message: '' };
-        }
-        if (Object.keys(this.user).length > 1) {
-          // if only 1 key (e.g. updatedAt), no data is loaded
-          this.loaded = true;
-        }
-        */
       }
     },
     reload() {
@@ -240,13 +231,13 @@ export default {
         if (this.user.userId !== 'demoUserId1') {
           this.user = demoData.users[0];
         }
-      } else { 
+      } else {
         this.$ext.loadData().then((data) => {
           this.load(data);
         }).catch((error) => {
           this.status = { status: 'unhealthy', message: 'failed to load data' };
           throw error;
-        }); 
+        });
       }
     },
     handlePermissions() {
@@ -276,13 +267,6 @@ export default {
         this.reload();
       });
     },
-    updateProfiles(appProfiles: AppData[]) {
-      this.$ext.log('updateProfiles');
-      appProfiles.forEach(ap => {
-        this.user.custom[ap.profile.id] = ap.profile.custom as CustomData;
-      });
-      this.saveUser();
-    },
     updateProfile(appProfile: AppData) {
       this.$ext.log('updateProfile');
       this.user.custom[appProfile.profile.id] = appProfile.profile.custom as CustomData;
@@ -292,7 +276,7 @@ export default {
       }
       this.saveUser();
     },
-    saveUser(){
+    saveUser() {
       if ((!this.demoMode) && this.user.userId !== 'demoUserId1') {
         this.$ext.saveUser(this.user).then(() => {
           this.reload();
@@ -305,6 +289,19 @@ export default {
         newData.profile.custom.label = newData['profile.custom.label'];
         this.updateProfile(newData);
       }
+    },
+    addIamRole(role: IamRole) {
+      this.$ext.log('addIamRole');
+      if (role.profileId in this.user.custom){
+        this.user.custom[role.profileId].iamRoles.push(role);
+      } else {
+        this.user.custom[role.profileId] = {
+          label: null,
+          favorite: false,
+          iamRoles: [role]
+        }
+      }
+      this.$ext.log(this.user);
     },
   },
 };

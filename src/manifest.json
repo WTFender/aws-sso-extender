@@ -35,7 +35,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src https://static.global.sso.amazonaws.com/"
+    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src 'self' data: https://static.global.sso.amazonaws.com/"
   },
   "{{chrome}}.cross_origin_opener_policy": {
     "value": "same-origin"

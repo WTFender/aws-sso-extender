@@ -47,7 +47,7 @@ class Extension {
   buildRoleLabel(role: IamRole, ap: AppData): string {
     let label = role.label.replaceAll('{{account}}', role.accountId);
     label = label.replaceAll('{{role}}', role.roleName);
-    label.replaceAll('{{profile}}', ap.profile.custom!.label ? ap.profile.custom!.label : ap.profile.name);
+    label = label.replaceAll('{{profile}}', ap.profile.custom!.label ? ap.profile.custom!.label : ap.profile.name);
     this.log(label);
     return label;
   }

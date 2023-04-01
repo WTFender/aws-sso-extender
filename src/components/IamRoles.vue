@@ -10,7 +10,7 @@
   </div><br>
   
   <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
-  <MultiSelect v-model="newIamRole.profiles" filter :options="awsAppProfiles" id= "awsAppProfiles" name="awsAppProfiles" option-label="label"
+  <MultiSelect v-model="selectedProfiles" filter :options="awsAppProfiles" id= "awsAppProfiles" name="awsAppProfiles" option-label="label"
     placeholder="Select SSO Profiles" display="chip" class="w-full md:w-20rem" aria-describedby="profiles-help"
     style="width: 400px" />
   <br><br>
@@ -35,18 +35,17 @@ export default {
       type: Array<AppData>,
     },
   },
-  emits: ['updateProfiles', 'updateProfile', 'setPage'],
+  emits: ['addIamRole', 'saveUser', 'updateProfile', 'setPage'],
   data() {
     return {
+      selectedProfiles: [] as AppData[],
       newIamRole: {
         arn: '',
-        profiles: [],
         label: '',
         color: '#22C55E',
         accountId: '',
         roleName: '',
       },
-      selectedProfiles: [],
     };
   },
   computed: {
@@ -81,7 +80,7 @@ export default {
           this.invalid('iamRoleArn')
           return false
         }
-        if (this.newIamRole.profiles.length === 0){
+        if (this.selectedProfiles.length === 0){
           // need to select at least 1 profile
           this.invalid('awsAppProfiles')
           return false
@@ -95,20 +94,17 @@ export default {
     },
     addIamRole() {
       if (this.validateNewIamRole()){
-        const appProfiles: AppData[] = [];
-        this.newIamRole.profiles.forEach((appProfile: AppData) => {
-          const iamRole = {
-            profileId: appProfile.profile.id,
+        this.selectedProfiles.forEach(ap => {
+          this.$emit('addIamRole', {
+            profileId: ap.profile.id,
             accountId: this.newIamRole.accountId,
             roleName: this.newIamRole.roleName,
             color: this.newIamRole.color.replace('#', ''),
             label: this.newIamRole.label,
-          };
-          appProfile.profile.custom!.iamRoles!.push(iamRole);
-          appProfiles.push(appProfile);
-        });
-        this.$emit('updateProfiles', appProfiles);
-        this.$emit('setPage', 'profiles');
+          });
+        })
+        this.$emit('saveUser');
+        this.$emit('setPage', 'profiles');        
       }
     },
   },
