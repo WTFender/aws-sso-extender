@@ -4,149 +4,85 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <!--- Setup -->
-  <SetupSteps
-    v-if="permissions.origins === false || loaded === false"
-    :permissions="permissions"
-    :loaded="loaded"
-    @demo="demo()"
-  />
+  <SetupSteps v-if="permissions.origins === false || loaded === false" :permissions="permissions" :loaded="loaded"
+    @demo="demo()" />
 
   <!--- Post-setup -->
   <div v-else>
     <div class="card">
       <!--- Profiles/Favorites page -->
-      <ProfileTable
-        v-if="page === 'favorites' || page === 'profiles'"
-        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles"
-        :user="user"
-        @updateProfile="updateProfile"
-        @updateProfileLabel="updateProfileLabel"
-      />
+      <ProfileTable v-if="page === 'favorites' || page === 'profiles'"
+        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+        @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
-      <div
-        v-if="page === 'user'"
-        class="settings"
-      >
-        <h2>Users</h2>
-        <PrimeListbox
-          v-model="user"
-          :options="users"
-          class="w-full md:w-14rem"
-        >
-          <template #option="slotProps">
-            <div class="flex align-items-center">
-              <div>
-                {{ slotProps.option.subject + ' @ ' + slotProps.option.managedActiveDirectoryId }}
-              </div>
-            </div>
-          </template>
-        </PrimeListbox>
-        <br>
-        <PrimeButton
-          class="p-button-warning reset-button"
-          label="Reset Preferences"
-          style="margin-top: 15px"
-          @click="resetUser()"
-        />
-        <h2>Default User</h2>
-        <select
-          id="defaultUserSelect"
-          name="defaultUserSelect"
-          @change="setDefaultUser($event)"
-        >
-          <option
-            v-for="u in defaultUserOptions"
-            :key="u.userId"
-            :label="u.label"
-            :value="u.userId"
-            :selected="u.userId === settings.defaultUser"
-          />
-        </select>
-        <div
-          v-if="!demoMode"
-          style="margin-top: 15px;"
-        >
-          <LoginLinks />
-        </div>
+      <div v-if="page === 'users'" class="settings">
+        <TabView>
+          <TabPanel header="Users">
+            <h3>Current User</h3>
+            <PListbox v-model="user" name="userSelect" :options="users" class="w-full md:w-14rem"
+              style="margin-bottom: 5px">
+              <template #option="slotProps">
+                <div class="flex align-items-center">
+                  <div>
+                    {{ slotProps.option.subject + ' @ ' + slotProps.option.managedActiveDirectoryId }}
+                  </div>
+                </div>
+              </template>
+            </PListbox>
+            <h3>Default User</h3>
+            <select id="defaultUserSelect" name="defaultUserSelect" @change="setDefaultUser($event.target.value)">
+              <option v-for="u in defaultUserOptions" :key="u.userId" :label="u.label" :value="u.userId"
+                :selected="u.userId === settings.defaultUser" />
+            </select>
+            <br><br>
+            <PrimeButton class="p-button-warning reset-button" label="Reset Preferences" style="margin-top: 15px"
+              @click="resetUser()" />
+          </TabPanel>
+          <TabPanel header="IAM Roles">
+            <IamRoles :app-profiles="userProfiles" @updateProfiles="updateProfiles" @updateProfile="updateProfile" @setPage="setPage" />
+          </TabPanel>
+          <TabPanel header="Directories" v-if="false">
+            <LoginLinks :permissions="permissions" />
+          </TabPanel>
+          <TabPanel header="Debug" v-if="$ext.config.debug">
+            <pre>{{ dataJson }}</pre>
+          </TabPanel>
+        </TabView>
       </div>
 
       <!--- Settings page -->
-      <div
-        v-if="page === 'settings'"
-        class="settings"
-      >
+      <div v-if="page === 'settings'" class="settings">
         <div>
-          <PrimeButton
-            class="p-button-danger reset-button"
-            label="Reset All Data"
-            @click="reset()"
-          />
+          <PrimeButton class="p-button-danger reset-button" label="Reset All Data" @click="reset()" />
         </div>
         <br>
       </div>
 
-      <!--- Debug JSON page -->
-      <pre
-        v-if="page === 'json' && $ext.config.debug"
-        class="json"
-      >
-          {{ '\n' + dataJson }}
-        </pre>
-
       <!--- Footer -->
       <div class="footer" />
-
-      <!--- Debug -->
-      <i
-        v-if="$ext.config.debug"
-        class="pi pi-circle-fill status-icon"
-        :class="'status-' + status.status"
-        :alt="status.status"
-      />
-      <i
-        v-if="$ext.config.debug"
-        class="pi pi-code debug-icon"
-        :class="'status-' + status.status"
-        alt="JSON Data"
-        @click="setPage('json')"
-      />
     </div>
 
     <!--- Menu Icons -->
-    <i
-      class="pi page-user page-icon"
-      :class="{ 'page-active': page === 'user', 'pi-users': users.length > 1, 'pi-user': users.length >= 1 }"
-      @click="setPage('user')"
-    />
-    <i
-      class="pi pi-list page-icon page-profiles"
-      :class="{ 'page-active': page === 'profiles' }"
-      @click="setPage('profiles')"
-    />
-    <i
-      v-if="faveProfiles.length > 0"
-      class="pi pi-star-fill page-icon page-favorites"
+    <i class="pi page-user page-icon"
+      :class="{ 'page-active': page === 'users', 'pi-users': users.length > 1, 'pi-user': users.length >= 1 }"
+      @click="setPage('users')" />
+    <i class="pi pi-list page-icon page-profiles" :class="{ 'page-active': page === 'profiles' }"
+      @click="setPage('profiles')" />
+    <i v-if="faveProfiles.length > 0" class="pi pi-star-fill page-icon page-favorites"
       :class="{ 'page-active': page === 'favorites' }"
-      @click="faveProfiles.length !== 0 ? setPage('favorites') : function(){}"
-    />
+      @click="faveProfiles.length !== 0 ? setPage('favorites') : function () { }" />
   </div>
-
-  <IamRoles
-    :app-profiles="appProfiles"
-    @updateProfile="updateProfile"
-  />
 </template>
 <script lang="ts">
-import demoData from '../demo.json';
-import { AppData, ExtensionData, UserData } from '../types';
+import demoData from '../demo';
+import { AppData, CustomData, ExtensionData, UserData } from '../types';
 
 export default {
   name: 'PopupView',
   data() {
     return {
-      raw: {},
-      activeUserId: '',
+      raw: {} as ExtensionData,
       defaultUser: '',
       demoMode: false,
       permissions: {
@@ -220,13 +156,9 @@ export default {
   watch: {
     user() {
       this.$ext.log('user change');
-      if (this.user === null) {
-        this.setUser(this.getUser(this.activeUserId));
-      } else {
-        this.setUser(this.getUser(this.user.userId));
-      }
-      this.$ext.log(this.user);
-      this.loaded = true;
+      this.settings.lastUserId = this.user.userId;
+      if (!this.demoMode) { this.$ext.saveSettings(this.settings) };
+      this.reload();
     },
     loaded(v) {
       if (v === true) {
@@ -245,13 +177,16 @@ export default {
     this.reload();
   },
   methods: {
+    refreshProfiles(){
+      this.appProfiles = [];
+      this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
+    },
     demo() {
       this.$ext.log('demoMode');
       this.demoMode = true;
-      this.loaded = true;
       this.permissions = {
         history: false,
-        origins: false,
+        origins: true,
       };
       this.load(demoData);
     },
@@ -267,19 +202,8 @@ export default {
         this.settings.defaultUser = userId;
       }
       if (!this.demoMode) {
-        this.$ext.saveSettings(this.settings).then(() => {
-          this.setUser(this.$ext.getDefaultUser(this.raw));
-        });
-      }
-    },
-    setUser(user: UserData) {
-      this.user = user;
-      this.settings.lastUserId = this.user.userId;
-      this.activeUserId = this.user.userId;
-      if (!this.demoMode) {
         this.$ext.saveSettings(this.settings);
       }
-      this.$ext.log(this.user);
     },
     load(data: ExtensionData) {
       this.raw = data;
@@ -288,10 +212,13 @@ export default {
       this.users = data.users;
       if (this.users.length > 0) {
         this.updatedAt = data.updatedAt as number;
-        this.setUser(this.$ext.getDefaultUser(data));
-        this.appProfiles = data.appProfiles;
-        // handled in Extension class
-        // this.appProfiles = this.customizeProfiles(data.appProfiles);
+        if (!this.loaded || !this.user) {
+          this.user = this.$ext.getDefaultUser(data);
+        } else {
+          this.user = data.users.filter((u) => u.userId === this.user.userId)[0]
+        }
+        this.refreshProfiles()
+        this.loaded = true;
         /* not in use yet
         if (this.staleData) {
           this.status = { status: 'stale', message: 'Login to AWS SSO to refresh profiles' };
@@ -311,16 +238,15 @@ export default {
         this.users = demoData.users;
         this.appProfiles = demoData.appProfiles;
         if (this.user.userId !== 'demoUserId1') {
-          // eslint-disable-next-line prefer-destructuring
           this.user = demoData.users[0];
         }
-      } else {
+      } else { 
         this.$ext.loadData().then((data) => {
           this.load(data);
         }).catch((error) => {
           this.status = { status: 'unhealthy', message: 'failed to load data' };
           throw error;
-        });
+        }); 
       }
     },
     handlePermissions() {
@@ -345,21 +271,33 @@ export default {
     },
     resetUser() {
       this.user.custom = {};
-      this.$ext.saveUser(this.user);
-      this.setPage('profiles');
-      this.reload();
+      this.$ext.saveUser(this.user).then(() => {
+        this.setPage('profiles');
+        this.reload();
+      });
     },
-    updateProfile(appProfile) {
+    updateProfiles(appProfiles: AppData[]) {
+      this.$ext.log('updateProfiles');
+      appProfiles.forEach(ap => {
+        this.user.custom[ap.profile.id] = ap.profile.custom as CustomData;
+      });
+      this.saveUser();
+    },
+    updateProfile(appProfile: AppData) {
+      this.$ext.log('updateProfile');
+      this.user.custom[appProfile.profile.id] = appProfile.profile.custom as CustomData;
       this.$ext.log(this.user);
-      this.$ext.log(appProfile);
-      this.user.custom[appProfile.profile.id] = appProfile.profile.custom;
       if (this.faveProfiles.length === 0) {
         this.setPage('profiles');
       }
+      this.saveUser();
+    },
+    saveUser(){
       if ((!this.demoMode) && this.user.userId !== 'demoUserId1') {
-        this.$ext.saveUser(this.user);
+        this.$ext.saveUser(this.user).then(() => {
+          this.reload();
+        })
       }
-      this.reload();
     },
     updateProfileLabel(event) {
       const { newData } = event;

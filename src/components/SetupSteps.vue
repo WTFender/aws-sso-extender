@@ -14,11 +14,11 @@
       >
       Setup
     </h2>
-    <Accordion
+    <PAccordion
       :active-index="permissions.origins === false ? 0 : 1"
       style="padding-right: 20px; padding-bottom: 20px;"
     >
-      <AccordionTab :disabled="permissions.origins">
+      <PAccordionTab :disabled="permissions.origins">
         <template #header>
           <div style="width: 90%">
             <span style="margin-left: 5px;">Required Permissions</span>
@@ -40,9 +40,9 @@
           @click="requestPermissions()"
         />
         <!--- TODO add granular site perms options --->
-      </AccordionTab>
+      </PAccordionTab>
 
-      <AccordionTab :disabled="loaded">
+      <PAccordionTab :disabled="loaded">
         <template #header>
           <div style="width: 90%">
             <span style="margin-left: 5px;">Login to AWS SSO</span>
@@ -55,25 +55,24 @@
             />
           </div>
         </template>
-        <div v-if="permissions.history === false">
+        <div>
           <p>Login to AWS SSO to populate your profiles. Your login link typically looks like this:</p>
           <code>companyName.awsapps.com/start#/</code>
           <br>
           <code>directoryId.awsapps.com/start#/</code>
         </div>
-        <Divider
-          v-if="!permissions.history"
+        <PDivider v-if="permissions.history === false"
           type="solid"
         >
           <small>Optional - Find login links in browser history</small>
-        </Divider>
+        </PDivider>
         <LoginLinks />
-      </AccordionTab>
-    </Accordion>
+      </PAccordionTab>
+    </PAccordion>
     <PrimeButton
       size="small"
       icon="pi pi-play"
-      class="p-button-success"
+      class="p-button-success flex-center"
       label="Demo"
       style="margin-bottom: 15px;"
       @click="$emit('demo')"

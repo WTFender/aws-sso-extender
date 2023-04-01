@@ -44,6 +44,14 @@ class Extension {
     }
   }
 
+  buildRoleLabel(role: IamRole, ap: AppData): string {
+    let label = role.label.replaceAll('{{account}}', role.accountId);
+    label = label.replaceAll('{{role}}', role.roleName);
+    label.replaceAll('{{profile}}', ap.profile.custom!.label ? ap.profile.custom!.label : ap.profile.name);
+    this.log(label);
+    return label;
+  }
+
   getCookie(name) {
     const cookies = Object.fromEntries(
       document.cookie
@@ -111,7 +119,7 @@ class Extension {
 
   async loadIamLogins(): Promise<IamRole[]> {
     const loginsKey = `${this.config.name}-iam-logins`;
-    const loginsData = await browser.storage.sync.get(loginsKey);
+    const loginsData = await this.config.db.get(loginsKey);
     const logins = loginsData[loginsKey] === undefined ? {} : JSON.parse(loginsData[loginsKey]);
     return logins;
   }
@@ -124,21 +132,21 @@ class Extension {
     return this.saveData(`${this.config.name}-iam-logins`, logins);
   }
 
-  queueIamLogin(iamLogin): Promise<void> {
+  queueIamLogin(role: IamRole): Promise<void> {
     this.log('func:queueIamLogin');
     return this.loadIamLogins().then((logins) => {
       const iamLogins = logins;
-      iamLogins[iamLogin.profileId] = iamLogin;
+      iamLogins[role.profileId] = role;
       this.saveData(`${this.config.name}-iam-logins`, iamLogins);
     });
   }
 
   async loadUser(userId: string): Promise<UserData> {
     const userKey = `${this.config.name}-user-${userId}`;
-    const userData = await browser.storage.sync.get(userKey);
+    const userData = await this.config.db.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
     const customKey = `${this.config.name}-custom-${userId}`;
-    const customData = await browser.storage.sync.get(customKey);
+    const customData = await this.config.db.get(customKey);
     const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
     user.custom = custom;
     return user as UserData;
@@ -147,7 +155,7 @@ class Extension {
   async loadUsers(): Promise<UserData[]> {
     const users: Array<Promise<UserData>> = [];
     const usersKey = `${this.config.name}-users`;
-    const usersData = await browser.storage.sync.get(usersKey);
+    const usersData = await this.config.db.get(usersKey);
     const userIds = usersData[usersKey] === undefined ? [] : JSON.parse(usersData[usersKey]).users;
     userIds.forEach((userId: string) => {
       users.push(this.loadUser(userId));
@@ -167,7 +175,7 @@ class Extension {
       lastUserId: null,
     };
     const setKey = `${this.config.name}-settings`;
-    const setData = await browser.storage.sync.get(setKey);
+    const setData = await this.config.db.get(setKey);
     const settings = setData[setKey] === undefined ? defaultSettings : JSON.parse(setData[setKey]);
     return settings as ExtensionSettings;
   }
@@ -186,12 +194,12 @@ class Extension {
     const settings = await this.loadSettings();
     let users = await this.loadUsers();
     users = users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
-    const appProfileIds = users.map((user) => user.appProfileIds);
+    const appProfileIds = users.map((u) => u.appProfileIds);
     const uniqProfileIds = [...new Set(appProfileIds.flat(1))];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const appProfiles: Array<Promise<Record<string, any>>> = [];
     uniqProfileIds.forEach((apId) => {
-      appProfiles.push(browser.storage.sync.get(apId));
+      appProfiles.push(this.config.db.get(apId));
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
       updatedAt: users.length > 0 ? users[0].updatedAt : 0,
@@ -200,7 +208,6 @@ class Extension {
       users,
       iamLogins,
     }));
-    data.appProfiles = this.customizeProfiles(this.getDefaultUser(data), data.appProfiles);
     this.log(data);
     return data;
   }
@@ -230,7 +237,7 @@ class Extension {
 
   async resetData(): Promise<void> {
     this.log('func:resetData');
-    await browser.storage.sync.clear();
+    await this.config.db.clear();
   }
 
   async saveData(dataKey: string, data: unknown): Promise<void> {
@@ -240,19 +247,18 @@ class Extension {
     dataObj[dataKey] = JSON.stringify(
       typeof data === 'object' ? { ...data, updatedAt: Date.now() } : data,
     );
-    await browser.storage.sync.set(dataObj);
+    await this.config.db.set(dataObj);
   }
 
-  saveUser(user: UserData): void {
+  saveUser(user: UserData): Promise<void> {
     const { userId } = user;
     if ('custom' in user) {
       this.saveData(`${this.config.name}-custom-${userId}`, user.custom);
       const userData = user;
       userData.custom = {};
-      this.saveData(`${this.config.name}-user-${userId}`, userData);
-    } else {
-      this.saveData(`${this.config.name}-user-${userId}`, user);
+      return this.saveData(`${this.config.name}-user-${userId}`, userData);
     }
+    return this.saveData(`${this.config.name}-user-${userId}`, user);
   }
 
   saveAppProfiles(user: UserData): void {
@@ -271,14 +277,17 @@ class Extension {
     const defaults = {
       favorite: false,
       label: null,
+      iamRoles: [],
     };
     const customProfiles: AppData[] = [];
     appProfiles.forEach((ap) => {
-      const profile = { ...ap };
+      const profile = ap;
       // eslint-disable-next-line max-len
       profile.profile.custom = ap.profile.id in user.custom ? user.custom[ap.profile.id] : defaults;
       customProfiles.push(profile);
     });
+    this.log(user);
+    this.log(customProfiles);
     return customProfiles;
   }
 
@@ -291,9 +300,9 @@ class Extension {
     });
   }
 
-  async switchRole(iamRole: IamRole) {
+  async switchRole(role: IamRole) {
     const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
-    return this.removeIamLogin(iamRole.profileId).then(() => {
+    return this.removeIamLogin(role.profileId).then(() => {
       fetch('https://signin.aws.amazon.com/switchrole', {
         method: 'POST',
         mode: 'no-cors',
@@ -304,10 +313,10 @@ class Extension {
         redirect: 'follow',
         referrerPolicy: 'strict-origin-when-cross-origin',
         body: [
-          `displayName=${iamRole.label}`,
-          `roleName=${iamRole.roleName}`,
-          `account=${iamRole.accountId}`,
-          `color=${iamRole.color}`,
+          `displayName=${role.label}`,
+          `roleName=${role.roleName}`,
+          `account=${role.accountId}`,
+          `color=${role.color}`,
           `csrf=${csrfToken}`,
           'action=switchFromBasis',
           'mfaNeeded=0',

@@ -32,7 +32,7 @@
         />
       </span>
     </template>
-    <Column
+    <PColumn
       header-style="display: none;"
       field="name"
       body-style="text-align: center;"
@@ -56,22 +56,22 @@
           </div>
         </div>
       </template>
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       field="applicationName"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       field="profile.name"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       :style="{ 'min-width': '220px' }"
       field="profile.custom.label"
       header-style="display: none;"
@@ -88,13 +88,12 @@
             {{ label(slotProps.data) }}</a>
         </div>
         <div v-if="'iamRoles' in slotProps.data.profile.custom">
-          <Badge
+          <PBadge
             v-for="(role, idx) in slotProps.data.profile.custom.iamRoles"
             :key="idx"
-            :value="role.roleName"
+            :value="role.label !== '' ? $ext.buildRoleLabel(role, slotProps.data) : `${role.roleName} @ ${role.accountId}`"
             class="role-link"
-            severity="success"
-            style="margin: 5px"
+            :style="{margin: '5px', 'background-color': `#${role.color}`}"
             @click="assumeIamRole(role, slotProps.data)"
           />
         </div>
@@ -105,13 +104,13 @@
           autofocus
         />
       </template>
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       :row-editor="true"
       body-style="text-align:center"
       header-style="display: none;"
     />
-    <Column
+    <PColumn
       :style="{ width: '20px' }"
       header-style="display: none;"
       body-class="sso-favorite"
@@ -126,15 +125,15 @@
           @click="fave(slotProps)"
         />
       </template>
-    </Column>
+    </PColumn>
     <!--- Hidden searchable fields --->
-    <Column
+    <PColumn
       v-for="field in ['id', 'applicationId', 'description', 'profile.custom.label', 'profile.id', 'profile.description', 'profile.protocol']"
       :field="field"
       style="display: none;"
       header-style="display: none;"
     />
-    <Column
+    <PColumn
       :style="{ width: '10px' }"
       header-style="display: none;"
     />
@@ -215,11 +214,17 @@ export default {
   color: #495057;
   text-decoration: none;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 5px;
 }
 .sso-link:hover {
   color: #5e3add;
+  cursor: pointer;
+}
+.role-link {
+  white-space: nowrap;
+  margin-right: 5px;
+}
+.role-link:hover {
+  background-color: #5e3add !important;
   cursor: pointer;
 }
 .pi-star:hover {

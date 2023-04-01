@@ -4,6 +4,7 @@ export interface ExtensionConfig {
   display: string
   debug: boolean
   origins: string[]
+  db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
 }
 
 export interface ExtensionSettings {
@@ -68,7 +69,7 @@ export interface AppData {
   name: string
   profiles?: ProfileData[]
   profile: ProfileData
-  searchMetadata: {
+  searchMetadata?: {
     AccountId: string
     AccountName: string
     AccountEmail: string
