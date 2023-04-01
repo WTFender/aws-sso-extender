@@ -106,7 +106,7 @@ export default {
       // TODO support granular directory permissions
       // origins = [`'https://${directoryId}.awsapps.com/start*'`];
       }
-      this.$browser.permissions.request({ origins });
+      this.$ext.config.browser.permissions.request({ origins });
       window.close();
     },
   },

@@ -70,6 +70,9 @@ export default {
     invalid(id){
       const el = document.getElementById(id);
       if(el){ el.classList.add('p-invalid') };
+      setTimeout(() => {
+        el!.classList.remove("p-invalid");
+      }, 5000);
     },
     validateNewIamRole(): boolean {
       if (this.newIamRole.arn.startsWith('arn:aws:iam::')) {

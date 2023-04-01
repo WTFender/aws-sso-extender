@@ -1,10 +1,14 @@
+import { Browser } from 'webextension-polyfill';
+
 export interface ExtensionConfig {
   id: string
   name: string
   display: string
   debug: boolean
   origins: string[]
+  browser: Browser
   db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
+  delay: number
 }
 
 export interface ExtensionSettings {

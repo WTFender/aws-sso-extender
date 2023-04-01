@@ -8,7 +8,9 @@ const extensionConfig: ExtensionConfig = {
   display: import.meta.env.VITE_EXT_NAME,
   debug: import.meta.env.VITE_EXT_DEBUG === 'true',
   origins: ['https://*.awsapps.com/start*'],
+  browser,
   db: import.meta.env.VITE_EXT_DEBUG === 'true' ? browser.storage.local : browser.storage.sync,
+  delay: 100,
 };
 
 export default new Extension(extensionConfig);

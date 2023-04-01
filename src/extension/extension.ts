@@ -1,4 +1,3 @@
-import browser from 'webextension-polyfill';
 import {
   type ExtensionConfig,
   type UserData,
@@ -64,10 +63,10 @@ class Extension {
 
   async checkPermissions(): Promise<object> {
     this.log('func:checkPermissions');
-    const origins = browser.permissions.contains({
+    const origins = this.config.browser.permissions.contains({
       origins: this.config.origins,
     });
-    const history = browser.permissions.contains({
+    const history = this.config.browser.permissions.contains({
       permissions: ['history'],
     });
     const data = await Promise.all([origins, history]).then((res) => ({
@@ -80,7 +79,7 @@ class Extension {
 
   async searchHistory(): Promise<string[]> {
     const dirs: string[] = [];
-    return browser.history.search({
+    return this.config.browser.history.search({
       text: 'awsapps.com/start#/',
       startTime: (Date.now() - (1000 * 60 * 60 * 24 * 30)), // 1 month ago,
       maxResults: 1000,

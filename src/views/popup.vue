@@ -171,7 +171,7 @@ export default {
     },
   },
   created() {
-    this.$browser.permissions.onAdded.addListener(this.handlePermissions);
+    this.$ext.config.browser.permissions.onAdded.addListener(this.handlePermissions);
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {
       this.permissions = perms;
@@ -252,10 +252,10 @@ export default {
     reset() {
       this.appProfiles = [];
       this.$ext.resetData();
-      this.$browser.permissions.remove({
+      this.$ext.config.browser.permissions.remove({
         permissions: ['history'],
       });
-      this.$browser.permissions.remove({
+      this.$ext.config.browser.permissions.remove({
         origins: this.$ext.config.origins,
       });
       window.close();
