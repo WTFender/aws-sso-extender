@@ -1,25 +1,27 @@
 <!-- eslint-disable max-len -->
 <template>
-  <div>
+  <div style="margin-bottom: 10px;">
     <h3>Assume IAM Roles via SSO Profiles</h3>
     <small id="arn-help">Enter the target AWS IAM Role ARN</small>
     <InputText id="iamRoleArn" v-model="newIamRole.arn" name="arn" class="p-inputtext-sm" aria-describedby="arn-help"
       style="width: 400px" placeholder="arn:aws:iam::123412341234:role/roleName" />
-    <br>
-    
-  </div><br>
-  
-  <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
-  <MultiSelect v-model="selectedProfiles" filter :options="awsAppProfiles" id= "awsAppProfiles" name="awsAppProfiles" option-label="label"
-    placeholder="Select SSO Profiles" display="chip" class="w-full md:w-20rem" aria-describedby="profiles-help"
-    style="width: 400px" />
-  <br><br>
+  </div>
   <small id="label-help">Session label and color for the AWS console</small>
-  <InputText id="iamRoleLabel" v-model="newIamRole.label" name="label" class="p-inputtext-sm"
+  <div style="margin-bottom: 10px;">
+    <InputText id="iamRoleLabel" v-model="newIamRole.label" name="label" class="p-inputtext-sm"
     style="width: 350px; margin-right: 10px;" placeholder="{{role}} @ {{account}} via {{profile}}" aria-describedby="label-help"/>
   <ColorPicker v-model="newIamRole.color" />
-  <br><br><br>
-  <PrimeButton size="small" icon="pi pi-user-plus" class="p-button-primary" label="Add IAM Role" style="margin-right: 5px"
+  </div>
+  <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
+  <PListbox v-model="selectedProfiles" id="awsAppProfiles" :options="awsAppProfiles" class="w-full md:w-14rem"
+    style="margin-bottom: 15px" listStyle="max-height:150px" multiple>
+    <template #option="slotProps">
+        <div class="flex align-items-center" style="line-height: 0; padding: 0px; margin: 0px;">
+          <small>{{ slotProps.option.label }}</small>
+        </div>
+    </template>
+  </PListbox>
+  <PrimeButton size="small" icon="pi pi-user-plus" class="p-button-primary" label="Add IAM Role" style="margin-right: 10px"
     @click="addIamRole()" />
   <PrimeButton size="small" icon="pi pi-trash" class="p-button-danger" label="Reset IAM Roles" @click="resetIamRoles()" />
 </template>

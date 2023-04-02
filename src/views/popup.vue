@@ -157,6 +157,7 @@ export default {
   watch: {
     user() {
       this.$ext.log('user change');
+      if (this.user === null){ this.user = this.$ext.getDefaultUser(this.raw);};
       this.settings.lastUserId = this.user.userId;
       if (!this.demoMode) { this.$ext.saveSettings(this.settings).then() };
       this.refreshProfiles();

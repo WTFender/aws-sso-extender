@@ -101,7 +101,6 @@
       <template #editor="{ data, field }">
         <InputText
           v-model="data[field]"
-          autofocus
         />
       </template>
     </PColumn>
@@ -173,7 +172,7 @@ export default {
   mounted() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const searchBox = (this.$refs.searchBox as any).$el as HTMLElement;
-    searchBox.focus();
+    // searchBox.focus();
   },
   methods: {
     assumeIamRole(iamRole, appProfile) {
