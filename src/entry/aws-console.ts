@@ -76,15 +76,11 @@ function checkIamLogins(aws: AwsConsole) {
   if (ap.profile.id in data.iamLogins) {
     const role: IamRole = data.iamLogins[ap.profile.id];
     if (role.profileId === ap.profile.id) {
-      // redirect user to iam role
       extension.switchRole({
         ...role,
         label: sessionLabel(role, ap),
-      }).then(() => {
-        setTimeout(() => {
-          window.location.reload();
-        }, extension.config.delay);
       });
+      extension.removeIamLogin(role.profileId);
     }
   }
 }
@@ -122,18 +118,20 @@ async function init(): Promise<AwsConsole> {
 }
 
 if (window.location.href.includes('console.aws.amazon.com/console/home')) {
-  // allow storage to update from popup, console menus to load
+  // get console info
+  init().then((aws) => {
+    extension.log(aws);
+    // sso user, check for pending iam logins, redirect
+    if (aws.userType === 'sso' && aws.appProfile) {
+      checkIamLogins(aws);
+      // iam user, check for pending iam logins, remove matching
+    } else if (aws.userType === 'iam' && aws.appProfile) {
+      extension.removeIamLogin(aws.appProfile!.profile.id);
+    }
+  });
+} else if (window.location.href.includes('signin.aws.amazon.com/switchrole')) {
   setTimeout(() => {
-    // get console info
-    init().then((aws) => {
-      extension.log(aws);
-      // sso user, check for pending iam logins, redirect
-      if (aws.userType === 'sso' && aws.appProfile) {
-        checkIamLogins(aws);
-        // iam user, check for pending iam logins, remove matching
-      } else if (aws.userType === 'iam' && aws.appProfile) {
-        extension.removeIamLogin(aws.appProfile!.profile.id);
-      }
-    });
+    const btn = document.getElementById('switchrole_form') as HTMLFormElement;
+    btn?.submit();
   }, extension.config.delay);
 }

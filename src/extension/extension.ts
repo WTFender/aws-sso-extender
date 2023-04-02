@@ -299,31 +299,33 @@ class Extension {
     });
   }
 
-  async switchRole(role: IamRole) {
+  switchRole(role: IamRole) {
     const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
-    return this.removeIamLogin(role.profileId).then(() => {
-      fetch('https://signin.aws.amazon.com/switchrole', {
-        method: 'POST',
-        mode: 'no-cors',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'strict-origin-when-cross-origin',
-        body: [
-          `displayName=${role.label}`,
-          `roleName=${role.roleName}`,
-          `account=${role.accountId}`,
-          `color=${role.color}`,
-          `csrf=${csrfToken}`,
-          'action=switchFromBasis',
-          'mfaNeeded=0',
-          'src=nav',
-          `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
-        ].join('&'),
-      });
-    });
+    const roleArgs = [
+      `displayName=${role.label}`,
+      `roleName=${role.roleName}`,
+      `account=${role.accountId}`,
+      `color=${role.color}`,
+      `csrf=${csrfToken}`,
+      'action=switchFromBasis',
+      'mfaNeeded=0',
+      'src=nav',
+      `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
+    ].join('&');
+    window.open(`https://signin.aws.amazon.com/switchrole?${roleArgs}`, '_self');
+    /*
+    return fetch('https://signin.aws.amazon.com/switchrole', {
+      method: 'POST',
+      mode: 'no-cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      redirect: 'follow',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      body: roleArgs,
+    }).then((response) => response.url);
+    */
   }
 }
 

@@ -27,7 +27,8 @@
     },
     {
       "matches": [
-        "https://*.console.aws.amazon.com/console/home?region*"
+        "https://*.console.aws.amazon.com/console/home?region*",
+        "https://signin.aws.amazon.com/switchrole?*"
       ],
       "js": [
         "src/entry/aws-console.ts"

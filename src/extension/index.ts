@@ -10,7 +10,7 @@ const extensionConfig: ExtensionConfig = {
   origins: ['https://*.awsapps.com/start*'],
   browser,
   db: import.meta.env.VITE_EXT_DEBUG === 'true' ? browser.storage.local : browser.storage.sync,
-  delay: 100,
+  delay: 10,
 };
 
 export default new Extension(extensionConfig);
