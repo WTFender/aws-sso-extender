@@ -160,12 +160,21 @@ class Extension {
   }
 
   async loadUser(userId: string): Promise<UserData> {
+    const customDefaults = {
+      colorDefault: '222f3e',
+      colorFooter: false,
+      colorHeader: false,
+      labelFooter: false,
+      labelHeader: false,
+      profiles: {},
+    };
     const userKey = `${this.config.name}-user-${userId}`;
     const userData = await this.config.db.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
     const customKey = `${this.config.name}-custom-${userId}`;
     const customData = await this.config.db.get(customKey);
-    const custom = customData[customKey] === undefined ? {} : JSON.parse(customData[customKey]);
+    // eslint-disable-next-line vue/max-len
+    const custom = customData[customKey] === undefined ? customDefaults : JSON.parse(customData[customKey]);
     user.custom = custom;
     return user as UserData;
   }

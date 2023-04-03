@@ -4,15 +4,14 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <!--- Setup -->
-  <SetupSteps v-if="!permissions.sso || !loaded" :permissions="permissions" :loaded="loaded"
-    @demo="demo()" />
+  <SetupSteps v-if="!permissions.sso || !loaded" :permissions="permissions" :loaded="loaded" @demo="demo()" />
 
   <!--- Post-setup -->
   <div v-else>
     <div class="card">
       <!--- Profiles/Favorites page -->
-      <ProfileTable v-if="page === 'favorites' || page === 'profiles'"
-        :demoMode="demoMode" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+      <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode"
+        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
@@ -36,7 +35,7 @@
                 :selected="u.userId === settings.defaultUser" />
             </select>
             <br><br>
-            <PrimeButton class="p-button-warning reset-button" label="Reset Preferences" style="margin-top: 15px"
+            <PrimeButton class="p-button-danger reset-button" label="Reset User" style="margin-top: 15px"
               @click="resetUser()" />
           </TabPanel>
           <TabPanel header="IAM Roles">
@@ -46,17 +45,55 @@
               </p>
               <code>https://*.console.aws.amazon.com/*</code><br>
               <code>https://signin.aws.amazon.com/switchrole</code>
-              <PrimeButton
-                size="small"
-                icon="pi pi-lock"
-                class="p-button-success"
-                label="Request Permissions"
-                style="margin-top:10px;"
-                @click="requestPermissionsConsole()"
-              />
+              <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+                style="margin-top:10px;" @click="requestPermissionsConsole()" />
             </div>
             <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
               @setPage="setPage" @saveUser="saveUser" />
+          </TabPanel>
+          <TabPanel header="Console">
+            <div v-if="!permissions.console">
+              <p>
+                This extension requires permissions to customize the AWS console:
+              </p>
+              <code>https://*.console.aws.amazon.com/*</code><br>
+              <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+                style="margin-top:10px;" @click="requestPermissionsConsole()" />
+            </div>
+            <div v-else>
+              <h3>Customizations</h3>
+              <div>
+                <PCheckbox @change="saveUser()" v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
+                :v-model="user.custom.labelHeader" :binary="true" style="margin-right: 10px;" />
+              <label for="labelHeader" class="ml-2">Label the AWS console header</label>
+              </div>
+              <br>
+              <div>
+                <PCheckbox @change="saveUser()" v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
+                :v-model="user.custom.labelFooter" :binary="true" style="margin-right: 10px;" />
+              <label for="labelFooter" class="ml-2">Label the AWS console footer</label>
+              </div>
+              <br>
+              <div>
+                <PCheckbox @change="saveUser()" v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
+                :v-model="user.custom.colorHeader" :binary="true" style="margin-right: 10px;" />
+              <label for="colorHeader" class="ml-2">Color the AWS console header</label>
+              </div>
+              <br>
+              <div>
+                <PCheckbox @change="saveUser()" v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
+                :v-model="user.custom.colorFooter" :binary="true" style="margin-right: 10px;" />
+              <label for="colorFooter" class="ml-2">Color the AWS console footer</label>
+              </div>
+              <br>
+              <div style="margin-bottom: 10px;">
+                <ColorPicker @change="saveUser()" inputId="colorDefault" name="colorDefault" @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault" id="colorDefault"/>
+                <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
+              </div>
+              <PDialog v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+                <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault"/>
+              </PDialog>
+            </div>
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
             <LoginLinks :permissions="permissions" />
@@ -100,6 +137,7 @@ export default {
     return {
       raw: {} as ExtensionData,
       defaultUser: '',
+      colorPickerVisible: false,
       demoMode: false,
       permissions: {
         history: false,
@@ -165,7 +203,7 @@ export default {
   watch: {
     user() {
       this.$ext.log('user change');
-      if (this.user === null){ this.user = this.$ext.getDefaultUser(this.raw);};
+      if (this.user === null) { this.user = this.$ext.getDefaultUser(this.raw); };
       this.settings.lastUserId = this.user.userId;
       if (!this.demoMode) { this.$ext.saveSettings(this.settings).then() };
       this.refreshProfiles();
@@ -189,12 +227,12 @@ export default {
   },
   methods: {
     requestPermissionsConsole() {
-      this.$ext.config.browser.permissions.request({ 
+      this.$ext.config.browser.permissions.request({
         origins: [
           ...this.$ext.config.permissions.console,
           ...this.$ext.config.permissions.signin,
         ]
-        });
+      });
       window.close();
     },
     refreshProfiles() {
@@ -308,7 +346,7 @@ export default {
     },
     addIamRole(role: IamRole) {
       this.$ext.log('addIamRole');
-      if (role.profileId in this.user.custom){
+      if (role.profileId in this.user.custom) {
         this.user.custom[role.profileId].iamRoles.push(role);
       } else {
         this.user.custom[role.profileId] = {

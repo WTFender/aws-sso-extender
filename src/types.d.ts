@@ -39,7 +39,14 @@ export interface ApiData {
 
 export interface UserData {
   updatedAt: number
-  custom: Record<string, CustomData>
+  custom: {
+    colorDefault: string,
+    colorFooter: boolean,
+    colorHeader: boolean,
+    labelFooter: boolean,
+    labelHeader: boolean,
+    profiles: Record<string, CustomData>
+  }
   appProfileIds: string[]
   accountId: string
   adGUID: string
