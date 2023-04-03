@@ -38,7 +38,7 @@ export default {
   data() {
     return {
       permissions: {
-        origins: false,
+        sso: false,
         history: false,
       },
       foundDirs: [],

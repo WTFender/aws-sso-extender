@@ -26,7 +26,7 @@ const users: UserData[] = [
     managedActiveDirectoryId: 'd-123456',
     middleName: '',
     name: 'demo user',
-    originSessionId: '',
+    ssoessionId: '',
     preferredUsername: 'demouser',
     sourceGUID: '',
     ssoInstanceId: 'ssoins-123',
@@ -34,6 +34,7 @@ const users: UserData[] = [
     userId: 'demoUserId1',
     custom: {
       'p-123': {
+        label: null,
         favorite: true,
         iamRoles: [{
           profileId: 'p-123',

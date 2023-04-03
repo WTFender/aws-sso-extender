@@ -83,7 +83,7 @@
             class="sso-link"
             target="_blank"
             rel="noopener noreferrer"
-            :href="$ext.createProfileUrl(user, slotProps.data)"
+            :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"
           ><i class="pi pi-external-link" />
             {{ label(slotProps.data) }}</a>
         </div>
@@ -155,6 +155,11 @@ export default {
       type: Array,
       required: true,
     },
+    demoMode: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   emits: ['updateProfileLabel', 'updateProfile'],
   data() {
@@ -177,6 +182,10 @@ export default {
   methods: {
     assumeIamRole(iamRole, appProfile) {
       // TODO notify on silent failure switching role
+      if (this.demoMode) {
+        window.open('about:blank', '_blank');
+        return;
+      }
       this.$ext.queueIamLogin(iamRole).then(() => {
         const profileUrl = this.$ext.createProfileUrl(this.user, appProfile);
         window.open(profileUrl, '_blank');

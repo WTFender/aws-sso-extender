@@ -85,6 +85,15 @@ function checkIamLogins(aws: AwsConsole) {
   }
 }
 
+function switchRoleBtn() {
+  if (
+    (document.getElementById('account') as HTMLInputElement).value
+    && (document.getElementById('roleName') as HTMLInputElement).value
+  ) {
+    (document.getElementById('switchrole_form') as HTMLFormElement)?.submit();
+  }
+}
+
 async function init(): Promise<AwsConsole> {
   const aws: AwsConsole = {
     userType: null,
@@ -121,17 +130,22 @@ if (window.location.href.includes('console.aws.amazon.com/console/home')) {
   // get console info
   init().then((aws) => {
     extension.log(aws);
-    // sso user, check for pending iam logins, redirect
+
+    // sso user, check for pending iam logins, switch role (soft POST)
     if (aws.userType === 'sso' && aws.appProfile) {
       checkIamLogins(aws);
-      // iam user, check for pending iam logins, remove matching
+
+    // iam user, check for pending iam logins, remove matching
     } else if (aws.userType === 'iam' && aws.appProfile) {
       extension.removeIamLogin(aws.appProfile!.profile.id);
     }
   });
+
+  // switch role
 } else if (window.location.href.includes('signin.aws.amazon.com/switchrole')) {
+  extension.log('switchrole');
+  switchRoleBtn();
   setTimeout(() => {
-    const btn = document.getElementById('switchrole_form') as HTMLFormElement;
-    btn?.submit();
+    switchRoleBtn();
   }, extension.config.delay);
 }

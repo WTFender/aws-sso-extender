@@ -4,7 +4,7 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <!--- Setup -->
-  <SetupSteps v-if="permissions.origins === false || loaded === false" :permissions="permissions" :loaded="loaded"
+  <SetupSteps v-if="!permissions.sso || !loaded" :permissions="permissions" :loaded="loaded"
     @demo="demo()" />
 
   <!--- Post-setup -->
@@ -12,7 +12,7 @@
     <div class="card">
       <!--- Profiles/Favorites page -->
       <ProfileTable v-if="page === 'favorites' || page === 'profiles'"
-        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+        :demoMode="demoMode" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
@@ -40,7 +40,22 @@
               @click="resetUser()" />
           </TabPanel>
           <TabPanel header="IAM Roles">
-            <IamRoles :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
+            <div v-if="!permissions.console || !permissions.signin">
+              <p>
+                In order to switch IAM roles, this extension requires permissions to the AWS console.
+              </p>
+              <code>https://*.console.aws.amazon.com/*</code><br>
+              <code>https://signin.aws.amazon.com/switchrole</code>
+              <PrimeButton
+                size="small"
+                icon="pi pi-lock"
+                class="p-button-success"
+                label="Request Permissions"
+                style="margin-top:10px;"
+                @click="requestPermissionsConsole()"
+              />
+            </div>
+            <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
               @setPage="setPage" @saveUser="saveUser" />
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
@@ -87,8 +102,10 @@ export default {
       defaultUser: '',
       demoMode: false,
       permissions: {
-        origins: false,
         history: false,
+        console: false,
+        signin: false,
+        sso: false,
       },
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
@@ -116,15 +133,6 @@ export default {
     };
   },
   computed: {
-    /*
-    defaultUserPlaceholder() {
-      if (this.settings.defaultUser === 'lastUserId') {
-        return 'Last sign-in activity';
-      }
-      const user = this.getUser(this.settings.defaultUser);
-      return `${user.subject} @ ${user.managedActiveDirectoryId}`;
-    },
-    */
     defaultUserOptions() {
       let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
       options = options.concat(this.userOptions);
@@ -180,6 +188,15 @@ export default {
     this.reload();
   },
   methods: {
+    requestPermissionsConsole() {
+      this.$ext.config.browser.permissions.request({ 
+        origins: [
+          ...this.$ext.config.permissions.console,
+          ...this.$ext.config.permissions.signin,
+        ]
+        });
+      window.close();
+    },
     refreshProfiles() {
       this.appProfiles = [];
       this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
@@ -188,8 +205,10 @@ export default {
       this.$ext.log('demoMode');
       this.demoMode = true;
       this.permissions = {
-        history: false,
-        origins: true,
+        console: true,
+        history: true,
+        signin: true,
+        sso: true,
       };
       this.load(demoData);
     },
@@ -244,6 +263,7 @@ export default {
     handlePermissions() {
       this.$ext.checkPermissions().then((perms) => {
         this.permissions = perms;
+        this.$ext.log(this.permissions);
       });
     },
     setPage(page) {
@@ -253,12 +273,7 @@ export default {
     reset() {
       this.appProfiles = [];
       this.$ext.resetData();
-      this.$ext.config.browser.permissions.remove({
-        permissions: ['history'],
-      });
-      this.$ext.config.browser.permissions.remove({
-        origins: this.$ext.config.origins,
-      });
+      this.$ext.resetPermissions();
       window.close();
     },
     resetUser() {

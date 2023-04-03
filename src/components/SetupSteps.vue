@@ -15,10 +15,10 @@
       Setup
     </h2>
     <PAccordion
-      :active-index="permissions.origins === false ? 0 : 1"
+      :active-index="!permissions.sso ? 0 : 1"
       style="padding-right: 20px; padding-bottom: 20px;"
     >
-      <PAccordionTab :disabled="permissions.origins">
+      <PAccordionTab :disabled="permissions.sso">
         <template #header>
           <div style="width: 90%">
             <span style="margin-left: 5px;">Required Permissions</span>
@@ -26,8 +26,8 @@
           <div style="width: 10%">
             <i
               class="pi"
-              :class="permissions.origins === true ? 'pi-check-circle' : 'pi-exclamation-circle'"
-              :style="permissions.origins === true ? 'color: green;' : 'color: orange;'"
+              :class="permissions.sso ? 'pi-check-circle' : 'pi-exclamation-circle'"
+              :style="permissions.sso ? 'color: green;' : 'color: orange;'"
             />
           </div>
         </template>
@@ -37,7 +37,7 @@
           icon="pi pi-lock"
           class="p-button-success"
           label="Request Permissions"
-          @click="requestPermissions()"
+          @click="requestPermissionsDirectory()"
         />
         <!--- TODO add granular site perms options --->
       </PAccordionTab>
@@ -61,7 +61,7 @@
           <br>
           <code>directoryId.awsapps.com/start#/</code>
         </div>
-        <PDivider v-if="permissions.history === false"
+        <PDivider v-if="!permissions.history"
           type="solid"
         >
           <small>Optional - Find login links in browser history</small>
@@ -93,20 +93,21 @@ export default {
       required: true,
       type: Object,
       default: () => ({
-        origins: false,
+        sso: false,
+        console: false,
+        signin: false,
         history: false,
       }),
     },
   },
   emits: ['demo'],
   methods: {
-    requestPermissions(directoryId = null) {
-      const { origins } = this.$ext.config;
+    requestPermissionsDirectory(directoryId = null) {
       if (directoryId !== null) {
       // TODO support granular directory permissions
-      // origins = [`'https://${directoryId}.awsapps.com/start*'`];
+      // sso = [`'https://${directoryId}.awsapps.com/start*'`];
       }
-      this.$ext.config.browser.permissions.request({ origins });
+      this.$ext.config.browser.permissions.request({ origins: this.$ext.config.permissions.sso });
       window.close();
     },
   },

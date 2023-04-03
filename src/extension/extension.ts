@@ -61,17 +61,36 @@ class Extension {
     return cookies[name];
   }
 
+  resetPermissions() {
+    this.config.browser.permissions.remove({
+      permissions: ['history'],
+      origins: [
+        ...this.config.permissions.sso,
+        ...this.config.permissions.console,
+        ...this.config.permissions.signin,
+      ],
+    });
+  }
+
   async checkPermissions(): Promise<object> {
     this.log('func:checkPermissions');
-    const origins = this.config.browser.permissions.contains({
-      origins: this.config.origins,
-    });
     const history = this.config.browser.permissions.contains({
       permissions: ['history'],
     });
-    const data = await Promise.all([origins, history]).then((res) => ({
-      origins: res[0],
-      history: res[1],
+    const console = this.config.browser.permissions.contains({
+      origins: this.config.permissions.console,
+    });
+    const signin = this.config.browser.permissions.contains({
+      origins: this.config.permissions.signin,
+    });
+    const sso = this.config.browser.permissions.contains({
+      origins: this.config.permissions.sso,
+    });
+    const data = await Promise.all([history, console, signin, sso]).then((res) => ({
+      history: res[0],
+      console: res[1],
+      signin: res[2],
+      sso: res[3],
     }));
     this.log(data);
     return data;
@@ -312,7 +331,8 @@ class Extension {
       'src=nav',
       `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
     ].join('&');
-    window.open(`https://signin.aws.amazon.com/switchrole?${roleArgs}`, '_self');
+    window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
+    // window.open(`https://signin.aws.amazon.com/switchrole?${roleArgs}`, '_self');
     /*
     return fetch('https://signin.aws.amazon.com/switchrole', {
       method: 'POST',

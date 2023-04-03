@@ -6,12 +6,15 @@
     <InputText id="iamRoleArn" v-model="newIamRole.arn" name="arn" class="p-inputtext-sm" aria-describedby="arn-help"
       style="width: 400px" placeholder="arn:aws:iam::123412341234:role/roleName" />
   </div>
-  <small id="label-help">Session label and color for the AWS console</small>
+  <small id="label-help">Role label and color for the AWS console</small>
   <div style="margin-bottom: 10px;">
     <InputText id="iamRoleLabel" v-model="newIamRole.label" name="label" class="p-inputtext-sm"
     style="width: 350px; margin-right: 10px;" placeholder="{{role}} @ {{account}} via {{profile}}" aria-describedby="label-help"/>
-  <ColorPicker v-model="newIamRole.color" />
+    <ColorPicker @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="newIamRole.color" id="colpradsf"/>
   </div>
+  <PDialog v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+    <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="newIamRole.color" id="colpradsf" />
+  </PDialog>
   <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
   <PListbox v-model="selectedProfiles" id="awsAppProfiles" :options="awsAppProfiles" class="w-full md:w-14rem"
     style="margin-bottom: 15px" listStyle="max-height:150px" multiple>
@@ -40,6 +43,7 @@ export default {
   emits: ['addIamRole', 'saveUser', 'updateProfile', 'setPage'],
   data() {
     return {
+      colorPickerVisible: false,
       selectedProfiles: [] as AppData[],
       newIamRole: {
         arn: '',
@@ -63,6 +67,12 @@ export default {
     //
   },
   methods: {
+    setColor() {
+      const color = document.getElementById('color') as HTMLInputElement;
+      this.$ext.log(color);
+      this.colorPickerVisible = false
+      this.newIamRole.color = color.value;
+    },
     resetIamRoles() {
       this.appProfiles.forEach(ap => {
         ap.profile!.custom!.iamRoles = [];

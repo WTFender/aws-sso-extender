@@ -5,7 +5,11 @@ export interface ExtensionConfig {
   name: string
   display: string
   debug: boolean
-  origins: string[]
+  permissions: {
+    sso: string[]
+    signin: string[]
+    console: string[]
+  }
   browser: Browser
   db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
   delay: number
@@ -17,7 +21,7 @@ export interface ExtensionSettings {
 }
 
 export interface ExtensionPermissions {
-  origins: string[]
+  sso: string[]
   history: boolean
 }
 
