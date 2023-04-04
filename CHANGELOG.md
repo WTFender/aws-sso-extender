@@ -1,3 +1,6 @@
+## 1.2.1
+- Bug fixes, sorting, defaults
+
 ## 1.2.0
 - Assume IAM roles via SSO 🔓
 - Customize the AWS console 🎨
