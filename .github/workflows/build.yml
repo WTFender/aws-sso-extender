@@ -30,17 +30,17 @@ jobs:
       - name: Build Chrome Extension
         run: |
           npm run build:chrome
-          cd dist/chrome/ && zip -r ../../release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip .
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
       
       - name: Build Firefox Extension
         run: npm run build:firefox
 
       - uses: actions/upload-artifact@v3
         with:
-          name: aws-sso-extender-${{ steps.setup.outputs.version }}-chrome.zip
-          path: ./release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip
+          name: aws_sso_extender-${{ steps.setup.outputs.version }}-chrome.zip
+          path: ./release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
 
       - uses: actions/upload-artifact@v3
         with:
-          name: aws-sso-extender-${{ steps.setup.outputs.version }}-firefox.zip
-          path: ./release/firefox/aws-sso-extender-${{ steps.setup.outputs.version }}.zip
+          name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
+          path: ./release/firefox/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
