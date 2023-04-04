@@ -1,5 +1,6 @@
 {
   "name": "aws-sso-extender",
+  "title": "AWS SSO Extender",
   "description": "Organize access to the AWS console & other AWS SSO (Identity Center) applications",
   "author": "WTFender",
   "url": "https://wtfender.com/posts/aws-sso-extender",
