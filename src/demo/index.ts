@@ -74,6 +74,7 @@ const appProfiles: AppData[] = [
       relayState: '',
       url: '',
       custom: {
+        color: '',
         favorite: false,
         label: null,
         iamRoles: [{
@@ -106,6 +107,7 @@ const appProfiles: AppData[] = [
       relayState: '',
       url: '',
       custom: {
+        color: '',
         favorite: true,
         label: null,
         iamRoles: [],
@@ -132,6 +134,7 @@ const appProfiles: AppData[] = [
       relayState: '',
       url: '',
       custom: {
+        color: '',
         favorite: false,
         label: null,
         iamRoles: [],

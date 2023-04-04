@@ -30,7 +30,7 @@
               </template>
             </PListbox>
             <h3>Default User</h3>
-            <select id="defaultUserSelect" name="defaultUserSelect" @change="setDefaultUser($event.target.value)">
+            <select id="defaultUserSelect" name="defaultUserSelect" @change="setDefaultUser($event)">
               <option v-for="u in defaultUserOptions" :key="u.userId" :label="u.label" :value="u.userId"
                 :selected="u.userId === settings.defaultUser" />
             </select>

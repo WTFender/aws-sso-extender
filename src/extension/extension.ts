@@ -5,6 +5,7 @@ import {
   type ExtensionData,
   type ExtensionSettings,
   type IamRole,
+  CustomData,
 } from '../types';
 
 function encodeUriPlusParens(str) {
@@ -290,14 +291,10 @@ class Extension {
   }
 
   saveUser(user: UserData): Promise<void> {
-    const { userId } = user;
     if ('custom' in user) {
-      this.saveData(`${this.config.name}-custom-${userId}`, user.custom);
-      const userData = user;
-      userData.custom = {};
-      return this.saveData(`${this.config.name}-user-${userId}`, userData);
+      this.saveData(`${this.config.name}-custom-${user.userId}`, user.custom);
     }
-    return this.saveData(`${this.config.name}-user-${userId}`, user);
+    return this.saveData(`${this.config.name}-user-${user.userId}`, { ...user, custom: {} });
   }
 
   saveAppProfiles(user: UserData): void {
@@ -313,11 +310,11 @@ class Extension {
 
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
     this.log('func:customizeProfiles');
-    const defaults = {
-      color: null,
+    const defaults: CustomData = {
+      color: '',
       favorite: false,
       label: null,
-      iamRoles: [],
+      iamRoles: [] as IamRole[],
     };
     const customProfiles: AppData[] = [];
     appProfiles.forEach((ap) => {
