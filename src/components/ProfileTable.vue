@@ -111,11 +111,6 @@
       </template>
     </PColumn>
     <PColumn
-      :style="{ width: '20px' }"
-      header-style="display: none;"
-    >
-    </PColumn>
-    <PColumn
       :row-editor="true"
       body-style="text-align:center"
       header-style="display: none;"

@@ -310,7 +310,7 @@ class Extension {
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
     this.log('func:customizeProfiles');
     const defaults: CustomData = {
-      color: '',
+      color: this.customDefaults.colorDefault,
       favorite: false,
       label: null,
       iamRoles: [] as IamRole[],
