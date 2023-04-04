@@ -1,10 +1,10 @@
 {
   "name": "aws-sso-extender",
-  "description": "Extension for AWS SSO (Identity Center) users",
+  "description": "Organize access to the AWS console & other AWS SSO (Identity Center) applications",
   "author": "WTFender",
   "url": "https://wtfender.com/posts/aws-sso-extender",
   "private": true,
-  "version": "1.1.7",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "prepare": "husky install",
