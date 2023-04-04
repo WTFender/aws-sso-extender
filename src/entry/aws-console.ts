@@ -50,21 +50,24 @@ function ssoRoleName(roleName: string): string | null {
 }
 
 function findIamRole(aws: AwsConsole): IamRole {
-  let iamRole;
+  extension.log('findIamRole');
+  const iamRoles: IamRole[] = [];
   aws.data?.users.forEach((user) => {
     // app profiles
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax
     for (const [profileId, profile] of Object.entries(user.custom.profiles)) {
       // eslint-disable-next-line @typescript-eslint/no-loop-func
       profile.iamRoles.forEach((role) => {
-        if (role.accountId === aws.accountId && role.roleName === aws.roleName) {
+        if (role.accountId === aws.accountId
+          && role.roleName === aws.roleName) {
           // eslint-disable-next-line vue/max-len
-          iamRole = role;
+          iamRoles.push(role);
         }
       });
     }
   });
-  return iamRole;
+  extension.log(iamRoles);
+  return iamRoles.filter((r) => r.profileId === aws.data?.settings.lastProfileId)[0];
 }
 
 function findUser(aws: AwsConsole): UserData {
@@ -76,6 +79,8 @@ function findUser(aws: AwsConsole): UserData {
 function findAppProfileByRole(aws: AwsConsole): AppData {
   // eslint-disable-next-line vue/max-len
   const appProfiles = aws.data!.appProfiles.filter((ap) => ap.profile.id === aws.iamRole?.profileId);
+  extension.log('findAppProfileByRole');
+  extension.log(appProfiles);
   return extension.customizeProfiles(aws.user as UserData, appProfiles)[0];
 }
 
@@ -89,8 +94,7 @@ function findAppProfile(aws: AwsConsole): AppData | null {
       data.appProfiles.forEach((ap) => {
         if (ap.applicationName === 'AWS Account') {
           // sso user, check for matching app profile
-          if (ap.searchMetadata!.AccountId === aws.accountId
-            && ap.profile.name === aws.ssoRoleName) {
+          if (ap.profile.name === aws.ssoRoleName) {
             appProfiles.push(extension.customizeProfiles(user, [ap])[0]);
           }
         }
@@ -118,12 +122,21 @@ function checkIamLogins(aws: AwsConsole) {
   }
 }
 
+function getFontColor(hexcolor): 'black' | 'white' {
+  extension.log(hexcolor);
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 180) ? 'black' : 'white';
+}
+
 function customizeConsole(aws: AwsConsole): Boolean {
   extension.log('customizeConsole');
   const defaultHeader = 'Services';
   const defaultFooter = '© 2023, Amazon Web Services, Inc. or its affiliates.';
   const label = sessionLabel(aws);
-  const color = aws.userType === 'iam'
+  const color = aws.userType === 'iam' && aws.iamRole!.color !== ''
     ? aws.iamRole!.color
     : aws.appProfile?.profile.custom?.color || aws.user?.custom.colorDefault;
   const header = document.getElementById('awsc-top-level-nav');
@@ -137,8 +150,14 @@ function customizeConsole(aws: AwsConsole): Boolean {
     return false;
   }
   // customize
-  if (aws.user!.custom.colorHeader) { header!.style.backgroundColor = `#${color || '222f3e'}`; }
-  if (aws.user!.custom.colorFooter) { footer!.style.backgroundColor = `#${color || '222f3e'}`; }
+  if (aws.user!.custom.colorHeader) {
+    header!.style.backgroundColor = `#${color || '222f3e'}`;
+    headerLbl!.style.color = getFontColor(color);
+  }
+  if (aws.user!.custom.colorFooter) {
+    footer!.style.backgroundColor = `#${color || '222f3e'}`;
+    footerLbl!.style.color = getFontColor(color);
+  }
   if (aws.user!.custom.labelFooter) { footerLbl!.textContent = label || defaultFooter; }
   // iam user has header already applied
   if (aws.user!.custom.labelHeader) { headerLbl!.textContent = label || defaultHeader; }

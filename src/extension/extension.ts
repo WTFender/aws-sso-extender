@@ -25,15 +25,21 @@ class Extension {
 
   loaded: boolean;
 
-  customDefaults = {
+  defaultCustom = {
     sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
     sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
     colorDefault: '222f3e',
-    colorFooter: false,
-    colorHeader: false,
-    labelFooter: false,
-    labelHeader: false,
+    colorFooter: true, // confusing if these are disabled
+    colorHeader: true, // after granting permissions
+    labelFooter: true,
+    labelHeader: true,
     profiles: {},
+  };
+
+  defaultSettings = {
+    defaultUser: 'lastUserId',
+    lastUserId: null,
+    lastProfileId: null,
   };
 
   constructor(config: ExtensionConfig) {
@@ -63,7 +69,6 @@ class Extension {
     if (user) { label = label.replaceAll('{{user}}', user); }
     if (role) { label = label.replaceAll('{{role}}', role); }
     if (profile) { label = label.replaceAll('{{profile}}', profile); }
-    if (profile && !role) { label = label.replaceAll('{{role}}', profile); }
     if (account) { label = label.replaceAll('{{account}}', account); }
     if (accountName) { label = label.replaceAll('{{accountName}}', accountName); }
     this.log(`func:buildLabel:${label}`);
@@ -143,15 +148,14 @@ class Extension {
 
   /*
   static calculateChecksum(c) {
+    // generate csrf token
     let a = 1;
     let b = 0;
     if (!c) { return 0; }
-    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < c.length; ++i) {
       a = (a + c.charCodeAt(i)) % 65521;
       b = (b + a) % 65521;
     }
-    // eslint-disable-next-line no-bitwise
     return (b << 15) | a;
   }
   */
@@ -187,7 +191,7 @@ class Extension {
     const customKey = `${this.config.name}-custom-${userId}`;
     const customData = await this.config.db.get(customKey);
     // eslint-disable-next-line vue/max-len
-    const custom = customData[customKey] === undefined ? this.customDefaults : JSON.parse(customData[customKey]);
+    const custom = customData[customKey] === undefined ? this.defaultCustom : JSON.parse(customData[customKey]);
     user.custom = custom;
     return user as UserData;
   }
@@ -210,13 +214,10 @@ class Extension {
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
-    const defaultSettings = {
-      defaultUser: 'lastUserId',
-      lastUserId: null,
-    };
     const setKey = `${this.config.name}-settings`;
     const setData = await this.config.db.get(setKey);
-    const settings = setData[setKey] === undefined ? defaultSettings : JSON.parse(setData[setKey]);
+    // eslint-disable-next-line vue/max-len
+    const settings = setData[setKey] === undefined ? this.defaultSettings : JSON.parse(setData[setKey]);
     return settings as ExtensionSettings;
   }
 
@@ -311,7 +312,7 @@ class Extension {
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
     this.log('func:customizeProfiles');
     const defaults: CustomData = {
-      color: '',
+      color: this.defaultCustom.colorDefault,
       favorite: false,
       label: null,
       iamRoles: [] as IamRole[],
@@ -338,34 +339,18 @@ class Extension {
   }
 
   switchRole(role: IamRole) {
-    // const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
     const roleArgs = [
       `${this.config.name}=true`, // identify when this extension is switching roles
       `displayName=${role.label}`,
       `roleName=${role.roleName}`,
       `account=${role.accountId}`,
       `color=${role.color}`,
-      // `csrf=${csrfToken}`,
       'action=switchFromBasis',
       'mfaNeeded=0',
       'src=nav',
       `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
     ].join('&');
     window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
-    // window.open(`https://signin.aws.amazon.com/switchrole?${roleArgs}`, '_self');
-    /*
-    return fetch('https://signin.aws.amazon.com/switchrole', {
-      method: 'POST',
-      mode: 'no-cors',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow',
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      body: roleArgs,
-    }).then((response) => response.url);
-    */
   }
 }
 

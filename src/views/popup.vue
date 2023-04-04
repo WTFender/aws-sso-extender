@@ -11,7 +11,7 @@
     <div class="card">
       <!--- Profiles/Favorites page -->
       <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode"
-        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+        :settings=settings :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
@@ -64,13 +64,15 @@
               <h3>Customize the AWS Console</h3>
               <div>
                 <label for="sessionLabelSso" class="ml-2">SSO session Label</label>
-                <InputText id="sessionLabelSso" v-model="user.custom.sessionLabelSso" name="sessionLabelSso" class="p-inputtext-sm"
-                style="width: 350px; margin-right: 10px;" :placeholder="user.custom.sessionLabelSso"/>
+                <InputText id="sessionLabelSso" v-model="user.custom.sessionLabelSso" name="sessionLabelSso"
+                  class="p-inputtext-sm" style="width: 350px; margin-right: 10px;"
+                  :placeholder="user.custom.sessionLabelSso" />
               </div><br>
               <div>
                 <label for="sessionLabelIam" class="ml-2">IAM session Label</label>
-                <InputText id="sessionLabelIam" v-model="user.custom.sessionLabelIam" name="sessionLabelIam" class="p-inputtext-sm"
-                style="width: 350px; margin-right: 10px;" :placeholder="user.custom.sessionLabelIam"/>
+                <InputText id="sessionLabelIam" v-model="user.custom.sessionLabelIam" name="sessionLabelIam"
+                  class="p-inputtext-sm" style="width: 350px; margin-right: 10px;"
+                  :placeholder="user.custom.sessionLabelIam" />
               </div>
               <details>
                 <summary>Use variables in your labels</summary>
@@ -80,43 +82,39 @@
                 <code>{{ '\{\{account\}\}     Current AWS account ID' }} </code><br>
                 <code>{{ '\{\{accountName\}\} Current AWS account alias' }} </code><br>
               </details>
-   
               <br>
-              <div >
-                <div >
-                  <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
+              <div style="width: 40%; float: left;">
+                <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
                   :v-model="user.custom.labelHeader" :binary="true" style="margin-right: 10px;" />
-                <label for="labelHeader" class="ml-2">Label header</label>
-                </div>
-                <div>
-                  <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
+                <label for="labelHeader" class="ml-2">Label header</label><br>
+                <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
                   :v-model="user.custom.labelFooter" :binary="true" style="margin-right: 10px;" />
                 <label for="labelFooter" class="ml-2">Label footer</label>
-                </div>
-                <div>
-                  <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
+              </div>
+              <div>
+                <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
                   :v-model="user.custom.colorHeader" :binary="true" style="margin-right: 10px;" />
-                <label for="colorHeader" class="ml-2">Colorize header</label>
-                </div>
-                <div>
-                  <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
+                <label for="colorHeader" class="ml-2">Colorize header</label><br>
+                <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
                   :v-model="user.custom.colorFooter" :binary="true" style="margin-right: 10px;" />
                 <label for="colorFooter" class="ml-2">Colorize footer</label>
-                </div>
-                <div style="margin-bottom: 10px;">
-                  <ColorPicker inputId="colorDefault" name="colorDefault" @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault" id="colorDefault"/>
-                  <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
-                </div>
+              </div><br>
+              <div style="margin-bottom: 10px;">
+                  <ColorPicker inputId="colorDefault" name="colorDefault"
+                    @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
+                    id="colorDefault" />
+                <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
+              
             </div>
               <!---
-                Colorpicker, dropdowns, and certain other elements won't stay open on firefox
-                Workaround is to render our own dialog box on firefox with the elements
-              -->
+                  Colorpicker, dropdowns, and certain other elements won't stay open on firefox
+                  Workaround is to render our own dialog box on firefox with the elements
+                -->
               <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
-                <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault"/>
+                <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault" />
               </PDialog><br>
-              <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-user-plus" class="p-button-primary" label="Save" style="margin-right: 10px"
-                @click="saveConsoleSettings()" />
+              <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-save" class="p-button-primary" label="Save"
+                style="margin-right: 10px" @click="saveConsoleSettings()" />
             </div>
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
@@ -347,10 +345,9 @@ export default {
       window.close();
     },
     resetUser() {
-      this.user.custom = this.$ext.customDefaults;
+      this.user.custom = this.$ext.defaultCustom;
       this.$ext.saveUser(this.user).then(() => {
-        this.setPage('profiles');
-        this.reload();
+        window.close();
       });
     },
     updateProfile(appProfile: AppData) {
@@ -483,55 +480,8 @@ export default {
   text-align: center;
 }
 
-.status-icon {
-  position: fixed;
-  left: 5px;
-  bottom: 5px;
-}
-
-.status-icon.status-unknown {
-  color: #dee2e6;
-}
-
-.status-icon.status-unhealthy {
-  color: #eb6060;
-}
-
-.status-icon.status-stale {
-  color: #f7e463;
-}
-
-.status-icon.status-healthy {
-  color: #7cd992;
-}
-
-.status-text {
-  position: fixed;
-  left: 25px;
-  bottom: 5px;
-  padding: 0px;
-  margin: 0px;
-}
-
-.debug-icon {
-  position: fixed;
-  left: 5px;
-  bottom: 5px;
-  left: 430px;
-}
-
-.debug-icon {
-  color: #dee2e6;
-}
-
-.debug-icon:hover {
-  color: #343a40;
-  cursor: pointer;
-}
-
 .json,
 .settings {
   margin: 15px;
   padding: 15px;
-}
-</style>
+}</style>

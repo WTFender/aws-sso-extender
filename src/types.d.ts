@@ -18,6 +18,7 @@ export interface ExtensionConfig {
 export interface ExtensionSettings {
   defaultUser: string
   lastUserId: string
+  lastProfileId: string
 }
 
 export interface ExtensionPermissions {

@@ -19,7 +19,7 @@
   <PListbox v-model="selectedProfiles" id="awsAppProfiles" :options="awsAppProfiles" class="w-full md:w-14rem"
     style="margin-bottom: 15px" listStyle="max-height:150px" multiple>
     <template #option="slotProps">
-        <div class="flex align-items-center" style="line-height: 0; padding: 0px; margin: 0px;">
+        <div class="flex align-items-center" style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px;">
           <small>{{ slotProps.option.label }}</small>
         </div>
     </template>
@@ -48,7 +48,7 @@ export default {
       newIamRole: {
         arn: '',
         label: '',
-        color: '#22C55E',
+        color: '#222f3e',
         accountId: '',
         roleName: '',
       },
