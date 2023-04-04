@@ -1,3 +1,7 @@
+## 1.2.0
+- Assume IAM roles via SSO 🔓
+- Customize the AWS console 🎨
+
 ## 1.1.7 - internal
 - Hot/live reloading for chrome/firefox
 - Added types

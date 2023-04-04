@@ -13,6 +13,8 @@
     :group-rows-by="['name']"
     sort-field="name"
     responsive-layout="scroll"
+    @row-edit-init="colorPickerVisible = true"
+    @row-edit-cancel="colorPickerVisible = false"
     @row-edit-save="updateProfileLabel"
     @keydown.enter="navSelectedProfile()"
   >
@@ -32,11 +34,11 @@
         />
       </span>
     </template>
-    <Column
+    <PColumn
       header-style="display: none;"
       field="name"
       body-style="text-align: center;"
-      :style="{'min-width':'120px'}"
+      :style="{ 'min-width': '120px' }"
     >
       <template #body="slotProps">
         <div>
@@ -56,23 +58,23 @@
           </div>
         </div>
       </template>
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       field="applicationName"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       field="profile.name"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
-    </Column>
-    <Column
-      :style="{'min-width':'220px'}"
+    </PColumn>
+    <PColumn
+      :style="{ 'min-width': '220px' }"
       field="profile.custom.label"
       header-style="display: none;"
       body-class="sso-profile"
@@ -82,25 +84,44 @@
           <a
             class="sso-link"
             target="_blank"
-            :href="createUrl(slotProps.data)"
+            rel="noopener noreferrer"
+            :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"
           ><i class="pi pi-external-link" />
-            {{ slotProps.data.profile.custom.label !== null ? slotProps.data.profile.custom.label : slotProps.data.profile.name }}</a>
+            {{ slotProps.data.profile.custom.label || slotProps.data.profile.name }}</a>
+        </div>
+        <div v-if="'iamRoles' in slotProps.data.profile.custom">
+          <PBadge
+            v-for="(role, idx) in slotProps.data.profile.custom.iamRoles"
+            :key="idx"
+            :value="role.label || role.roleName"
+            class="role-link"
+            :style="{margin: '5px', 'background-color': `#${role.color}`}"
+            @click="assumeIamRole(role, slotProps.data)"
+          />
         </div>
       </template>
       <template #editor="{ data, field }">
         <InputText
           v-model="data[field]"
-          autofocus
+          :placeholder="data.profile.custom.label || data.profile.name"
+          style="width: 80%"
         />
+        <ColorPicker style="margin-left: 5px" @click="colorPickerVisible = !colorPickerVisible" v-model="data.profile.custom.color" />
       </template>
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
+      :style="{ width: '20px' }"
+      header-style="display: none;"
+    >
+    </PColumn>
+    <PColumn
       :row-editor="true"
       body-style="text-align:center"
       header-style="display: none;"
-    />
-    <Column
-      :style="{'width':'20px'}"
+    >
+    </PColumn>
+    <PColumn
+      :style="{ width: '20px' }"
       header-style="display: none;"
       body-class="sso-favorite"
     >
@@ -109,58 +130,29 @@
           class="pi"
           :class="{
             'pi-star-fill': slotProps.data.profile.custom.favorite,
-            'pi-star': !slotProps.data.profile.custom.favorite
+            'pi-star': !slotProps.data.profile.custom.favorite,
           }"
           @click="fave(slotProps)"
         />
       </template>
-    </Column>
+    </PColumn>
     <!--- Hidden searchable fields --->
-    <Column
-      field="id"
+    <PColumn
+      v-for="field in ['id', 'applicationId', 'description', 'profile.custom.label', 'profile.id', 'profile.description', 'profile.protocol']"
+      :field="field"
       style="display: none;"
       header-style="display: none;"
     />
-    <Column
-      field="applicationId"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="description"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.custom.label"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.id"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.description"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.protocol"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      :style="{'width':'10px'}"
+    <PColumn
+      :style="{ width: '10px' }"
       header-style="display: none;"
     />
   </DataTable>
 </template>
 
 <script lang="ts">
-import { FilterMatchMode } from 'primevue/api'
-import { UserData } from '../types'
+import { FilterMatchMode } from 'primevue/api';
+import { AppData, UserData } from '../types';
 
 export default {
   name: 'ProfileTable',
@@ -168,56 +160,68 @@ export default {
     user: {
       required: true,
       type: Object,
-      default: () => ({} as UserData)
+      default: () => ({} as UserData),
     },
     appProfiles: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
+    demoMode: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   emits: ['updateProfileLabel', 'updateProfile'],
-  data () {
+  data() {
     return {
+      colorPickerVisible: false,
       selectedProfile: null,
       editingRows: [],
-      filterProfiles: {}
-    }
+      filterProfiles: {},
+    };
   },
-  created () {
+  created() {
     this.filterProfiles = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-    }
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    };
   },
-  mounted () {
+  mounted() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement
-    searchBox.focus()
+    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement;
+    searchBox.focus();
   },
   methods: {
-    navSelectedProfile () {
-      const profileUrl = this.createUrl(this.selectedProfile)
-      window.open(profileUrl, '_blank')
+    assumeIamRole(iamRole, appProfile) {
+      // TODO notify on silent failure switching role
+      if (this.demoMode) {
+        window.open('about:blank', '_blank');
+        return;
+      }
+      this.$ext.queueIamLogin(iamRole).then(() => {
+        const profileUrl = this.$ext.createProfileUrl(this.user, appProfile);
+        window.open(profileUrl, '_blank');
+      });
     },
-    updateProfileLabel (event) {
-      this.$emit('updateProfileLabel', event)
+    navSelectedProfile() {
+      const profileUrl = this.$ext.createProfileUrl(this.user, this.selectedProfile);
+      window.open(profileUrl, '_blank');
     },
-    encodeUriPlusParens (str) {
-      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`)
+    updateProfileLabel(event) {
+      this.colorPickerVisible = false;
+      this.$emit('updateProfileLabel', event);
     },
-    createUrl (appProfile) {
-      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`
-      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`))
-      const appProfileName = this.encodeUriPlusParens(appProfile.name)
-      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`
+    encodeUriPlusParens(str) {
+      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
     },
-    fave (event) {
+    fave(event) {
       // TODO fix favorite issue for multi users
-      const appProfile = event.data
-      appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite
-      this.$emit('updateProfile', appProfile)
-    }
-  }
-}
+      const appProfile = event.data;
+      appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
+      this.$emit('updateProfile', appProfile);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -225,11 +229,17 @@ export default {
   color: #495057;
   text-decoration: none;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 5px;
 }
 .sso-link:hover {
   color: #5e3add;
+  cursor: pointer;
+}
+.role-link {
+  white-space: nowrap;
+  margin-right: 5px;
+}
+.role-link:hover {
+  background-color: #5e3add !important;
   cursor: pointer;
 }
 .pi-star:hover {
