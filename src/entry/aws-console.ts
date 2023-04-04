@@ -118,12 +118,21 @@ function checkIamLogins(aws: AwsConsole) {
   }
 }
 
+function getFontColor(hexcolor): 'black' | 'white' {
+  extension.log(hexcolor);
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 180) ? 'black' : 'white';
+}
+
 function customizeConsole(aws: AwsConsole): Boolean {
   extension.log('customizeConsole');
   const defaultHeader = 'Services';
   const defaultFooter = '© 2023, Amazon Web Services, Inc. or its affiliates.';
   const label = sessionLabel(aws);
-  const color = aws.userType === 'iam'
+  const color = aws.userType === 'iam' && aws.iamRole!.color !== ''
     ? aws.iamRole!.color
     : aws.appProfile?.profile.custom?.color || aws.user?.custom.colorDefault;
   const header = document.getElementById('awsc-top-level-nav');
@@ -137,8 +146,14 @@ function customizeConsole(aws: AwsConsole): Boolean {
     return false;
   }
   // customize
-  if (aws.user!.custom.colorHeader) { header!.style.backgroundColor = `#${color || '222f3e'}`; }
-  if (aws.user!.custom.colorFooter) { footer!.style.backgroundColor = `#${color || '222f3e'}`; }
+  if (aws.user!.custom.colorHeader) {
+    header!.style.backgroundColor = `#${color || '222f3e'}`;
+    headerLbl!.style.color = getFontColor(color);
+  }
+  if (aws.user!.custom.colorFooter) {
+    footer!.style.backgroundColor = `#${color || '222f3e'}`;
+    footerLbl!.style.color = getFontColor(color);
+  }
   if (aws.user!.custom.labelFooter) { footerLbl!.textContent = label || defaultFooter; }
   // iam user has header already applied
   if (aws.user!.custom.labelHeader) { headerLbl!.textContent = label || defaultHeader; }

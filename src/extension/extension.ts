@@ -29,10 +29,10 @@ class Extension {
     sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
     sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
     colorDefault: '222f3e',
-    colorFooter: false,
-    colorHeader: false,
-    labelFooter: false,
-    labelHeader: false,
+    colorFooter: true, // confusing if these are disabled
+    colorHeader: true, // after granting permissions
+    labelFooter: true,
+    labelHeader: true,
     profiles: {},
   };
 
