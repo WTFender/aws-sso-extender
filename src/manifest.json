@@ -22,12 +22,28 @@
         "https://*.awsapps.com/start*"
       ],
       "js": [
-        "src/entry/content.ts"
+        "src/entry/aws-sso.ts"
+      ]
+    },
+    {
+      "matches": [
+        "https://*.console.aws.amazon.com/console/home?region*"
+      ],
+      "js": [
+        "src/entry/aws-console.ts"
+      ]
+    },
+    {
+      "matches": [
+        "https://signin.aws.amazon.com/switchrole?*"
+      ],
+      "js": [
+        "src/entry/aws-switchrole.ts"
       ]
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src https://static.global.sso.amazonaws.com/"
+    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src 'self' data: https://static.global.sso.amazonaws.com/"
   },
   "{{chrome}}.cross_origin_opener_policy": {
     "value": "same-origin"

@@ -38,7 +38,7 @@ export default {
   data() {
     return {
       permissions: {
-        origins: false,
+        sso: false,
         history: false,
       },
       foundDirs: [],
@@ -62,7 +62,7 @@ export default {
       this.foundDirs = dirs;
     },
     requestHistory() {
-      this.$browser.permissions.request({ permissions: ['history'] });
+      this.$ext.config.browser.permissions.request({ permissions: ['history'] });
       window.close();
     },
   },

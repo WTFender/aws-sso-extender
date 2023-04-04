@@ -13,6 +13,8 @@
     :group-rows-by="['name']"
     sort-field="name"
     responsive-layout="scroll"
+    @row-edit-init="colorPickerVisible = true"
+    @row-edit-cancel="colorPickerVisible = false"
     @row-edit-save="updateProfileLabel"
     @keydown.enter="navSelectedProfile()"
   >
@@ -32,7 +34,7 @@
         />
       </span>
     </template>
-    <Column
+    <PColumn
       header-style="display: none;"
       field="name"
       body-style="text-align: center;"
@@ -56,22 +58,22 @@
           </div>
         </div>
       </template>
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       field="applicationName"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       field="profile.name"
       header-style="display: none;"
       body-class="display: none;"
     >
       <template #body="" />
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
       :style="{ 'min-width': '220px' }"
       field="profile.custom.label"
       header-style="display: none;"
@@ -83,24 +85,42 @@
             class="sso-link"
             target="_blank"
             rel="noopener noreferrer"
-            :href="createUrl(slotProps.data)"
+            :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"
           ><i class="pi pi-external-link" />
-            {{ label(slotProps.data) }}</a>
+            {{ slotProps.data.profile.custom.label || slotProps.data.profile.name }}</a>
+        </div>
+        <div v-if="'iamRoles' in slotProps.data.profile.custom">
+          <PBadge
+            v-for="(role, idx) in slotProps.data.profile.custom.iamRoles"
+            :key="idx"
+            :value="role.label || role.roleName"
+            class="role-link"
+            :style="{margin: '5px', 'background-color': `#${role.color}`}"
+            @click="assumeIamRole(role, slotProps.data)"
+          />
         </div>
       </template>
       <template #editor="{ data, field }">
         <InputText
           v-model="data[field]"
-          autofocus
+          :placeholder="data.profile.custom.label || data.profile.name"
+          style="width: 80%"
         />
+        <ColorPicker style="margin-left: 5px" @click="colorPickerVisible = !colorPickerVisible" v-model="data.profile.custom.color" />
       </template>
-    </Column>
-    <Column
+    </PColumn>
+    <PColumn
+      :style="{ width: '20px' }"
+      header-style="display: none;"
+    >
+    </PColumn>
+    <PColumn
       :row-editor="true"
       body-style="text-align:center"
       header-style="display: none;"
-    />
-    <Column
+    >
+    </PColumn>
+    <PColumn
       :style="{ width: '20px' }"
       header-style="display: none;"
       body-class="sso-favorite"
@@ -115,44 +135,15 @@
           @click="fave(slotProps)"
         />
       </template>
-    </Column>
+    </PColumn>
     <!--- Hidden searchable fields --->
-    <Column
-      field="id"
+    <PColumn
+      v-for="field in ['id', 'applicationId', 'description', 'profile.custom.label', 'profile.id', 'profile.description', 'profile.protocol']"
+      :field="field"
       style="display: none;"
       header-style="display: none;"
     />
-    <Column
-      field="applicationId"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="description"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.custom.label"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.id"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.description"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
-      field="profile.protocol"
-      style="display: none;"
-      header-style="display: none;"
-    />
-    <Column
+    <PColumn
       :style="{ width: '10px' }"
       header-style="display: none;"
     />
@@ -161,7 +152,7 @@
 
 <script lang="ts">
 import { FilterMatchMode } from 'primevue/api';
-import { UserData } from '../types';
+import { AppData, UserData } from '../types';
 
 export default {
   name: 'ProfileTable',
@@ -175,10 +166,16 @@ export default {
       type: Array,
       required: true,
     },
+    demoMode: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   emits: ['updateProfileLabel', 'updateProfile'],
   data() {
     return {
+      colorPickerVisible: false,
       selectedProfile: null,
       editingRows: [],
       filterProfiles: {},
@@ -195,27 +192,27 @@ export default {
     searchBox.focus();
   },
   methods: {
-    label(appProfile) {
-      if (appProfile.profile.custom.label !== null) {
-        return appProfile.profile.custom.label;
+    assumeIamRole(iamRole, appProfile) {
+      // TODO notify on silent failure switching role
+      if (this.demoMode) {
+        window.open('about:blank', '_blank');
+        return;
       }
-      return appProfile.profile.name;
+      this.$ext.queueIamLogin(iamRole).then(() => {
+        const profileUrl = this.$ext.createProfileUrl(this.user, appProfile);
+        window.open(profileUrl, '_blank');
+      });
     },
     navSelectedProfile() {
-      const profileUrl = this.createUrl(this.selectedProfile);
+      const profileUrl = this.$ext.createProfileUrl(this.user, this.selectedProfile);
       window.open(profileUrl, '_blank');
     },
     updateProfileLabel(event) {
+      this.colorPickerVisible = false;
       this.$emit('updateProfileLabel', event);
     },
     encodeUriPlusParens(str) {
       return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
-    },
-    createUrl(appProfile) {
-      const ssoDirUrl = `https://${this.user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
-      const appProfilePath = this.encodeUriPlusParens(btoa(`${this.user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
-      const appProfileName = this.encodeUriPlusParens(appProfile.name);
-      return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
     },
     fave(event) {
       // TODO fix favorite issue for multi users
@@ -232,11 +229,17 @@ export default {
   color: #495057;
   text-decoration: none;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 5px;
 }
 .sso-link:hover {
   color: #5e3add;
+  cursor: pointer;
+}
+.role-link {
+  white-space: nowrap;
+  margin-right: 5px;
+}
+.role-link:hover {
+  background-color: #5e3add !important;
   cursor: pointer;
 }
 .pi-star:hover {

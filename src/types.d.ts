@@ -1,9 +1,18 @@
+import { Browser } from 'webextension-polyfill';
+
 export interface ExtensionConfig {
   id: string
   name: string
   display: string
   debug: boolean
-  origins: string[]
+  permissions: {
+    sso: string[]
+    signin: string[]
+    console: string[]
+  }
+  browser: Browser
+  db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
+  delay: number
 }
 
 export interface ExtensionSettings {
@@ -12,7 +21,7 @@ export interface ExtensionSettings {
 }
 
 export interface ExtensionPermissions {
-  origins: string[]
+  sso: string[]
   history: boolean
 }
 
@@ -20,6 +29,7 @@ export interface ExtensionData {
   users: UserData[]
   appProfiles: AppData[]
   settings: ExtensionSettings
+  iamLogins: IamRole[]
   updatedAt?: number
 }
 
@@ -29,7 +39,16 @@ export interface ApiData {
 
 export interface UserData {
   updatedAt: number
-  custom: Record<string, CustomData>
+  custom: {
+    sessionLabelSso: string,
+    sessionLabelIam: string,
+    colorDefault: string,
+    colorFooter: boolean,
+    colorHeader: boolean,
+    labelFooter: boolean,
+    labelHeader: boolean,
+    profiles: Record<string, CustomData>
+  }
   appProfileIds: string[]
   accountId: string
   adGUID: string
@@ -58,6 +77,7 @@ export interface UserData {
 }
 
 export interface AppData {
+  label?: string
   applicationId: string
   applicationName: string
   description: string
@@ -66,7 +86,7 @@ export interface AppData {
   name: string
   profiles?: ProfileData[]
   profile: ProfileData
-  searchMetadata: {
+  searchMetadata?: {
     AccountId: string
     AccountName: string
     AccountEmail: string
@@ -74,7 +94,6 @@ export interface AppData {
 }
 
 export interface ProfileData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profiles?: any[]
   description: string
   id: string
@@ -88,4 +107,14 @@ export interface ProfileData {
 export interface CustomData {
   favorite?: boolean
   label?: string | null
+  color: string;
+  iamRoles: IamRole[]
+}
+
+export interface IamRole {
+  profileId: string
+  accountId: string
+  roleName: string
+  label: string
+  color: string
 }

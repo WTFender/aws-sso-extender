@@ -29,11 +29,12 @@ module.exports = {
         project: [
           './tsconfig.json'
         ]
+      },
+      rules: {
+        'linebreak-style': 0,
+        'vuejs-accessibility/click-events-have-key-events': 'off'
       }
     }
   ],
-  rules: {
-    'linebreak-style': 'off',
-    'vuejs-accessibility/click-events-have-key-events': 'off'
-  }
+  rules: {}
 }
