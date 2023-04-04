@@ -48,7 +48,7 @@ export default {
       newIamRole: {
         arn: '',
         label: '',
-        color: '#22C55E',
+        color: '#222f3e',
         accountId: '',
         roleName: '',
       },
