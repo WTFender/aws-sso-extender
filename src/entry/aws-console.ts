@@ -50,21 +50,24 @@ function ssoRoleName(roleName: string): string | null {
 }
 
 function findIamRole(aws: AwsConsole): IamRole {
-  let iamRole;
+  extension.log('findIamRole');
+  const iamRoles: IamRole[] = [];
   aws.data?.users.forEach((user) => {
     // app profiles
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax
     for (const [profileId, profile] of Object.entries(user.custom.profiles)) {
       // eslint-disable-next-line @typescript-eslint/no-loop-func
       profile.iamRoles.forEach((role) => {
-        if (role.accountId === aws.accountId && role.roleName === aws.roleName) {
+        if (role.accountId === aws.accountId
+          && role.roleName === aws.roleName) {
           // eslint-disable-next-line vue/max-len
-          iamRole = role;
+          iamRoles.push(role);
         }
       });
     }
   });
-  return iamRole;
+  extension.log(iamRoles);
+  return iamRoles.filter((r) => r.profileId === aws.data?.settings.lastProfileId)[0];
 }
 
 function findUser(aws: AwsConsole): UserData {
@@ -76,6 +79,8 @@ function findUser(aws: AwsConsole): UserData {
 function findAppProfileByRole(aws: AwsConsole): AppData {
   // eslint-disable-next-line vue/max-len
   const appProfiles = aws.data!.appProfiles.filter((ap) => ap.profile.id === aws.iamRole?.profileId);
+  extension.log('findAppProfileByRole');
+  extension.log(appProfiles);
   return extension.customizeProfiles(aws.user as UserData, appProfiles)[0];
 }
 
@@ -89,8 +94,7 @@ function findAppProfile(aws: AwsConsole): AppData | null {
       data.appProfiles.forEach((ap) => {
         if (ap.applicationName === 'AWS Account') {
           // sso user, check for matching app profile
-          if (ap.searchMetadata!.AccountId === aws.accountId
-            && ap.profile.name === aws.ssoRoleName) {
+          if (ap.profile.name === aws.ssoRoleName) {
             appProfiles.push(extension.customizeProfiles(user, [ap])[0]);
           }
         }

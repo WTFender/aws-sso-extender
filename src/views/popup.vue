@@ -11,7 +11,7 @@
     <div class="card">
       <!--- Profiles/Favorites page -->
       <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode"
-        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+        :settings=settings :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
@@ -345,10 +345,9 @@ export default {
       window.close();
     },
     resetUser() {
-      this.user.custom = this.$ext.customDefaults;
+      this.user.custom = this.$ext.defaultCustom;
       this.$ext.saveUser(this.user).then(() => {
-        this.setPage('profiles');
-        this.reload();
+        window.close();
       });
     },
     updateProfile(appProfile: AppData) {
@@ -479,52 +478,6 @@ export default {
   right: 0px;
   overflow: hidden;
   text-align: center;
-}
-
-.status-icon {
-  position: fixed;
-  left: 5px;
-  bottom: 5px;
-}
-
-.status-icon.status-unknown {
-  color: #dee2e6;
-}
-
-.status-icon.status-unhealthy {
-  color: #eb6060;
-}
-
-.status-icon.status-stale {
-  color: #f7e463;
-}
-
-.status-icon.status-healthy {
-  color: #7cd992;
-}
-
-.status-text {
-  position: fixed;
-  left: 25px;
-  bottom: 5px;
-  padding: 0px;
-  margin: 0px;
-}
-
-.debug-icon {
-  position: fixed;
-  left: 5px;
-  bottom: 5px;
-  left: 430px;
-}
-
-.debug-icon {
-  color: #dee2e6;
-}
-
-.debug-icon:hover {
-  color: #343a40;
-  cursor: pointer;
 }
 
 .json,

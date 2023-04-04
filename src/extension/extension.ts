@@ -25,7 +25,7 @@ class Extension {
 
   loaded: boolean;
 
-  customDefaults = {
+  defaultCustom = {
     sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
     sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
     colorDefault: '222f3e',
@@ -34,6 +34,12 @@ class Extension {
     labelFooter: true,
     labelHeader: true,
     profiles: {},
+  };
+
+  defaultSettings = {
+    defaultUser: 'lastUserId',
+    lastUserId: null,
+    lastProfileId: null,
   };
 
   constructor(config: ExtensionConfig) {
@@ -63,7 +69,6 @@ class Extension {
     if (user) { label = label.replaceAll('{{user}}', user); }
     if (role) { label = label.replaceAll('{{role}}', role); }
     if (profile) { label = label.replaceAll('{{profile}}', profile); }
-    if (profile && !role) { label = label.replaceAll('{{role}}', profile); }
     if (account) { label = label.replaceAll('{{account}}', account); }
     if (accountName) { label = label.replaceAll('{{accountName}}', accountName); }
     this.log(`func:buildLabel:${label}`);
@@ -186,7 +191,7 @@ class Extension {
     const customKey = `${this.config.name}-custom-${userId}`;
     const customData = await this.config.db.get(customKey);
     // eslint-disable-next-line vue/max-len
-    const custom = customData[customKey] === undefined ? this.customDefaults : JSON.parse(customData[customKey]);
+    const custom = customData[customKey] === undefined ? this.defaultCustom : JSON.parse(customData[customKey]);
     user.custom = custom;
     return user as UserData;
   }
@@ -209,13 +214,10 @@ class Extension {
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
-    const defaultSettings = {
-      defaultUser: 'lastUserId',
-      lastUserId: null,
-    };
     const setKey = `${this.config.name}-settings`;
     const setData = await this.config.db.get(setKey);
-    const settings = setData[setKey] === undefined ? defaultSettings : JSON.parse(setData[setKey]);
+    // eslint-disable-next-line vue/max-len
+    const settings = setData[setKey] === undefined ? this.defaultSettings : JSON.parse(setData[setKey]);
     return settings as ExtensionSettings;
   }
 
@@ -310,7 +312,7 @@ class Extension {
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
     this.log('func:customizeProfiles');
     const defaults: CustomData = {
-      color: this.customDefaults.colorDefault,
+      color: this.defaultCustom.colorDefault,
       favorite: false,
       label: null,
       iamRoles: [] as IamRole[],
