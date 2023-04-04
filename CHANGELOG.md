@@ -1,3 +1,6 @@
+## 1.2.2
+- Name fix
+
 ## 1.2.1
 - Bug fixes, sorting, defaults
 
