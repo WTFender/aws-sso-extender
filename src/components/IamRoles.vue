@@ -9,11 +9,11 @@
   <small id="label-help">Role label and color for the AWS console</small>
   <div style="margin-bottom: 10px;">
     <InputText id="iamRoleLabel" v-model="newIamRole.label" name="label" class="p-inputtext-sm"
-    style="width: 350px; margin-right: 10px;" placeholder="{{role}} @ {{account}} via {{profile}}" aria-describedby="label-help"/>
-    <ColorPicker @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="newIamRole.color" id="colpradsf"/>
+    style="width: 350px; margin-right: 10px;" placeholder="roleName" aria-describedby="label-help"/>
+    <ColorPicker @click="colorPickerVisible = !colorPickerVisible" v-model="newIamRole.color" />
   </div>
-  <PDialog v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
-    <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="newIamRole.color" id="colpradsf" />
+  <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+    <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="newIamRole.color" />
   </PDialog>
   <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
   <PListbox v-model="selectedProfiles" id="awsAppProfiles" :options="awsAppProfiles" class="w-full md:w-14rem"

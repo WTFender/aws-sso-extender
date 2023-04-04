@@ -22,16 +22,23 @@
         "https://*.awsapps.com/start*"
       ],
       "js": [
-        "src/entry/content.ts"
+        "src/entry/aws-sso.ts"
       ]
     },
     {
       "matches": [
-        "https://*.console.aws.amazon.com/console/home?region*",
-        "https://signin.aws.amazon.com/switchrole?*"
+        "https://*.console.aws.amazon.com/console/home?region*"
       ],
       "js": [
         "src/entry/aws-console.ts"
+      ]
+    },
+    {
+      "matches": [
+        "https://signin.aws.amazon.com/switchrole?*"
+      ],
+      "js": [
+        "src/entry/aws-switchrole.ts"
       ]
     }
   ],

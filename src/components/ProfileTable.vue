@@ -13,6 +13,8 @@
     :group-rows-by="['name']"
     sort-field="name"
     responsive-layout="scroll"
+    @row-edit-init="colorPickerVisible = true"
+    @row-edit-cancel="colorPickerVisible = false"
     @row-edit-save="updateProfileLabel"
     @keydown.enter="navSelectedProfile()"
   >
@@ -85,13 +87,13 @@
             rel="noopener noreferrer"
             :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"
           ><i class="pi pi-external-link" />
-            {{ label(slotProps.data) }}</a>
+            {{ slotProps.data.profile.custom.label || slotProps.data.profile.name }}</a>
         </div>
         <div v-if="'iamRoles' in slotProps.data.profile.custom">
           <PBadge
             v-for="(role, idx) in slotProps.data.profile.custom.iamRoles"
             :key="idx"
-            :value="role.label !== '' ? $ext.buildRoleLabel(role, slotProps.data) : `${role.roleName} @ ${role.accountId}`"
+            :value="role.label || role.roleName"
             class="role-link"
             :style="{margin: '5px', 'background-color': `#${role.color}`}"
             @click="assumeIamRole(role, slotProps.data)"
@@ -101,14 +103,23 @@
       <template #editor="{ data, field }">
         <InputText
           v-model="data[field]"
+          :placeholder="data.profile.custom.label || data.profile.name"
+          style="width: 80%"
         />
+        <ColorPicker style="margin-left: 5px" @click="colorPickerVisible = !colorPickerVisible" v-model="data.profile.custom.color" />
       </template>
+    </PColumn>
+    <PColumn
+      :style="{ width: '20px' }"
+      header-style="display: none;"
+    >
     </PColumn>
     <PColumn
       :row-editor="true"
       body-style="text-align:center"
       header-style="display: none;"
-    />
+    >
+    </PColumn>
     <PColumn
       :style="{ width: '20px' }"
       header-style="display: none;"
@@ -141,7 +152,7 @@
 
 <script lang="ts">
 import { FilterMatchMode } from 'primevue/api';
-import { UserData } from '../types';
+import { AppData, UserData } from '../types';
 
 export default {
   name: 'ProfileTable',
@@ -164,6 +175,7 @@ export default {
   emits: ['updateProfileLabel', 'updateProfile'],
   data() {
     return {
+      colorPickerVisible: false,
       selectedProfile: null,
       editingRows: [],
       filterProfiles: {},
@@ -177,7 +189,7 @@ export default {
   mounted() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const searchBox = (this.$refs.searchBox as any).$el as HTMLElement;
-    // searchBox.focus();
+    searchBox.focus();
   },
   methods: {
     assumeIamRole(iamRole, appProfile) {
@@ -191,17 +203,12 @@ export default {
         window.open(profileUrl, '_blank');
       });
     },
-    label(appProfile) {
-      if (appProfile.profile.custom.label !== null) {
-        return appProfile.profile.custom.label;
-      }
-      return appProfile.profile.name;
-    },
     navSelectedProfile() {
       const profileUrl = this.$ext.createProfileUrl(this.user, this.selectedProfile);
       window.open(profileUrl, '_blank');
     },
     updateProfileLabel(event) {
+      this.colorPickerVisible = false;
       this.$emit('updateProfileLabel', event);
     },
     encodeUriPlusParens(str) {

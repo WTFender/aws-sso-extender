@@ -14,6 +14,8 @@ function encodeUriPlusParens(str) {
 class Extension {
   config: ExtensionConfig;
 
+  platform: 'chrome' | 'firefox';
+
   ssoUrlRegex: RegExp;
 
   ssoUrl: string;
@@ -22,8 +24,20 @@ class Extension {
 
   loaded: boolean;
 
+  customDefaults = {
+    sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
+    sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
+    colorDefault: '222f3e',
+    colorFooter: false,
+    colorHeader: false,
+    labelFooter: false,
+    labelHeader: false,
+    profiles: {},
+  };
+
   constructor(config: ExtensionConfig) {
     this.config = config;
+    this.platform = navigator.userAgent.indexOf('Firefox') !== -1 ? 'firefox' : 'chrome';
     this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/;
     this.ssoUrl = '';
     this.loaded = false;
@@ -43,11 +57,15 @@ class Extension {
     }
   }
 
-  buildRoleLabel(role: IamRole, ap: AppData): string {
-    let label = role.label.replaceAll('{{account}}', role.accountId);
-    label = label.replaceAll('{{role}}', role.roleName);
-    label = label.replaceAll('{{profile}}', ap.profile.custom!.label ? ap.profile.custom!.label : ap.profile.name);
-    this.log(label);
+  buildLabel(s, user, profile, role, account, accountName) {
+    let label = s;
+    if (user) { label = label.replaceAll('{{user}}', user); }
+    if (role) { label = label.replaceAll('{{role}}', role); }
+    if (profile) { label = label.replaceAll('{{profile}}', profile); }
+    if (profile && !role) { label = label.replaceAll('{{role}}', profile); }
+    if (account) { label = label.replaceAll('{{account}}', account); }
+    if (accountName) { label = label.replaceAll('{{accountName}}', accountName); }
+    this.log(`func:buildLabel:${label}`);
     return label;
   }
 
@@ -122,6 +140,7 @@ class Extension {
     return appProfiles.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
   }
 
+  /*
   static calculateChecksum(c) {
     let a = 1;
     let b = 0;
@@ -134,6 +153,7 @@ class Extension {
     // eslint-disable-next-line no-bitwise
     return (b << 15) | a;
   }
+  */
 
   async loadIamLogins(): Promise<IamRole[]> {
     const loginsKey = `${this.config.name}-iam-logins`;
@@ -160,21 +180,13 @@ class Extension {
   }
 
   async loadUser(userId: string): Promise<UserData> {
-    const customDefaults = {
-      colorDefault: '222f3e',
-      colorFooter: false,
-      colorHeader: false,
-      labelFooter: false,
-      labelHeader: false,
-      profiles: {},
-    };
     const userKey = `${this.config.name}-user-${userId}`;
     const userData = await this.config.db.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
     const customKey = `${this.config.name}-custom-${userId}`;
     const customData = await this.config.db.get(customKey);
     // eslint-disable-next-line vue/max-len
-    const custom = customData[customKey] === undefined ? customDefaults : JSON.parse(customData[customKey]);
+    const custom = customData[customKey] === undefined ? this.customDefaults : JSON.parse(customData[customKey]);
     user.custom = custom;
     return user as UserData;
   }
@@ -302,6 +314,7 @@ class Extension {
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
     this.log('func:customizeProfiles');
     const defaults = {
+      color: null,
       favorite: false,
       label: null,
       iamRoles: [],
@@ -309,8 +322,8 @@ class Extension {
     const customProfiles: AppData[] = [];
     appProfiles.forEach((ap) => {
       const profile = ap;
-      // eslint-disable-next-line max-len
-      profile.profile.custom = ap.profile.id in user.custom ? user.custom[ap.profile.id] : defaults;
+      // eslint-disable-next-line max-len, vue/max-len
+      profile.profile.custom = ap.profile.id in user.custom.profiles ? user.custom.profiles[ap.profile.id] : defaults;
       customProfiles.push(profile);
     });
     this.log(user);
@@ -328,13 +341,14 @@ class Extension {
   }
 
   switchRole(role: IamRole) {
-    const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
+    // const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
     const roleArgs = [
+      `${this.config.name}=true`, // identify when this extension is switching roles
       `displayName=${role.label}`,
       `roleName=${role.roleName}`,
       `account=${role.accountId}`,
       `color=${role.color}`,
-      `csrf=${csrfToken}`,
+      // `csrf=${csrfToken}`,
       'action=switchFromBasis',
       'mfaNeeded=0',
       'src=nav',

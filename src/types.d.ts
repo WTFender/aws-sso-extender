@@ -40,6 +40,8 @@ export interface ApiData {
 export interface UserData {
   updatedAt: number
   custom: {
+    sessionLabelSso: string,
+    sessionLabelIam: string,
     colorDefault: string,
     colorFooter: boolean,
     colorHeader: boolean,
@@ -105,6 +107,7 @@ export interface ProfileData {
 export interface CustomData {
   favorite?: boolean
   label?: string | null
+  color: string;
   iamRoles: IamRole[]
 }
 

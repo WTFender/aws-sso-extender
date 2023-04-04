@@ -8,13 +8,13 @@ const extensionConfig: ExtensionConfig = {
   display: import.meta.env.VITE_EXT_NAME,
   debug: import.meta.env.VITE_EXT_DEBUG === 'true',
   permissions: {
-    console: ['https://*.console.aws.amazon.com/*'],
-    signin: ['https://signin.aws.amazon.com/switchrole/*'],
+    console: ['https://*.console.aws.amazon.com/console/home?region*'],
+    signin: ['https://signin.aws.amazon.com/switchrole?*'],
     sso: ['https://*.awsapps.com/start*'],
   },
   browser,
   db: import.meta.env.VITE_EXT_DEBUG === 'true' ? browser.storage.local : browser.storage.sync,
-  delay: 500,
+  delay: 750,
 };
 
 export default new Extension(extensionConfig);

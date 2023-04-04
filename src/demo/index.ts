@@ -33,6 +33,8 @@ const users: UserData[] = [
     subject: 'demouser',
     userId: 'demoUserId1',
     custom: {
+      sessionLabelSso: 'demo {{profile}} @ {{account}}',
+      sessionLabelIam: 'demo {{role}} @ {{account}}',
       labelHeader: true,
       labelFooter: true,
       colorHeader: true,
@@ -40,6 +42,7 @@ const users: UserData[] = [
       colorDefault: '222f3e',
       profiles: {
         'p-123': {
+          color: '',
           label: null,
           favorite: true,
           iamRoles: [{

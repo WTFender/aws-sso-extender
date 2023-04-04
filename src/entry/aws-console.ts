@@ -1,7 +1,9 @@
 import extension from '../extension';
-import { AppData, ExtensionData, IamRole } from '../types';
+import {
+  UserData, AppData, ExtensionData, IamRole,
+} from '../types';
 
-/* redirect SSO users to IAM roles */
+/* assume IAM roles for SSO users / redirect to switchrole */
 
 type AwsConsole = {
   userType: 'iam' | 'sso' | null
@@ -9,19 +11,36 @@ type AwsConsole = {
   roleName: string | null
   ssoRoleName: string | null
   data: ExtensionData | null
+  user: UserData | null
   appProfile: AppData | null
+  iamRole: IamRole | null
 };
 
-function sessionLabel(role: IamRole, ap: AppData): string {
-  let label = '';
-  if (role.label !== '') {
-    label = extension.buildRoleLabel(role, ap);
-  } else if (ap.profile.custom?.label !== null) {
-    label = `${role.roleName} @ ${role.accountId} via ${ap.profile.custom?.label}`;
+function sessionLabel(aws: AwsConsole): string {
+  let role: string | null = null;
+  let label;
+  let account;
+  let accountName;
+  const profile = aws.appProfile?.profile.custom?.label || aws.appProfile?.profile.name;
+  if (aws.userType === 'iam') {
+    label = aws.user?.custom.sessionLabelIam;
+    role = aws.iamRole?.label || aws.iamRole?.roleName as string;
+    account = aws.iamRole?.accountId;
+    const metadata = aws.data?.appProfiles.filter((ap) => ap.searchMetadata?.AccountId === account);
+    accountName = metadata![0].searchMetadata?.AccountName;
   } else {
-    label = `${role.roleName} @ ${role.accountId} via ${ap.profile.name}`;
+    label = aws.user?.custom.sessionLabelSso;
+    account = aws.appProfile?.searchMetadata?.AccountId;
+    accountName = aws.appProfile?.searchMetadata?.AccountName;
   }
-  return encodeURIComponent(label);
+  return extension.buildLabel(
+    label,
+    aws.user!.subject,
+    profile,
+    role,
+    account,
+    accountName,
+  );
 }
 
 function ssoRoleName(roleName: string): string | null {
@@ -30,20 +49,34 @@ function ssoRoleName(roleName: string): string | null {
   return roleName.split('_')[1];
 }
 
-function findAppProfileByRole(aws: AwsConsole): AppData | null {
-  const iamLogins = aws.data?.iamLogins;
-  const appProfiles: AppData[] = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for (const [profileId, role] of Object.entries(iamLogins!)) {
-    if (role.accountId === aws.accountId && role.roleName === aws.roleName) {
-      aws.data?.appProfiles.forEach((ap) => {
-        if (ap.profile.id === profileId) {
-          appProfiles.push(ap);
+function findIamRole(aws: AwsConsole): IamRole {
+  let iamRole;
+  aws.data?.users.forEach((user) => {
+    // app profiles
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax
+    for (const [profileId, profile] of Object.entries(user.custom.profiles)) {
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      profile.iamRoles.forEach((role) => {
+        if (role.accountId === aws.accountId && role.roleName === aws.roleName) {
+          // eslint-disable-next-line vue/max-len
+          iamRole = role;
         }
       });
     }
-  }
-  return appProfiles[0];
+  });
+  return iamRole;
+}
+
+function findUser(aws: AwsConsole): UserData {
+  // eslint-disable-next-line vue/max-len
+  const activeUserId = aws.data!.users.length === 1 ? aws.data!.users[0].userId : aws.data!.settings.lastUserId;
+  return aws.data!.users.filter((u) => u.userId === activeUserId)[0];
+}
+
+function findAppProfileByRole(aws: AwsConsole): AppData {
+  // eslint-disable-next-line vue/max-len
+  const appProfiles = aws.data!.appProfiles.filter((ap) => ap.profile.id === aws.iamRole?.profileId);
+  return extension.customizeProfiles(aws.user as UserData, appProfiles)[0];
 }
 
 function findAppProfile(aws: AwsConsole): AppData | null {
@@ -54,10 +87,10 @@ function findAppProfile(aws: AwsConsole): AppData | null {
   data.users.forEach((user) => {
     if (user.userId === activeUserId) {
       data.appProfiles.forEach((ap) => {
-        const roleName = aws.userType === 'sso' ? aws.ssoRoleName : aws.roleName;
         if (ap.applicationName === 'AWS Account') {
+          // sso user, check for matching app profile
           if (ap.searchMetadata!.AccountId === aws.accountId
-            && ap.profile.name === roleName) {
+            && ap.profile.name === aws.ssoRoleName) {
             appProfiles.push(extension.customizeProfiles(user, [ap])[0]);
           }
         }
@@ -78,20 +111,38 @@ function checkIamLogins(aws: AwsConsole) {
     if (role.profileId === ap.profile.id) {
       extension.switchRole({
         ...role,
-        label: sessionLabel(role, ap),
+        label: encodeURIComponent(sessionLabel(aws)),
       });
       extension.removeIamLogin(role.profileId);
     }
   }
 }
 
-function switchRoleBtn() {
-  if (
-    (document.getElementById('account') as HTMLInputElement).value
-    && (document.getElementById('roleName') as HTMLInputElement).value
-  ) {
-    (document.getElementById('switchrole_form') as HTMLFormElement)?.submit();
+function customizeConsole(aws: AwsConsole): Boolean {
+  extension.log('customizeConsole');
+  const defaultHeader = 'Services';
+  const defaultFooter = '© 2023, Amazon Web Services, Inc. or its affiliates.';
+  const label = sessionLabel(aws);
+  const color = aws.userType === 'iam'
+    ? aws.iamRole!.color
+    : aws.appProfile?.profile.custom?.color || aws.user?.custom.colorDefault;
+  const header = document.getElementById('awsc-top-level-nav');
+  const headerLbl = document.getElementById('nav-usernameMenu')!.querySelectorAll('span')[
+    aws.userType === 'iam' ? 2 : 1
+  ];
+  const footer = document.getElementById('awsc-nav-footer-content');
+  const footerLbl = footer!.querySelectorAll('span')[5];
+  if (!header || !headerLbl || !footer || !footerLbl) {
+    extension.log('customizeConsole:missing-elements');
+    return false;
   }
+  // customize
+  if (aws.user!.custom.colorHeader) { header!.style.backgroundColor = `#${color || '222f3e'}`; }
+  if (aws.user!.custom.colorFooter) { footer!.style.backgroundColor = `#${color || '222f3e'}`; }
+  if (aws.user!.custom.labelFooter) { footerLbl!.textContent = label || defaultFooter; }
+  // iam user has header already applied
+  if (aws.user!.custom.labelHeader) { headerLbl!.textContent = label || defaultHeader; }
+  return true;
 }
 
 async function init(): Promise<AwsConsole> {
@@ -101,7 +152,9 @@ async function init(): Promise<AwsConsole> {
     roleName: null,
     ssoRoleName: null,
     data: null,
+    user: null,
     appProfile: null,
+    iamRole: null,
   };
   const accountMenu = document.getElementById('menu--account')!
     .firstElementChild!.firstElementChild!;
@@ -117,11 +170,16 @@ async function init(): Promise<AwsConsole> {
     aws.ssoRoleName = ssoRoleName(aws.roleName);
   }
   if ((aws.userType === 'sso' && aws.ssoRoleName)
-  || (aws.userType === 'iam' && aws.roleName)) {
+    || (aws.userType === 'iam' && aws.roleName)) {
     aws.data = await extension.loadData();
   }
-  if (aws.data) {
-    aws.appProfile = aws.userType === 'sso' ? findAppProfile(aws) : findAppProfileByRole(aws);
+  if (aws.data) { aws.user = findUser(aws); }
+  if (aws.user && aws.userType === 'sso') {
+    aws.iamRole = null;
+    aws.appProfile = findAppProfile(aws);
+  } else if (aws.user && aws.userType === 'iam') {
+    aws.iamRole = findIamRole(aws);
+    aws.appProfile = findAppProfileByRole(aws);
   }
   return aws;
 }
@@ -131,21 +189,22 @@ if (window.location.href.includes('console.aws.amazon.com/console/home')) {
   init().then((aws) => {
     extension.log(aws);
 
+    // customize defined profiles
+    if (aws.appProfile) {
+      if (!customizeConsole(aws)) {
+        setTimeout(() => {
+          customizeConsole(aws);
+        }, extension.config.delay * 2);
+      }
+    }
+
     // sso user, check for pending iam logins, switch role (soft POST)
     if (aws.userType === 'sso' && aws.appProfile) {
       checkIamLogins(aws);
 
-    // iam user, check for pending iam logins, remove matching
+      // iam user, check for pending iam logins, remove matching
     } else if (aws.userType === 'iam' && aws.appProfile) {
       extension.removeIamLogin(aws.appProfile!.profile.id);
     }
   });
-
-  // switch role
-} else if (window.location.href.includes('signin.aws.amazon.com/switchrole')) {
-  extension.log('switchrole');
-  switchRoleBtn();
-  setTimeout(() => {
-    switchRoleBtn();
-  }, extension.config.delay);
 }

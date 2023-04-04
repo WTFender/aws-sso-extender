@@ -46,7 +46,7 @@
               <code>https://*.console.aws.amazon.com/*</code><br>
               <code>https://signin.aws.amazon.com/switchrole</code>
               <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
-                style="margin-top:10px;" @click="requestPermissionsConsole()" />
+                style="margin-top:10px;" @click="requestPermissionsSwitchrole()" />
             </div>
             <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
               @setPage="setPage" @saveUser="saveUser" />
@@ -61,38 +61,62 @@
                 style="margin-top:10px;" @click="requestPermissionsConsole()" />
             </div>
             <div v-else>
-              <h3>Customizations</h3>
+              <h3>Customize the AWS Console</h3>
               <div>
-                <PCheckbox @change="saveUser()" v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
-                :v-model="user.custom.labelHeader" :binary="true" style="margin-right: 10px;" />
-              <label for="labelHeader" class="ml-2">Label the AWS console header</label>
-              </div>
-              <br>
+                <label for="sessionLabelSso" class="ml-2">SSO session Label</label>
+                <InputText id="sessionLabelSso" v-model="user.custom.sessionLabelSso" name="sessionLabelSso" class="p-inputtext-sm"
+                style="width: 350px; margin-right: 10px;" :placeholder="user.custom.sessionLabelSso"/>
+              </div><br>
               <div>
-                <PCheckbox @change="saveUser()" v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
-                :v-model="user.custom.labelFooter" :binary="true" style="margin-right: 10px;" />
-              <label for="labelFooter" class="ml-2">Label the AWS console footer</label>
+                <label for="sessionLabelIam" class="ml-2">IAM session Label</label>
+                <InputText id="sessionLabelIam" v-model="user.custom.sessionLabelIam" name="sessionLabelIam" class="p-inputtext-sm"
+                style="width: 350px; margin-right: 10px;" :placeholder="user.custom.sessionLabelIam"/>
               </div>
+              <details>
+                <summary>Use variables in your labels</summary>
+                <code>{{ '\{\{user\}\}        Current AWS SSO user' }} </code><br>
+                <code>{{ '\{\{role\}\}        Current IAM role' }} </code><br>
+                <code>{{ '\{\{profile\}\}     Current AWS SSO profile' }} </code><br>
+                <code>{{ '\{\{account\}\}     Current AWS account ID' }} </code><br>
+                <code>{{ '\{\{accountName\}\} Current AWS account alias' }} </code><br>
+              </details>
+   
               <br>
-              <div>
-                <PCheckbox @change="saveUser()" v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
-                :v-model="user.custom.colorHeader" :binary="true" style="margin-right: 10px;" />
-              <label for="colorHeader" class="ml-2">Color the AWS console header</label>
-              </div>
-              <br>
-              <div>
-                <PCheckbox @change="saveUser()" v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
-                :v-model="user.custom.colorFooter" :binary="true" style="margin-right: 10px;" />
-              <label for="colorFooter" class="ml-2">Color the AWS console footer</label>
-              </div>
-              <br>
-              <div style="margin-bottom: 10px;">
-                <ColorPicker @change="saveUser()" inputId="colorDefault" name="colorDefault" @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault" id="colorDefault"/>
-                <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
-              </div>
-              <PDialog v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+              <div >
+                <div >
+                  <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
+                  :v-model="user.custom.labelHeader" :binary="true" style="margin-right: 10px;" />
+                <label for="labelHeader" class="ml-2">Label header</label>
+                </div>
+                <div>
+                  <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
+                  :v-model="user.custom.labelFooter" :binary="true" style="margin-right: 10px;" />
+                <label for="labelFooter" class="ml-2">Label footer</label>
+                </div>
+                <div>
+                  <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
+                  :v-model="user.custom.colorHeader" :binary="true" style="margin-right: 10px;" />
+                <label for="colorHeader" class="ml-2">Colorize header</label>
+                </div>
+                <div>
+                  <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
+                  :v-model="user.custom.colorFooter" :binary="true" style="margin-right: 10px;" />
+                <label for="colorFooter" class="ml-2">Colorize footer</label>
+                </div>
+                <div style="margin-bottom: 10px;">
+                  <ColorPicker inputId="colorDefault" name="colorDefault" @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault" id="colorDefault"/>
+                  <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
+                </div>
+            </div>
+              <!---
+                Colorpicker, dropdowns, and certain other elements won't stay open on firefox
+                Workaround is to render our own dialog box on firefox with the elements
+              -->
+              <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
                 <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault"/>
-              </PDialog>
+              </PDialog><br>
+              <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-user-plus" class="p-button-primary" label="Save" style="margin-right: 10px"
+                @click="saveConsoleSettings()" />
             </div>
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
@@ -226,11 +250,19 @@ export default {
     this.reload();
   },
   methods: {
-    requestPermissionsConsole() {
+    requestPermissionsSwitchrole() {
       this.$ext.config.browser.permissions.request({
         origins: [
           ...this.$ext.config.permissions.console,
           ...this.$ext.config.permissions.signin,
+        ]
+      });
+      window.close();
+    },
+    requestPermissionsConsole() {
+      this.$ext.config.browser.permissions.request({
+        origins: [
+          ...this.$ext.config.permissions.console
         ]
       });
       window.close();
@@ -315,7 +347,7 @@ export default {
       window.close();
     },
     resetUser() {
-      this.user.custom = {};
+      this.user.custom = this.$ext.customDefaults;
       this.$ext.saveUser(this.user).then(() => {
         this.setPage('profiles');
         this.reload();
@@ -323,11 +355,19 @@ export default {
     },
     updateProfile(appProfile: AppData) {
       this.$ext.log('updateProfile');
-      this.user.custom[appProfile.profile.id] = appProfile.profile.custom as CustomData;
+      this.user.custom.profiles[appProfile.profile.id] = appProfile.profile.custom as CustomData;
       this.$ext.log(this.user);
       if (this.faveProfiles.length === 0) {
         this.setPage('profiles');
       }
+      this.saveUser();
+    },
+    saveConsoleSettings() {
+      const saveConsoleBtn = (this.$refs.saveConsoleBtn as any).$el as HTMLInputElement;
+      saveConsoleBtn.disabled = true;
+      setTimeout(() => {
+        saveConsoleBtn.disabled = false;
+      }, 1000);
       this.saveUser();
     },
     saveUser() {
@@ -338,18 +378,22 @@ export default {
       }
     },
     updateProfileLabel(event) {
-      const { newData } = event;
+      let { newData } = event;
       if ('profile.custom.label' in newData) {
         newData.profile.custom.label = newData['profile.custom.label'];
-        this.updateProfile(newData);
       }
+      if ('profile.custom.color' in newData) {
+        newData.profile.custom.color = newData['profile.custom.color'];
+      }
+      this.updateProfile(newData);
     },
     addIamRole(role: IamRole) {
       this.$ext.log('addIamRole');
-      if (role.profileId in this.user.custom) {
-        this.user.custom[role.profileId].iamRoles.push(role);
+      if (role.profileId in this.user.custom.profiles) {
+        this.user.custom.profiles[role.profileId].iamRoles.push(role);
       } else {
-        this.user.custom[role.profileId] = {
+        this.user.custom.profiles[role.profileId] = {
+          color: '',
           label: null,
           favorite: false,
           iamRoles: [role]
