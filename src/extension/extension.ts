@@ -143,15 +143,14 @@ class Extension {
 
   /*
   static calculateChecksum(c) {
+    // generate csrf token
     let a = 1;
     let b = 0;
     if (!c) { return 0; }
-    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < c.length; ++i) {
       a = (a + c.charCodeAt(i)) % 65521;
       b = (b + a) % 65521;
     }
-    // eslint-disable-next-line no-bitwise
     return (b << 15) | a;
   }
   */
@@ -338,34 +337,18 @@ class Extension {
   }
 
   switchRole(role: IamRole) {
-    // const csrfToken = Extension.calculateChecksum(this.getCookie('aws-userInfo'));
     const roleArgs = [
       `${this.config.name}=true`, // identify when this extension is switching roles
       `displayName=${role.label}`,
       `roleName=${role.roleName}`,
       `account=${role.accountId}`,
       `color=${role.color}`,
-      // `csrf=${csrfToken}`,
       'action=switchFromBasis',
       'mfaNeeded=0',
       'src=nav',
       `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
     ].join('&');
     window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
-    // window.open(`https://signin.aws.amazon.com/switchrole?${roleArgs}`, '_self');
-    /*
-    return fetch('https://signin.aws.amazon.com/switchrole', {
-      method: 'POST',
-      mode: 'no-cors',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow',
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      body: roleArgs,
-    }).then((response) => response.url);
-    */
   }
 }
 
