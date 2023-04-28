@@ -7,7 +7,7 @@ function waitForElement<TElement extends Element = HTMLElement>(
     parentNode?: ParentNode;
   } = {},
 ): Promise<TElement> {
-  extension.log('waitForElement');
+  extension.log(`waitForElement:${selector}`);
   const { timeout = 3000, parentNode = document } = options;
 
   return new Promise((resolve, reject) => {

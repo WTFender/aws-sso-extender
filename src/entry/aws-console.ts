@@ -140,10 +140,16 @@ async function customizeConsole(aws: AwsConsole): Promise<Boolean> {
   const color = aws.userType === 'iam' && aws.iamRole!.color !== ''
     ? aws.iamRole!.color
     : aws.appProfile?.profile.custom?.color || aws.user?.custom.colorDefault;
-  const header = document.getElementById('awsc-top-level-nav');
+  // const header = document.getElementById('awsc-top-level-nav');
+  const header = await waitForElement('#awsc-top-level-nav');
+  /*
   const headerLbl = document.getElementById('nav-usernameMenu')!.querySelectorAll('span')[
     aws.userType === 'iam' ? 2 : 1
   ];
+  */
+  const headerLbl = await waitForElement('#nav-usernameMenu').then((el) => el.querySelectorAll('span')[
+    aws.userType === 'iam' ? 2 : 1
+  ]);
   const footer = await waitForElement('#awsc-nav-footer-content');
   const footerLbl = await waitForElement('div._awsc-footer__inner__content__center_swu42_106 > span', { parentNode: footer });
   // const footer = document.getElementById('awsc-nav-footer-content');
