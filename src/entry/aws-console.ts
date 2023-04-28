@@ -161,37 +161,31 @@ function customizeConsole(aws: AwsConsole): void {
   let footerLblPromise;
   if (aws.user!.custom.colorHeader) {
     getHeader().then((header) => {
-      // eslint-disable-next-line no-param-reassign
       header.style.backgroundColor = `#${color || '222f3e'}`;
     });
     headerLblPromise = getHeaderLabel(aws.userType);
     headerLblPromise.then((headerLbl) => {
-      // eslint-disable-next-line no-param-reassign
       headerLbl.style.color = getFontColor(color);
     });
   }
   if (aws.user!.custom.colorFooter) {
     getFooter().then((footer) => {
-      // eslint-disable-next-line no-param-reassign
       footer.style.backgroundColor = `#${color || '222f3e'}`;
     });
     footerLblPromise = getFooterLabel();
     footerLblPromise.then((footerLbl) => {
-      // eslint-disable-next-line no-param-reassign
       footerLbl.style.color = getFontColor(color);
     });
   }
   if (aws.user!.custom.labelFooter) {
     footerLblPromise ??= getFooterLabel();
     footerLblPromise.then((footerLbl) => {
-      // eslint-disable-next-line no-param-reassign
       footerLbl.textContent = label || defaultFooter;
     });
   }
   // iam user has header already applied
   if (aws.user!.custom.labelHeader) {
     getHeaderLabel(aws.userType).then((headerLbl) => {
-      // eslint-disable-next-line no-param-reassign
       headerLbl.textContent = label || defaultHeader;
     });
   }
