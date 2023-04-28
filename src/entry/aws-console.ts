@@ -1,4 +1,5 @@
 import extension from '../extension';
+import { waitForElement } from '../utils';
 import {
   UserData, AppData, ExtensionData, IamRole,
 } from '../types';
@@ -131,7 +132,7 @@ function getFontColor(hexcolor): 'black' | 'white' {
   return (yiq >= 180) ? 'black' : 'white';
 }
 
-function customizeConsole(aws: AwsConsole): Boolean {
+async function customizeConsole(aws: AwsConsole): Promise<Boolean> {
   extension.log('customizeConsole');
   const defaultHeader = 'Services';
   const defaultFooter = '© 2023, Amazon Web Services, Inc. or its affiliates.';
@@ -143,8 +144,10 @@ function customizeConsole(aws: AwsConsole): Boolean {
   const headerLbl = document.getElementById('nav-usernameMenu')!.querySelectorAll('span')[
     aws.userType === 'iam' ? 2 : 1
   ];
-  const footer = document.getElementById('awsc-nav-footer-content');
-  const footerLbl = footer!.querySelectorAll('span')[5];
+  const footer = await waitForElement('#awsc-nav-footer-content');
+  const footerLbl = await waitForElement('div._awsc-footer__inner__content__center_swu42_106 > span', { parentNode: footer });
+  // const footer = document.getElementById('awsc-nav-footer-content');
+  // const footerLbl = footer!.querySelectorAll('span')[5];
   if (!header || !headerLbl || !footer || !footerLbl) {
     extension.log('customizeConsole:missing-elements');
     return false;
