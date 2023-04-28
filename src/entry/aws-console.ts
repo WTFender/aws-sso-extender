@@ -95,7 +95,8 @@ function findAppProfile(aws: AwsConsole): AppData | null {
       data.appProfiles.forEach((ap) => {
         if (ap.applicationName === 'AWS Account') {
           // sso user, check for matching app profile
-          if (ap.profile.name === aws.ssoRoleName) {
+          if (ap.profile.name === aws.ssoRoleName
+            && ap.searchMetadata?.AccountId === aws.accountId) {
             appProfiles.push(extension.customizeProfiles(user, [ap])[0]);
           }
         }
