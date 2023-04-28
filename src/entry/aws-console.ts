@@ -132,7 +132,23 @@ function getFontColor(hexcolor): 'black' | 'white' {
   return (yiq >= 180) ? 'black' : 'white';
 }
 
-async function customizeConsole(aws: AwsConsole): Promise<Boolean> {
+function getHeader() {
+  return waitForElement('#awsc-top-level-nav');
+}
+
+function getHeaderLabel(userType:AwsConsole['userType']) {
+  return waitForElement('#nav-usernameMenu').then((el) => el.querySelectorAll('span')[userType === 'iam' ? 2 : 1]);
+}
+
+function getFooter() {
+  return waitForElement('#awsc-nav-footer-content');
+}
+
+function getFooterLabel() {
+  return waitForElement("#awsc-nav-footer-content span[data-testid='awsc-footer-copyright']");
+}
+
+function customizeConsole(aws: AwsConsole): void {
   extension.log('customizeConsole');
   const defaultHeader = 'Services';
   const defaultFooter = '© 2023, Amazon Web Services, Inc. or its affiliates.';
@@ -140,37 +156,45 @@ async function customizeConsole(aws: AwsConsole): Promise<Boolean> {
   const color = aws.userType === 'iam' && aws.iamRole!.color !== ''
     ? aws.iamRole!.color
     : aws.appProfile?.profile.custom?.color || aws.user?.custom.colorDefault;
-  // const header = document.getElementById('awsc-top-level-nav');
-  const header = await waitForElement('#awsc-top-level-nav');
-  /*
-  const headerLbl = document.getElementById('nav-usernameMenu')!.querySelectorAll('span')[
-    aws.userType === 'iam' ? 2 : 1
-  ];
-  */
-  const headerLbl = await waitForElement('#nav-usernameMenu').then((el) => el.querySelectorAll('span')[
-    aws.userType === 'iam' ? 2 : 1
-  ]);
-  const footer = await waitForElement('#awsc-nav-footer-content');
-  const footerLbl = await waitForElement('div._awsc-footer__inner__content__center_swu42_106 > span', { parentNode: footer });
-  // const footer = document.getElementById('awsc-nav-footer-content');
-  // const footerLbl = footer!.querySelectorAll('span')[5];
-  if (!header || !headerLbl || !footer || !footerLbl) {
-    extension.log('customizeConsole:missing-elements');
-    return false;
-  }
   // customize
+  let headerLblPromise;
+  let footerLblPromise;
   if (aws.user!.custom.colorHeader) {
-    header!.style.backgroundColor = `#${color || '222f3e'}`;
-    headerLbl!.style.color = getFontColor(color);
+    getHeader().then((header) => {
+      // eslint-disable-next-line no-param-reassign
+      header.style.backgroundColor = `#${color || '222f3e'}`;
+    });
+    headerLblPromise = getHeaderLabel(aws.userType);
+    headerLblPromise.then((headerLbl) => {
+      // eslint-disable-next-line no-param-reassign
+      headerLbl.style.color = getFontColor(color);
+    });
   }
   if (aws.user!.custom.colorFooter) {
-    footer!.style.backgroundColor = `#${color || '222f3e'}`;
-    footerLbl!.style.color = getFontColor(color);
+    getFooter().then((footer) => {
+      // eslint-disable-next-line no-param-reassign
+      footer.style.backgroundColor = `#${color || '222f3e'}`;
+    });
+    footerLblPromise = getFooterLabel();
+    footerLblPromise.then((footerLbl) => {
+      // eslint-disable-next-line no-param-reassign
+      footerLbl.style.color = getFontColor(color);
+    });
   }
-  if (aws.user!.custom.labelFooter) { footerLbl!.textContent = label || defaultFooter; }
+  if (aws.user!.custom.labelFooter) {
+    footerLblPromise ??= getFooterLabel();
+    footerLblPromise.then((footerLbl) => {
+      // eslint-disable-next-line no-param-reassign
+      footerLbl.textContent = label || defaultFooter;
+    });
+  }
   // iam user has header already applied
-  if (aws.user!.custom.labelHeader) { headerLbl!.textContent = label || defaultHeader; }
-  return true;
+  if (aws.user!.custom.labelHeader) {
+    getHeaderLabel(aws.userType).then((headerLbl) => {
+      // eslint-disable-next-line no-param-reassign
+      headerLbl.textContent = label || defaultHeader;
+    });
+  }
 }
 
 async function init(): Promise<AwsConsole> {
@@ -219,11 +243,7 @@ if (window.location.href.includes('console.aws.amazon.com/console/home')) {
 
     // customize defined profiles
     if (aws.appProfile) {
-      if (!customizeConsole(aws)) {
-        setTimeout(() => {
-          customizeConsole(aws);
-        }, extension.config.delay * 2);
-      }
+      customizeConsole(aws);
     }
 
     // sso user, check for pending iam logins, switch role (soft POST)
