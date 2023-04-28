@@ -1,5 +1,8 @@
+## 1.2.4
+- Page load fixes - Thanks @renataogarcia
+
 ## 1.2.3
-- Console fixes - Thanks @renataogarcia
+- Console fixes
 
 ## 1.2.2
 - Name fix
