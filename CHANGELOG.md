@@ -1,3 +1,6 @@
+## 1.2.3
+- Console fixes - Thanks @renataogarcia
+
 ## 1.2.2
 - Name fix
 

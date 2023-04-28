@@ -7,8 +7,7 @@
 🎨 Label and customize the AWS console  
 🔑 Assume IAM roles from your SSO profiles  
 
-https://user-images.githubusercontent.com/12001399/224067799-c3a9a3d0-c0cf-44e2-918b-767c3a1c018f.mov
-
+https://user-images.githubusercontent.com/12001399/229891725-044d0632-8de1-47bd-80d1-936141d93831.mp4
 
 ## Dev & Build
 
