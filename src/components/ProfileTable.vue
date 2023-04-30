@@ -3,7 +3,7 @@
   <DataTable v-model:editingRows="editingRows" v-model:filters="filterProfiles" v-model:selection="selectedProfile"
     selection-mode="single" edit-mode="row" class="p-datatable-sm" scroll-height="400px" :value="appProfiles"
     row-group-mode="rowspan" :group-rows-by="['name']" :sort-field="'name'" :sort-order="1" responsive-layout="scroll"
-    @row-edit-init="colorPickerVisible = true" @row-edit-cancel="colorPickerVisible = false"
+    @row-edit-cancel="colorPickerVisible = false"
     @row-edit-save="updateProfileLabel" @keydown.enter="navSelectedProfile()">
     <template #header>
       <span class="p-input-icon-left" style="width: 90%;">
@@ -36,9 +36,10 @@
       body-class="sso-profile">
       <template #body="slotProps">
         <div>
-          <a class="sso-link" target="_blank" rel="noopener noreferrer"
+          <a class="sso-link" target="_blank" rel="noopener noreferrer" 
             :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"><i
-              class="pi pi-external-link" />
+          />
+            <i class="pi pi-external-link" :style="{ color: `#${slotProps.data.profile.custom.color}` }" />
             {{ slotProps.data.profile.custom.label || slotProps.data.profile.name }}</a>
         </div>
         <div v-if="'iamRoles' in slotProps.data.profile.custom">
@@ -52,9 +53,14 @@
           style="width: 80%" />
         <ColorPicker style="margin-left: 5px" @click="colorPickerVisible = !colorPickerVisible"
           v-model="data.profile.custom.color" />
+        <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+          <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="data.profile.custom.color" />
+        </PDialog>
       </template>
     </PColumn>
-    <PColumn :row-editor="true" body-style="text-align:center" header-style="display: none;">
+    <PColumn :row-editor="true" body-style="text-align:center;" header-style="display: none;"> 
+      <template>
+      </template>
     </PColumn>
     <PColumn :style="{ width: '20px' }" header-style="display: none;" body-class="sso-favorite">
       <template #body="slotProps">
@@ -162,6 +168,7 @@ export default {
   color: #495057;
   text-decoration: none;
   text-overflow: ellipsis;
+  border-radius: 4pt;
 }
 
 .sso-link:hover {
