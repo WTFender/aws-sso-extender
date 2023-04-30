@@ -36,9 +36,10 @@
       body-class="sso-profile">
       <template #body="slotProps">
         <div>
-          <a class="sso-link" target="_blank" rel="noopener noreferrer"
+          <a class="sso-link" target="_blank" rel="noopener noreferrer" 
             :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"><i
-              class="pi pi-external-link" />
+          />
+            <i class="pi pi-external-link" :style="{ color: `#${slotProps.data.profile.custom.color}` }" />
             {{ slotProps.data.profile.custom.label || slotProps.data.profile.name }}</a>
         </div>
         <div v-if="'iamRoles' in slotProps.data.profile.custom">
@@ -57,7 +58,9 @@
         </PDialog>
       </template>
     </PColumn>
-    <PColumn :row-editor="true" body-style="text-align:center" header-style="display: none;">
+    <PColumn :row-editor="true" body-style="text-align:center;" header-style="display: none;"> 
+      <template>
+      </template>
     </PColumn>
     <PColumn :style="{ width: '20px' }" header-style="display: none;" body-class="sso-favorite">
       <template #body="slotProps">
@@ -165,6 +168,7 @@ export default {
   color: #495057;
   text-decoration: none;
   text-overflow: ellipsis;
+  border-radius: 4pt;
 }
 
 .sso-link:hover {
