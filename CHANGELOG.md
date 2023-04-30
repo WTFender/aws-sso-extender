@@ -1,5 +1,9 @@
+## 1.2.6
+- Show profile color on icon
+- Firefox bug fixes
+
 ## 1.2.5
-- Console label fixes - Thanks @renataogarcia
+- Console label fixes
 
 ## 1.2.4
 - Page load fixes
