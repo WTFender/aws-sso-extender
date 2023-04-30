@@ -3,7 +3,7 @@
   <DataTable v-model:editingRows="editingRows" v-model:filters="filterProfiles" v-model:selection="selectedProfile"
     selection-mode="single" edit-mode="row" class="p-datatable-sm" scroll-height="400px" :value="appProfiles"
     row-group-mode="rowspan" :group-rows-by="['name']" :sort-field="'name'" :sort-order="1" responsive-layout="scroll"
-    @row-edit-init="colorPickerVisible = true" @row-edit-cancel="colorPickerVisible = false"
+    @row-edit-cancel="colorPickerVisible = false"
     @row-edit-save="updateProfileLabel" @keydown.enter="navSelectedProfile()">
     <template #header>
       <span class="p-input-icon-left" style="width: 90%;">
@@ -52,6 +52,9 @@
           style="width: 80%" />
         <ColorPicker style="margin-left: 5px" @click="colorPickerVisible = !colorPickerVisible"
           v-model="data.profile.custom.color" />
+        <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+          <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="data.profile.custom.color" />
+        </PDialog>
       </template>
     </PColumn>
     <PColumn :row-editor="true" body-style="text-align:center" header-style="display: none;">
