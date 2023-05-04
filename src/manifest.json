@@ -27,7 +27,7 @@
     },
     {
       "matches": [
-        "https://*.console.aws.amazon.com/console/home?region*"
+        "https://*.console.aws.amazon.com/*"
       ],
       "js": [
         "src/entry/aws-console.ts"
