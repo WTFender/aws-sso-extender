@@ -1,9 +1,9 @@
+name: Create Release
+
 on:  
   push:
     branches:
       - release
-
-name: Create Release
 
 permissions:
   contents: write

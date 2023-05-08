@@ -8,7 +8,7 @@ const extensionConfig: ExtensionConfig = {
   display: import.meta.env.VITE_EXT_NAME,
   debug: import.meta.env.VITE_EXT_DEBUG === 'true',
   permissions: {
-    console: ['https://*.console.aws.amazon.com/console/home?region*'],
+    console: ['https://*.console.aws.amazon.com/*'],
     signin: ['https://signin.aws.amazon.com/switchrole?*'],
     sso: ['https://*.awsapps.com/start*'],
   },
