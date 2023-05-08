@@ -1,3 +1,6 @@
+## 1.2.7
+- Bug fix - Thanks @renataogarcia
+
 ## 1.2.6
 - Show profile color on icon
 - Firefox bug fixes
