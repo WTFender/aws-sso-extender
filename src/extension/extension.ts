@@ -17,6 +17,8 @@ class Extension {
 
   platform: 'chrome' | 'firefox';
 
+  consoleUrlRegex: RegExp;
+
   ssoUrlRegex: RegExp;
 
   ssoUrl: string;
@@ -45,6 +47,8 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = navigator.userAgent.indexOf('Firefox') !== -1 ? 'firefox' : 'chrome';
+    // TODO prompt to request for gov domain permissions
+    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/;
     this.ssoUrl = '';
     this.loaded = false;

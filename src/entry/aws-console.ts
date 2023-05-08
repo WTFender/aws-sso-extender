@@ -231,7 +231,7 @@ async function init(): Promise<AwsConsole> {
   return aws;
 }
 
-if (window.location.href.includes('console.aws.amazon.com/')) {
+if (extension.consoleUrlRegex.test(window.location.href)) {
   // get console info
   init().then((aws) => {
     extension.log(aws);
