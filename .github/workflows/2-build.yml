@@ -1,10 +1,10 @@
+name: Build Packages
+
 on:  
   pull_request:
     branches:
       - release
       - main
-
-name: Build Packages
 
 permissions:
   contents: write
