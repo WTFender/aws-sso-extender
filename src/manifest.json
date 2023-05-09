@@ -16,6 +16,11 @@
       }
     }
   },
+  "{{firefox}}.background": {
+    "scripts": [
+      "src/entry/background.ts"
+    ]
+  },
   "content_scripts": [
     {
       "matches": [
@@ -57,7 +62,12 @@
   ],
   "{{firefox}}.optional_permissions": [
     "history",
-    "https://*.awsapps.com/start*"
+    "https://*.awsapps.com/start*",
+    "webRequest",
+    "webRequestBlocking",
+    "activeTab",
+    "tabs",
+    "contextualIdentities"
   ],
   "{{firefox}}.browser_specific_settings": {
     "gecko": {
