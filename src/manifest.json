@@ -53,7 +53,12 @@
   "{{chrome}}.cross_origin_opener_policy": {
     "value": "same-origin"
   },
-  "permissions": [
+  "{{chrome}}.permissions": [
+    "cookies",
+    "storage"
+  ],
+  "{{firefox}}.permissions": [
+    "contextualIdentities",
     "cookies",
     "storage"
   ],
@@ -62,12 +67,15 @@
   ],
   "{{firefox}}.optional_permissions": [
     "history",
-    "https://*.awsapps.com/start*",
     "webRequest",
     "webRequestBlocking",
+    "webRequestFilterResponse",
     "activeTab",
     "tabs",
-    "contextualIdentities"
+    "https://*.awsapps.com/start*",
+    "https://*.amazonaws.com/federation/console?*",
+    "https://*.amazonaws-us-gov.com/federation/console?*",
+    "https://*.amazonaws.cn/federation/console?*"
   ],
   "{{firefox}}.browser_specific_settings": {
     "gecko": {

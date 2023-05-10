@@ -9,6 +9,7 @@ export interface ExtensionConfig {
     sso: string[]
     signin: string[]
     console: string[]
+    containers: string[]
   }
   browser: Browser
   db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
@@ -49,6 +50,7 @@ export interface UserData {
     labelFooter: boolean,
     labelHeader: boolean,
     profiles: Record<string, CustomData>
+    firefoxContainers?: boolean,
   }
   appProfileIds: string[]
   accountId: string

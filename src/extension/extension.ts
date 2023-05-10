@@ -36,6 +36,7 @@ class Extension {
     labelFooter: true,
     labelHeader: true,
     profiles: {},
+    firefoxContainers: false,
   };
 
   defaultSettings = {
@@ -68,7 +69,7 @@ class Extension {
     }
   }
 
-  buildLabel(s, user, profile, role, account, accountName) {
+  buildLabel(s, user, profile, role, account, accountName): string {
     let label = s;
     if (user) { label = label.replaceAll('{{user}}', user); }
     if (role) { label = label.replaceAll('{{role}}', role); }
@@ -91,11 +92,18 @@ class Extension {
 
   resetPermissions() {
     this.config.browser.permissions.remove({
-      permissions: ['history'],
+      permissions: [
+        'history',
+        'webRequest',
+        'webRequestBlocking',
+        'activeTab',
+        'tabs',
+      ],
       origins: [
         ...this.config.permissions.sso,
         ...this.config.permissions.console,
         ...this.config.permissions.signin,
+        ...this.config.permissions.containers,
       ],
     });
   }
@@ -106,19 +114,30 @@ class Extension {
       permissions: ['history'],
     });
     const console = this.config.browser.permissions.contains({
-      origins: this.config.permissions.console,
+      origins: [...this.config.permissions.console],
     });
     const signin = this.config.browser.permissions.contains({
-      origins: this.config.permissions.signin,
+      origins: [...this.config.permissions.signin],
     });
     const sso = this.config.browser.permissions.contains({
-      origins: this.config.permissions.sso,
+      origins: [...this.config.permissions.sso],
     });
-    const data = await Promise.all([history, console, signin, sso]).then((res) => ({
+    const containers = this.config.browser.permissions.contains({
+      origins: [...this.config.permissions.containers],
+      permissions: [
+        'webRequest',
+        'webRequestBlocking',
+        'webRequestFilterResponse',
+        'activeTab',
+        'tabs',
+      ],
+    });
+    const data = await Promise.all([history, console, signin, sso, containers]).then((res) => ({
       history: res[0],
       console: res[1],
       signin: res[2],
       sso: res[3],
+      containers: res[4],
     }));
     this.log(data);
     return data;
@@ -331,6 +350,34 @@ class Extension {
     this.log(user);
     this.log(customProfiles);
     return customProfiles;
+  }
+
+  findAppProfile(ssoRoleName: string, accountId: string, data: ExtensionData): AppData | null {
+    this.log('findAppProfile');
+    const appProfiles: AppData[] = [];
+    const activeUserId = data.users.length === 1 ? data.users[0].userId : data.settings.lastUserId;
+    data.users.forEach((user) => {
+      if (user.userId === activeUserId) {
+        data.appProfiles.forEach((ap) => {
+          if (ap.applicationName === 'AWS Account') {
+            // sso user, check for matching app profile
+            if (ap.profile.name === ssoRoleName
+              && ap.searchMetadata?.AccountId === accountId) {
+              appProfiles.push(this.customizeProfiles(user, [ap])[0]);
+            }
+          }
+        });
+      }
+    });
+    this.log(appProfiles);
+    return appProfiles[0];
+  }
+
+  findUser(data: ExtensionData): UserData {
+    this.log('findUser');
+    // eslint-disable-next-line vue/max-len
+    const activeUserId = data!.users.length === 1 ? data!.users[0].userId : data!.settings.lastUserId;
+    return data!.users.filter((u) => u.userId === activeUserId)[0];
   }
 
   async update(user: UserData): Promise<void> {
