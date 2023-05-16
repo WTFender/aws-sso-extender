@@ -10,8 +10,8 @@
   <div v-else>
     <div class="card">
       <!--- Profiles/Favorites page -->
-      <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode"
-        :settings=settings :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+      <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings=settings
+        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
@@ -51,8 +51,8 @@
               <h3>Customize the AWS Console</h3>
               <div>
                 <div v-if="$ext.platform === 'firefox'">
-                  <PCheckbox @click="toggleContainers()" v-model="user.custom.firefoxContainers" inputId="container" name="container"
-                  :binary="true" style="margin-right: 10px; text-align: middle;" />
+                  <PCheckbox @click="toggleContainers()" v-model="user.custom.firefoxContainers" inputId="container"
+                    name="container" :binary="true" style="margin-right: 10px; text-align: middle;" />
                   <label for="container">Open in Firefox Containers</label><br><br>
                 </div>
                 <label for="sessionLabelSso" class="ml-2">SSO session Label</label>
@@ -76,28 +76,28 @@
               </details>
               <br>
               <div style="width: 40%; float: left;">
-                <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
-                  :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="labelHeader">Label header</label><br>
-                <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
-                  :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="labelFooter" class="ml-2">Label footer</label>
               </div>
               <div>
-                <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
-                  :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="colorHeader" class="ml-2">Colorize header</label><br>
-                <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
-                  :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="colorFooter" class="ml-2">Colorize footer</label>
               </div><br>
               <div style="margin-bottom: 10px;">
-                  <ColorPicker inputId="colorDefault" name="colorDefault"
-                    @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
-                    id="colorDefault" />
+                <ColorPicker inputId="colorDefault" name="colorDefault"
+                  @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
+                  id="colorDefault" />
                 <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
-              
-            </div>
+
+              </div>
               <!---
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
@@ -256,21 +256,19 @@ export default {
   methods: {
     toggleContainers() {
       this.user.custom.firefoxContainers = !this.user.custom.firefoxContainers;
-      if(this.user.custom.firefoxContainers && !(this.permissions.containers)){
-        this.requestPermissionsContainers();
-      }
     },
     requestPermissionsContainers() {
       this.$ext.config.browser.permissions.request({
         origins: [
+          ...this.$ext.config.permissions.console,
           ...this.$ext.config.permissions.containers,
         ],
         permissions: [
+          "activeTab",
+          "tabs",
           "webRequest",
           "webRequestBlocking",
           "webRequestFilterResponse",
-          "activeTab",
-          "tabs",
         ],
       });
       window.close();
@@ -285,12 +283,16 @@ export default {
       window.close();
     },
     requestPermissionsConsole() {
-      this.$ext.config.browser.permissions.request({
-        origins: [
-          ...this.$ext.config.permissions.console
-        ]
-      });
-      window.close();
+      if (this.$ext.platform === 'firefox'){
+        this.$ext.log('requestPermissionsContainers');
+        this.requestPermissionsContainers();
+      } else {
+        this.$ext.log('requestPermissionsConsole');
+        this.$ext.config.browser.permissions.request({
+          origins: [...this.$ext.config.permissions.console,],
+        });
+        window.close();
+      }
     },
     refreshProfiles() {
       this.appProfiles = [];
@@ -512,4 +514,5 @@ export default {
 .settings {
   margin: 15px;
   padding: 15px;
-}</style>
+}
+</style>

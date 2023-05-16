@@ -1,4 +1,5 @@
 import extension from '../extension';
+import { IamRole } from '../types';
 
 const availableContainerIcons = [
   'fingerprint',
@@ -37,10 +38,39 @@ function randomColor() {
   return availableContainerColors[Math.random() * availableContainerColors.length | 0];
 }
 
-// eslint-disable-next-line func-names
-export default async function (details) {
+function updateContainerName(role: IamRole) {
+  extension.log('updateContainerName');
+  extension.loadData().then((data) => {
+    const user = extension.findUser(data);
+    const ap = extension.findAppProfile(role.roleName, role.accountId, data);
+    const ssoContainerName = extension.buildLabel(
+      user.custom.sessionLabelSso,
+      user.subject,
+      ap?.profile.custom?.label || ap?.profile.name,
+      null,
+      role.accountId,
+      ap?.searchMetadata?.AccountName,
+    );
+    const iamContainerName = extension.buildLabel(
+      user.custom.sessionLabelIam,
+      user.subject,
+      ap?.profile.custom?.label || ap?.profile.name,
+      role.roleName,
+      role.accountId,
+      ap?.searchMetadata?.AccountName,
+    );
+    extension.config.browser.contextualIdentities.query({
+      name: ssoContainerName,
+    }).then((details) => {
+      details[0].name = iamContainerName;
+    }, null);
+  });
+}
+
+async function createContainer(details) {
   extension.log('container');
-  // If we're in a container already, skip
+
+  // If we're in a container already, check if iam role, update label
   if (details.cookieStoreId !== 'firefox-default') {
     return {};
   }
@@ -108,6 +138,7 @@ export default async function (details) {
           };
           extension.config.browser.tabs.create(createTabParams);
           extension.config.browser.tabs.remove(details.tabId);
+          extension.log(details);
         });
       } else {
         filter.write(encoder.encode(str));
@@ -118,3 +149,5 @@ export default async function (details) {
 
   return {};
 }
+
+export { createContainer, updateContainerName };

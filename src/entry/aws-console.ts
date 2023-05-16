@@ -1,5 +1,5 @@
 import extension from '../extension';
-import { waitForElement } from '../utils';
+import { updateContainerName, waitForElement } from '../utils';
 import {
   UserData, AppData, ExtensionData, IamRole,
 } from '../types';
@@ -91,6 +91,7 @@ function checkIamLogins(aws: AwsConsole) {
         label: encodeURIComponent(sessionLabel(aws)),
       });
       extension.removeIamLogin(role.profileId);
+      updateContainerName(role);
     }
   }
 }

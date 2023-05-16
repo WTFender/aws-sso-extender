@@ -66,13 +66,12 @@
     "history"
   ],
   "{{firefox}}.optional_permissions": [
+    "activeTab",
     "history",
+    "tabs",
     "webRequest",
     "webRequestBlocking",
     "webRequestFilterResponse",
-    "activeTab",
-    "tabs",
-    "https://*.awsapps.com/start*",
     "https://*.amazonaws.com/federation/console?*",
     "https://*.amazonaws-us-gov.com/federation/console?*",
     "https://*.amazonaws.cn/federation/console?*"

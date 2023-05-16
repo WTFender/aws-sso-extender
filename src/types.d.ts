@@ -23,8 +23,11 @@ export interface ExtensionSettings {
 }
 
 export interface ExtensionPermissions {
-  sso: string[]
+  sso: boolean
   history: boolean
+  console: boolean
+  signin: boolean
+  containers: boolean
 }
 
 export interface ExtensionData {

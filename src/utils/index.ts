@@ -1,5 +1,5 @@
 import extension from '../extension';
-import createContainer from './container';
+import { createContainer, updateContainerName } from './container';
 
 function waitForElement<TElement extends Element = HTMLElement>(
   selector: string,
@@ -43,4 +43,4 @@ function waitForElement<TElement extends Element = HTMLElement>(
   });
 }
 
-export { waitForElement, createContainer };
+export { waitForElement, createContainer, updateContainerName };

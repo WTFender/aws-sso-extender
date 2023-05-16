@@ -6,6 +6,7 @@ import {
   type ExtensionSettings,
   type IamRole,
   CustomData,
+  ExtensionPermissions,
 } from '../types';
 
 function encodeUriPlusParens(str) {
@@ -48,7 +49,6 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = navigator.userAgent.indexOf('Firefox') !== -1 ? 'firefox' : 'chrome';
-    // TODO prompt to request for gov domain permissions
     this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/;
     this.ssoUrl = '';
@@ -93,11 +93,11 @@ class Extension {
   resetPermissions() {
     this.config.browser.permissions.remove({
       permissions: [
+        'activeTab',
         'history',
+        'tabs',
         'webRequest',
         'webRequestBlocking',
-        'activeTab',
-        'tabs',
       ],
       origins: [
         ...this.config.permissions.sso,
@@ -108,7 +108,7 @@ class Extension {
     });
   }
 
-  async checkPermissions(): Promise<object> {
+  async checkPermissions(): Promise<ExtensionPermissions> {
     this.log('func:checkPermissions');
     const history = this.config.browser.permissions.contains({
       permissions: ['history'],
@@ -125,11 +125,11 @@ class Extension {
     const containers = this.config.browser.permissions.contains({
       origins: [...this.config.permissions.containers],
       permissions: [
+        'activeTab',
+        'tabs',
         'webRequest',
         'webRequestBlocking',
         'webRequestFilterResponse',
-        'activeTab',
-        'tabs',
       ],
     });
     const data = await Promise.all([history, console, signin, sso, containers]).then((res) => ({
