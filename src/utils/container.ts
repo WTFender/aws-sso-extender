@@ -72,6 +72,8 @@ async function createContainer(details) {
 
   // If we're in a container already, check if iam role, update label
   if (details.cookieStoreId !== 'firefox-default') {
+    extension.log('inContainer');
+    extension.log(details);
     return {};
   }
 

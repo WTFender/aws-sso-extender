@@ -72,6 +72,7 @@
     "webRequest",
     "webRequestBlocking",
     "webRequestFilterResponse",
+    "https://signin.aws.amazon.com/switchrole?*",
     "https://*.amazonaws.com/federation/console?*",
     "https://*.amazonaws-us-gov.com/federation/console?*",
     "https://*.amazonaws.cn/federation/console?*"

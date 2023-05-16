@@ -13,6 +13,7 @@ const extensionConfig: ExtensionConfig = {
     sso: ['https://*.awsapps.com/start*'],
     containers: [
       'https://*.awsapps.com/start*',
+      'https://signin.aws.amazon.com/switchrole?*',
       'https://*.amazonaws.com/federation/console?*',
       'https://*.amazonaws-us-gov.com/federation/console?*',
       'https://*.amazonaws.cn/federation/console?*',
