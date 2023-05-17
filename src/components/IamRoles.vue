@@ -9,7 +9,7 @@
   <small id="label-help">Role label and color for the AWS console</small>
   <div style="margin-bottom: 10px;">
     <InputText id="iamRoleLabel" v-model="newIamRole.label" name="label" class="p-inputtext-sm"
-    style="width: 350px; margin-right: 10px;" placeholder="roleName" aria-describedby="label-help"/>
+      style="width: 350px; margin-right: 10px;" placeholder="roleName" aria-describedby="label-help" />
     <ColorPicker @click="colorPickerVisible = !colorPickerVisible" v-model="newIamRole.color" />
   </div>
   <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
@@ -19,13 +19,13 @@
   <PListbox v-model="selectedProfiles" id="awsAppProfiles" :options="awsAppProfiles" class="w-full md:w-14rem"
     style="margin-bottom: 15px" listStyle="max-height:150px" multiple>
     <template #option="slotProps">
-        <div class="flex align-items-center" style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px;">
-          <small>{{ slotProps.option.label }}</small>
-        </div>
+      <div class="flex align-items-center" style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px;">
+        <small>{{ slotProps.option.label }}</small>
+      </div>
     </template>
   </PListbox>
-  <PrimeButton size="small" icon="pi pi-user-plus" class="p-button-primary" label="Add IAM Role" style="margin-right: 10px"
-    @click="addIamRole()" />
+  <PrimeButton size="small" icon="pi pi-user-plus" class="p-button-primary" label="Add IAM Role"
+    style="margin-right: 10px" @click="addIamRole()" />
   <PrimeButton size="small" icon="pi pi-trash" class="p-button-danger" label="Reset IAM Roles" @click="resetIamRoles()" />
 </template>
 
@@ -79,9 +79,9 @@ export default {
         this.$emit('updateProfile', ap);
       });
     },
-    invalid(id){
+    invalid(id) {
       const el = document.getElementById(id);
-      if(el){ el.classList.add('p-invalid') };
+      if (el) { el.classList.add('p-invalid') };
       setTimeout(() => {
         el!.classList.remove("p-invalid");
       }, 5000);
@@ -90,12 +90,12 @@ export default {
       if (this.newIamRole.arn.startsWith('arn:aws:iam::')) {
         const accountId = this.newIamRole.arn.split(':')[4];
         const roleName = this.newIamRole.arn.split('/')[1];
-        if (accountId == undefined || roleName === undefined){
+        if (accountId == undefined || roleName === undefined) {
           // bad arn format
           this.invalid('iamRoleArn')
           return false
         }
-        if (this.selectedProfiles.length === 0){
+        if (this.selectedProfiles.length === 0) {
           // need to select at least 1 profile
           this.invalid('awsAppProfiles')
           return false
@@ -108,7 +108,7 @@ export default {
       return false
     },
     addIamRole() {
-      if (this.validateNewIamRole()){
+      if (this.validateNewIamRole()) {
         this.selectedProfiles.forEach(ap => {
           this.$emit('addIamRole', {
             profileId: ap.profile.id,
@@ -119,7 +119,7 @@ export default {
           });
         })
         this.$emit('saveUser');
-        this.$emit('setPage', 'profiles');        
+        this.$emit('setPage', 'profiles');
       }
     },
   },

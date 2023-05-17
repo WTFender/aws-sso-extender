@@ -100,7 +100,7 @@ function getHeader() {
   return waitForElement('#awsc-top-level-nav');
 }
 
-function getHeaderLabel(userType:AwsConsole['userType']) {
+function getHeaderLabel(userType: AwsConsole['userType']) {
   return waitForElement('#nav-usernameMenu').then((el) => el.querySelectorAll('span')[userType === 'iam' ? 2 : 1]);
 }
 

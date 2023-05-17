@@ -1,15 +1,8 @@
 <!-- eslint-disable max-len -->
 <template>
-  <div
-    v-if="!permissions.history"
-  >
-    <PrimeButton
-      size="small"
-      icon="pi pi-search"
-      class="p-button-primary"
-      label="Find Login Links"
-      @click="requestHistory()"
-    />
+  <div v-if="!permissions.history">
+    <PrimeButton size="small" icon="pi pi-search" class="p-button-primary" label="Find Login Links"
+      @click="requestHistory()" />
   </div>
   <div v-else-if="foundDirs">
     <p v-if="foundDirs.length === 0">
@@ -18,16 +11,9 @@
     <h2 v-else>
       Detected Login Links
     </h2>
-    <div
-      v-for="dir in foundDirs"
-      :key="dir"
-    >
-      <PrimeButton
-        class="p-button-primary"
-        :label="dir"
-        style="margin-top: 5px"
-        @click="openLink(`https://${dir}.awsapps.com/start#/`)"
-      />
+    <div v-for="dir in foundDirs" :key="dir">
+      <PrimeButton class="p-button-primary" :label="dir" style="margin-top: 5px"
+        @click="openLink(`https://${dir}.awsapps.com/start#/`)" />
     </div>
   </div>
 </template>
@@ -69,5 +55,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

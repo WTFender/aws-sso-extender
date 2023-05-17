@@ -33,7 +33,7 @@ module.exports = {
       rules: {
         'linebreak-style': 0,
         'vuejs-accessibility/click-events-have-key-events': 'off',
-        'no-param-reassign': ['error',{ props: false }],
+        'no-param-reassign': ['error', { props: false }],
       }
     }
   ],
