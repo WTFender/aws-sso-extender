@@ -5,6 +5,16 @@ import {
 
 /* collect user, app, and profiles from the AWS SSO directory page */
 
+function getCookie(name) {
+  const cookies = Object.fromEntries(
+    document.cookie
+      .split('; ')
+      .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
+  );
+  extension.log(`aws-sso:getCookie:${name in cookies}`);
+  return cookies[name];
+}
+
 function getRegion(): string {
   const region = (
     document.head.querySelector('[name~=region][content]') as HTMLMetaElement
@@ -15,7 +25,7 @@ function getRegion(): string {
 
 function getToken(): string {
   const ssoKey = 'x-amz-sso_authn';
-  return extension.getCookie(ssoKey);
+  return getCookie(ssoKey);
 }
 
 async function api(path: string): Promise<ApiData> {
