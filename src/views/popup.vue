@@ -39,7 +39,7 @@
               @click="resetUser()" />
           </TabPanel>
           <TabPanel header="Console">
-            <div v-if="!permissions.console">
+            <div v-if="!consolePermissions">
               <p>
                 This extension requires permissions to customize the AWS console:
               </p>
@@ -201,6 +201,13 @@ export default {
     };
   },
   computed: {
+    consolePermissions() {
+      if (this.$ext.platform === 'firefox') {
+        return this.permissions.console && this.permissions.containers;
+      } else {
+        return this.permissions.console;
+      }
+    },
     defaultUserOptions() {
       let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
       options = options.concat(this.userOptions);
