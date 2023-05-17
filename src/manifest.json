@@ -58,6 +58,7 @@
   ],
   "{{firefox}}.permissions": [
     "contextualIdentities",
+    "cookies",
     "storage"
   ],
   "{{chrome}}.optional_permissions": [
