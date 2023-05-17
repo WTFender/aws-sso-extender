@@ -10,8 +10,8 @@
   <div v-else>
     <div class="card">
       <!--- Profiles/Favorites page -->
-      <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode"
-        :settings=settings :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
+      <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings=settings
+        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user" @updateProfile="updateProfile"
         @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
@@ -38,19 +38,6 @@
             <PrimeButton class="p-button-danger reset-button" label="Reset User" style="margin-top: 15px"
               @click="resetUser()" />
           </TabPanel>
-          <TabPanel header="IAM Roles">
-            <div v-if="!permissions.console || !permissions.signin">
-              <p>
-                In order to switch IAM roles, this extension requires permissions to the AWS console.
-              </p>
-              <code>https://*.console.aws.amazon.com/*</code><br>
-              <code>https://signin.aws.amazon.com/switchrole</code>
-              <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
-                style="margin-top:10px;" @click="requestPermissionsSwitchrole()" />
-            </div>
-            <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
-              @setPage="setPage" @saveUser="saveUser" />
-          </TabPanel>
           <TabPanel header="Console">
             <div v-if="!permissions.console">
               <p>
@@ -63,6 +50,11 @@
             <div v-else>
               <h3>Customize the AWS Console</h3>
               <div>
+                <div v-if="$ext.platform === 'firefox'">
+                  <PCheckbox @click="toggleContainers()" v-model="settings.firefoxContainers" inputId="container"
+                    name="container" :binary="true" style="margin-right: 10px; text-align: middle;" />
+                  <label for="container">Open in Firefox Containers</label><br><br>
+                </div>
                 <label for="sessionLabelSso" class="ml-2">SSO session Label</label>
                 <InputText id="sessionLabelSso" v-model="user.custom.sessionLabelSso" name="sessionLabelSso"
                   class="p-inputtext-sm" style="width: 350px; margin-right: 10px;"
@@ -84,28 +76,28 @@
               </details>
               <br>
               <div style="width: 40%; float: left;">
-                <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader"
-                  :v-model="user.custom.labelHeader" :binary="true" style="margin-right: 10px;" />
-                <label for="labelHeader" class="ml-2">Label header</label><br>
-                <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter"
-                  :v-model="user.custom.labelFooter" :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader" :binary="true"
+                  style="margin-right: 10px;" />
+                <label for="labelHeader">Label header</label><br>
+                <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="labelFooter" class="ml-2">Label footer</label>
               </div>
               <div>
-                <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader"
-                  :v-model="user.custom.colorHeader" :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="colorHeader" class="ml-2">Colorize header</label><br>
-                <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter"
-                  :v-model="user.custom.colorFooter" :binary="true" style="margin-right: 10px;" />
+                <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter" :binary="true"
+                  style="margin-right: 10px;" />
                 <label for="colorFooter" class="ml-2">Colorize footer</label>
               </div><br>
               <div style="margin-bottom: 10px;">
-                  <ColorPicker inputId="colorDefault" name="colorDefault"
-                    @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
-                    id="colorDefault" />
+                <ColorPicker inputId="colorDefault" name="colorDefault"
+                  @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
+                  id="colorDefault" />
                 <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
-              
-            </div>
+
+              </div>
               <!---
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
@@ -116,6 +108,19 @@
               <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-save" class="p-button-primary" label="Save"
                 style="margin-right: 10px" @click="saveConsoleSettings()" />
             </div>
+          </TabPanel>
+          <TabPanel header="IAM Roles">
+            <div v-if="!permissions.console || !permissions.signin">
+              <p>
+                In order to switch IAM roles, this extension requires permissions to the AWS console.
+              </p>
+              <code>https://*.console.aws.amazon.com/*</code><br>
+              <code>https://signin.aws.amazon.com/switchrole</code>
+              <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+                style="margin-top:10px;" @click="requestPermissionsSwitchrole()" />
+            </div>
+            <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
+              @setPage="setPage" @saveUser="saveUser" />
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
             <LoginLinks :permissions="permissions" />
@@ -151,7 +156,7 @@
 </template>
 <script lang="ts">
 import demoData from '../demo';
-import { AppData, CustomData, ExtensionData, IamRole, UserData } from '../types';
+import { AppData, CustomData, ExtensionConfig, ExtensionData, ExtensionSettings, IamRole, UserData } from '../types';
 
 export default {
   name: 'PopupView',
@@ -166,6 +171,7 @@ export default {
         console: false,
         signin: false,
         sso: false,
+        containers: false,
       },
       setupSteps: [
         { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
@@ -179,7 +185,9 @@ export default {
       settings: {
         defaultUser: 'lastUserId',
         lastUserId: '',
-      },
+        lastProfileId: '',
+        firefoxContainers: false,
+      } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: '',
       staleHours: 1,
@@ -223,11 +231,30 @@ export default {
     },
   },
   watch: {
+    'settings.firefoxContainers': {
+      handler: function (v) {
+        if (v === true) {
+          this.$ext.config.browser.runtime.sendMessage({
+            action: 'enableFirefoxContainers',
+          });
+        } else if (v === false) {
+          this.$ext.config.browser.runtime.sendMessage({
+            action: 'disableFirefoxContainers',
+          });
+        }
+      },
+    },
+    settings: {
+      handler() {
+        if (!this.demoMode) {
+          this.$ext.saveSettings(this.settings);
+        }
+      },
+      deep: true,
+    },
     user() {
-      this.$ext.log('user change');
       if (this.user === null) { this.user = this.$ext.getDefaultUser(this.raw); };
       this.settings.lastUserId = this.user.userId;
-      if (!this.demoMode) { this.$ext.saveSettings(this.settings).then() };
       this.refreshProfiles();
       // this.reload();
     },
@@ -248,6 +275,25 @@ export default {
     this.reload();
   },
   methods: {
+    toggleContainers() {
+      this.settings.firefoxContainers = !this.settings.firefoxContainers;
+    },
+    requestPermissionsContainers() {
+      this.$ext.config.browser.permissions.request({
+        origins: [
+          ...this.$ext.config.permissions.console,
+          ...this.$ext.config.permissions.containers,
+        ],
+        permissions: [
+          "activeTab",
+          "tabs",
+          "webRequest",
+          "webRequestBlocking",
+          "webRequestFilterResponse",
+        ],
+      });
+      window.close();
+    },
     requestPermissionsSwitchrole() {
       this.$ext.config.browser.permissions.request({
         origins: [
@@ -258,25 +304,30 @@ export default {
       window.close();
     },
     requestPermissionsConsole() {
-      this.$ext.config.browser.permissions.request({
-        origins: [
-          ...this.$ext.config.permissions.console
-        ]
-      });
-      window.close();
+      if (this.$ext.platform === 'firefox') {
+        this.$ext.log('popup:requestPermissionsContainers');
+        this.requestPermissionsContainers();
+      } else {
+        this.$ext.log('popup:requestPermissionsConsole');
+        this.$ext.config.browser.permissions.request({
+          origins: [...this.$ext.config.permissions.console,],
+        });
+        window.close();
+      }
     },
     refreshProfiles() {
       this.appProfiles = [];
       this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
     },
     demo() {
-      this.$ext.log('demoMode');
+      this.$ext.log('popup:demoMode');
       this.demoMode = true;
       this.permissions = {
         console: true,
         history: true,
         signin: true,
         sso: true,
+        containers: true,
       };
       this.load(demoData);
     },
@@ -290,9 +341,6 @@ export default {
         this.settings.defaultUser = userId.target.value;
       } else {
         this.settings.defaultUser = userId;
-      }
-      if (!this.demoMode) {
-        this.$ext.saveSettings(this.settings);
       }
     },
     load(data: ExtensionData) {
@@ -351,7 +399,7 @@ export default {
       });
     },
     updateProfile(appProfile: AppData) {
-      this.$ext.log('updateProfile');
+      this.$ext.log('popup:updateProfile');
       this.user.custom.profiles[appProfile.profile.id] = appProfile.profile.custom as CustomData;
       this.$ext.log(this.user);
       if (this.faveProfiles.length === 0) {
@@ -385,7 +433,7 @@ export default {
       this.updateProfile(newData);
     },
     addIamRole(role: IamRole) {
-      this.$ext.log('addIamRole');
+      this.$ext.log('popup:addIamRole');
       if (role.profileId in this.user.custom.profiles) {
         this.user.custom.profiles[role.profileId].iamRoles.push(role);
       } else {
@@ -484,4 +532,5 @@ export default {
 .settings {
   margin: 15px;
   padding: 15px;
-}</style>
+}
+</style>

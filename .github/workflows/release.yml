@@ -78,10 +78,10 @@ jobs:
 #           --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
 #           --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip \
 #     
-#     - name: Publish Mozilla Store
-#       run: |
-#         npx web-ext-submit \
-#           --source-dir ./dist/firefox/ \
-#           --artifacts-dir ./release/firefox/ \
-#           --api-key ${{ secrets.WEB_EXT_API_KEY }} \
-#           --api-secret ${{ secrets.WEB_EXT_API_SECRET }}
+      - name: Publish Mozilla Store
+        run: |
+          npx web-ext-submit \
+            --source-dir ./dist/firefox/ \
+            --artifacts-dir ./release/firefox/ \
+            --api-key ${{ secrets.WEB_EXT_API_KEY }} \
+            --api-secret ${{ secrets.WEB_EXT_API_SECRET }}

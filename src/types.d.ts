@@ -9,6 +9,7 @@ export interface ExtensionConfig {
     sso: string[]
     signin: string[]
     console: string[]
+    containers: string[]
   }
   browser: Browser
   db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
@@ -19,11 +20,15 @@ export interface ExtensionSettings {
   defaultUser: string
   lastUserId: string
   lastProfileId: string
+  firefoxContainers?: boolean
 }
 
 export interface ExtensionPermissions {
-  sso: string[]
+  sso: boolean
   history: boolean
+  console: boolean
+  signin: boolean
+  containers: boolean
 }
 
 export interface ExtensionData {
@@ -32,6 +37,10 @@ export interface ExtensionData {
   settings: ExtensionSettings
   iamLogins: IamRole[]
   updatedAt?: number
+}
+
+export interface ExtensionMessage {
+  action: 'enableFirefoxContainers' | 'disableFirefoxContainers'
 }
 
 export interface ApiData {

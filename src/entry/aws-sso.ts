@@ -9,7 +9,7 @@ function getRegion(): string {
   const region = (
     document.head.querySelector('[name~=region][content]') as HTMLMetaElement
   ).content;
-  extension.log(`func:getRegion:${region}`);
+  extension.log(`aws-sso:getRegion:${region}`);
   return region;
 }
 
@@ -19,11 +19,11 @@ function getToken(): string {
 }
 
 async function api(path: string): Promise<ApiData> {
-  extension.log(`func:api:${path}`);
+  extension.log(`aws-sso:api:${path}`);
   return fetch(`${extension.ssoUrl}${path}`, {
     headers: { 'x-amz-sso_bearer_token': getToken() },
   }).then(async (response) => {
-    extension.log(`func:api:${path}:results`);
+    extension.log(`aws-sso:api:${path}:results`);
     return await response.json() as ApiData;
   });
 }
@@ -46,7 +46,7 @@ async function getAppProfiles(app: AppData): Promise<ProfileData[]> {
 
 if (extension.ssoUrlRegex.test(window.location.href)) {
   // getUserData > getApps > getProfiles > resolve promises > saveData
-  extension.log('func:run');
+  extension.log('aws-sso:run');
   extension.ssoUrl = `https://portal.sso.${getRegion()}.amazonaws.com`;
   getUserData().then((user) => {
     const profiles: Array<Promise<ProfileData | void>> = [];
