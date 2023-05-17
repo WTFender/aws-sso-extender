@@ -1,3 +1,6 @@
+## 1.3.3
+- Readd cookie permissions for Firefox
+
 ## 1.3.2
 - Fix container permissions
 
