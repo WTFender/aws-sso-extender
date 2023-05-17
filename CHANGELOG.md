@@ -1,3 +1,6 @@
+## 1.3.2
+- Fix container permissions
+
 ## 1.3.1
 - Remove unneeded cookie permissions
 
