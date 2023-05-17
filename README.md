@@ -6,7 +6,7 @@
 - [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/)
 
 ⭐ Quickly access your Favorite AWS SSO apps  
-🎨 Label and Customize your profiles, roles & AWS console  
+🎨 Customize your profiles, roles & AWS console  
 🔑 Assume IAM roles from your SSO profiles  
 🦊 Open the AWS console in Firefox Containers  
 
