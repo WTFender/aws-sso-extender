@@ -4,6 +4,8 @@ import { createFirefoxContainer } from '../utils';
 
 extension.log('background:init');
 
+// setup listeners to create firefox containers
+
 function listenConsole() {
   if (!extension.config.browser.webRequest.onBeforeRequest.hasListener(createFirefoxContainer)) {
     extension.log('background:listenConsole');
@@ -21,6 +23,7 @@ function listenConsole() {
   } else { extension.log('background:listenConsole:listenerExists'); }
 }
 
+// setup listeners on message / settings change
 extension.config.browser.runtime.onMessage.addListener((msg: ExtensionMessage) => {
   extension.checkPermissions().then((permissions) => {
     if (msg.action === 'enableFirefoxContainers') {
@@ -37,7 +40,7 @@ extension.config.browser.runtime.onMessage.addListener((msg: ExtensionMessage) =
   });
 });
 
-// startup
+// startup listeners
 extension.checkPermissions().then((permissions) => {
   // permissions
   if (permissions.containers) {
