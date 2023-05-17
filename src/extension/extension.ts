@@ -80,16 +80,6 @@ class Extension {
     return label;
   }
 
-  getCookie(name) {
-    const cookies = Object.fromEntries(
-      document.cookie
-        .split('; ')
-        .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
-    );
-    this.log(`getCookie:${name in cookies}`);
-    return cookies[name];
-  }
-
   resetPermissions() {
     this.config.browser.permissions.remove({
       permissions: [

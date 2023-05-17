@@ -1,3 +1,6 @@
+## 1.3.1
+- Remove unneeded cookie permissions
+
 ## 1.3.0
 - Firefox Containers for AWS Console 🦊
 
