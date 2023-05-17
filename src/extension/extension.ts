@@ -6,6 +6,7 @@ import {
   type ExtensionSettings,
   type IamRole,
   CustomData,
+  ExtensionPermissions,
 } from '../types';
 
 function encodeUriPlusParens(str) {
@@ -42,12 +43,12 @@ class Extension {
     defaultUser: 'lastUserId',
     lastUserId: null,
     lastProfileId: null,
+    firefoxContainers: false,
   };
 
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = navigator.userAgent.indexOf('Firefox') !== -1 ? 'firefox' : 'chrome';
-    // TODO prompt to request for gov domain permissions
     this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/;
     this.ssoUrl = '';
@@ -68,14 +69,14 @@ class Extension {
     }
   }
 
-  buildLabel(s, user, profile, role, account, accountName) {
+  buildLabel(s, user, profile, role, account, accountName): string {
     let label = s;
     if (user) { label = label.replaceAll('{{user}}', user); }
     if (role) { label = label.replaceAll('{{role}}', role); }
     if (profile) { label = label.replaceAll('{{profile}}', profile); }
     if (account) { label = label.replaceAll('{{account}}', account); }
     if (accountName) { label = label.replaceAll('{{accountName}}', accountName); }
-    this.log(`func:buildLabel:${label}`);
+    this.log(`buildLabel:${label}`);
     return label;
   }
 
@@ -85,40 +86,59 @@ class Extension {
         .split('; ')
         .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
     );
-    this.log(`func:getCookie:${name in cookies}`);
+    this.log(`getCookie:${name in cookies}`);
     return cookies[name];
   }
 
   resetPermissions() {
     this.config.browser.permissions.remove({
-      permissions: ['history'],
+      permissions: [
+        'activeTab',
+        'history',
+        'tabs',
+        'webRequest',
+        'webRequestBlocking',
+      ],
       origins: [
         ...this.config.permissions.sso,
         ...this.config.permissions.console,
         ...this.config.permissions.signin,
+        ...this.config.permissions.containers,
       ],
     });
   }
 
-  async checkPermissions(): Promise<object> {
-    this.log('func:checkPermissions');
+  async checkPermissions(): Promise<ExtensionPermissions> {
+    this.log('checkPermissions');
     const history = this.config.browser.permissions.contains({
       permissions: ['history'],
     });
     const console = this.config.browser.permissions.contains({
-      origins: this.config.permissions.console,
+      origins: [...this.config.permissions.console],
     });
     const signin = this.config.browser.permissions.contains({
-      origins: this.config.permissions.signin,
+      origins: [...this.config.permissions.signin],
     });
     const sso = this.config.browser.permissions.contains({
-      origins: this.config.permissions.sso,
+      origins: [...this.config.permissions.sso],
     });
-    const data = await Promise.all([history, console, signin, sso]).then((res) => ({
+    const containers = this.platform === 'firefox' ? this.config.browser.permissions.contains({
+      origins: [...this.config.permissions.containers],
+      permissions: [
+        'activeTab',
+        'tabs',
+        'webRequest',
+        'webRequestBlocking',
+        'webRequestFilterResponse',
+      ],
+    }) : Promise.resolve(false);
+    // eslint-disable-next-line vue/max-len
+    const data = await Promise.all([history, console, signin, sso, containers]).then((res) => ({
       history: res[0],
       console: res[1],
       signin: res[2],
       sso: res[3],
+      containers: res[4],
     }));
     this.log(data);
     return data;
@@ -172,7 +192,7 @@ class Extension {
   }
 
   async removeIamLogin(profileId: string): Promise<void> {
-    this.log(`func:removeIamLogin:${profileId}`);
+    this.log(`removeIamLogin:${profileId}`);
     const logins = await this.loadIamLogins();
     delete logins[profileId];
     this.log(logins);
@@ -180,7 +200,7 @@ class Extension {
   }
 
   queueIamLogin(role: IamRole): Promise<void> {
-    this.log('func:queueIamLogin');
+    this.log('queueIamLogin');
     return this.loadIamLogins().then((logins) => {
       const iamLogins = logins;
       iamLogins[role.profileId] = role;
@@ -226,7 +246,7 @@ class Extension {
   }
 
   getDefaultUser(data: ExtensionData): UserData {
-    this.log('func:getDefaultUser');
+    this.log('getDefaultUser');
     if (data.settings.defaultUser === 'lastUserId') {
       return data.users[0];
     }
@@ -234,7 +254,7 @@ class Extension {
   }
 
   async loadData(): Promise<ExtensionData> {
-    this.log('func:loadData');
+    this.log('loadData');
     const iamLogins = await this.loadIamLogins();
     const settings = await this.loadSettings();
     let users = await this.loadUsers();
@@ -258,7 +278,7 @@ class Extension {
   }
 
   createProfileUrl(user: UserData, appProfile: AppData) {
-    this.log('func:createProfileUrl');
+    this.log('createProfileUrl');
     const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
     const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
     const appProfileName = encodeUriPlusParens(appProfile.name);
@@ -281,12 +301,12 @@ class Extension {
   }
 
   async resetData(): Promise<void> {
-    this.log('func:resetData');
+    this.log('resetData');
     await this.config.db.clear();
   }
 
   async saveData(dataKey: string, data: unknown): Promise<void> {
-    this.log(`func:saveData:${dataKey}`);
+    this.log(`saveData:${dataKey}`);
     this.log(data);
     const dataObj = {};
     dataObj[dataKey] = JSON.stringify(
@@ -303,7 +323,7 @@ class Extension {
   }
 
   saveAppProfiles(user: UserData): void {
-    this.log('func:saveAppProfiles');
+    this.log('saveAppProfiles');
     const appProfiles = this.parseAppProfiles();
     appProfiles.forEach((appProfile) => {
       this.saveData(appProfile.profile?.id, appProfile);
@@ -314,7 +334,7 @@ class Extension {
   }
 
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
-    this.log('func:customizeProfiles');
+    this.log('customizeProfiles');
     const defaults: CustomData = {
       color: this.defaultCustom.colorDefault,
       favorite: false,
@@ -333,8 +353,44 @@ class Extension {
     return customProfiles;
   }
 
+  findAppProfile(ssoRoleName: string, accountId: string, data: ExtensionData): AppData | null {
+    this.log('findAppProfile');
+    const appProfiles: AppData[] = [];
+    const activeUserId = data.users.length === 1 ? data.users[0].userId : data.settings.lastUserId;
+    data.users.forEach((user) => {
+      if (user.userId === activeUserId) {
+        data.appProfiles.forEach((ap) => {
+          if (ap.applicationName === 'AWS Account') {
+            // sso user, check for matching app profile
+            if (ap.profile.name === ssoRoleName
+              && ap.searchMetadata?.AccountId === accountId) {
+              appProfiles.push(this.customizeProfiles(user, [ap])[0]);
+            }
+          }
+        });
+      }
+    });
+    this.log(appProfiles);
+    return appProfiles[0];
+  }
+
+  findAppProfileByRole(iamRole: IamRole, user: UserData, data: ExtensionData): AppData {
+    // eslint-disable-next-line vue/max-len
+    const appProfiles = data!.appProfiles.filter((ap) => ap.profile.id === iamRole?.profileId);
+    this.log('findAppProfileByRole');
+    this.log(appProfiles);
+    return this.customizeProfiles(user, appProfiles)[0];
+  }
+
+  findUser(data: ExtensionData): UserData {
+    this.log('findUser');
+    // eslint-disable-next-line vue/max-len
+    const activeUserId = data!.users.length === 1 ? data!.users[0].userId : data!.settings.lastUserId;
+    return data!.users.filter((u) => u.userId === activeUserId)[0];
+  }
+
   async update(user: UserData): Promise<void> {
-    this.log('func:updateData');
+    this.log('updateData');
     await this.loadData().then((data) => {
       const userIds = [user.userId, ...data.users.map((u) => u.userId)];
       this.saveData(`${this.config.name}-users`, { users: [...new Set(userIds)] });

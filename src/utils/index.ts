@@ -1,4 +1,5 @@
 import extension from '../extension';
+import { createFirefoxContainer } from './container';
 
 function waitForElement<TElement extends Element = HTMLElement>(
   selector: string,
@@ -42,5 +43,4 @@ function waitForElement<TElement extends Element = HTMLElement>(
   });
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export { waitForElement };
+export { waitForElement, createFirefoxContainer };

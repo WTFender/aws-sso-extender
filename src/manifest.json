@@ -16,6 +16,11 @@
       }
     }
   },
+  "{{firefox}}.background": {
+    "scripts": [
+      "src/entry/background.ts"
+    ]
+  },
   "content_scripts": [
     {
       "matches": [
@@ -48,7 +53,12 @@
   "{{chrome}}.cross_origin_opener_policy": {
     "value": "same-origin"
   },
-  "permissions": [
+  "{{chrome}}.permissions": [
+    "cookies",
+    "storage"
+  ],
+  "{{firefox}}.permissions": [
+    "contextualIdentities",
     "cookies",
     "storage"
   ],
@@ -56,8 +66,16 @@
     "history"
   ],
   "{{firefox}}.optional_permissions": [
+    "activeTab",
     "history",
-    "https://*.awsapps.com/start*"
+    "tabs",
+    "webRequest",
+    "webRequestBlocking",
+    "webRequestFilterResponse",
+    "https://signin.aws.amazon.com/switchrole?*",
+    "https://*.amazonaws.com/federation/console?*",
+    "https://*.amazonaws-us-gov.com/federation/console?*",
+    "https://*.amazonaws.cn/federation/console?*"
   ],
   "{{firefox}}.browser_specific_settings": {
     "gecko": {

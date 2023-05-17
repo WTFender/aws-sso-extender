@@ -1,6 +1,6 @@
 import extension from '../extension';
 
-/* submit switchrole form */
+/* submit iam switchrole form */
 
 function parseQuery(queryString): object {
   const query = {};

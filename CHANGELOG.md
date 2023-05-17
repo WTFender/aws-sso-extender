@@ -1,24 +1,5 @@
-## 1.2.7
-- Bug fix - Thanks @renataogarcia
-
-## 1.2.6
-- Show profile color on icon
-- Firefox bug fixes
-
-## 1.2.5
-- Console label fixes
-
-## 1.2.4
-- Page load fixes
-
-## 1.2.3
-- Console fixes
-
-## 1.2.2
-- Name fix
-
-## 1.2.1
-- Bug fixes, sorting, defaults
+## 1.3.0
+- Firefox Containers for AWS Console 🦊
 
 ## 1.2.0
 - Assume IAM roles via SSO 🔓

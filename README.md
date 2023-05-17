@@ -1,5 +1,7 @@
 # aws-sso-extender
 
+[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/codeql.yml/badge.svg?event=push)](https://github.com/WTFender/aws-sso-extender/actions/workflows/codeql.yml)
+
 [Install Chrome Extension](https://chrome.google.com/webstore/detail/aws-sso-extender/pojoaiboolahdaedebpjgnllehpofkep)  |  [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/)  |  [Read more](https://blog.wtfender.com/posts/aws-sso-extender/)  
 
 🚀 Quickly access AWS SSO applications  

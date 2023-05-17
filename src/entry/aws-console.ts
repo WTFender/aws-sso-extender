@@ -22,7 +22,6 @@ function sessionLabel(aws: AwsConsole): string {
   let label;
   let account;
   let accountName;
-  const profile = aws.appProfile?.profile.custom?.label || aws.appProfile?.profile.name;
   if (aws.userType === 'iam') {
     label = aws.user?.custom.sessionLabelIam;
     role = aws.iamRole?.label || aws.iamRole?.roleName as string;
@@ -37,7 +36,7 @@ function sessionLabel(aws: AwsConsole): string {
   return extension.buildLabel(
     label,
     aws.user!.subject,
-    profile,
+    aws.appProfile?.profile.custom?.label || aws.appProfile?.profile.name,
     role,
     account,
     accountName,
@@ -71,42 +70,6 @@ function findIamRole(aws: AwsConsole): IamRole {
   return iamRoles.filter((r) => r.profileId === aws.data?.settings.lastProfileId)[0];
 }
 
-function findUser(aws: AwsConsole): UserData {
-  // eslint-disable-next-line vue/max-len
-  const activeUserId = aws.data!.users.length === 1 ? aws.data!.users[0].userId : aws.data!.settings.lastUserId;
-  return aws.data!.users.filter((u) => u.userId === activeUserId)[0];
-}
-
-function findAppProfileByRole(aws: AwsConsole): AppData {
-  // eslint-disable-next-line vue/max-len
-  const appProfiles = aws.data!.appProfiles.filter((ap) => ap.profile.id === aws.iamRole?.profileId);
-  extension.log('findAppProfileByRole');
-  extension.log(appProfiles);
-  return extension.customizeProfiles(aws.user as UserData, appProfiles)[0];
-}
-
-function findAppProfile(aws: AwsConsole): AppData | null {
-  extension.log('findAppProfile');
-  const data = aws.data as ExtensionData;
-  const appProfiles: AppData[] = [];
-  const activeUserId = data.users.length === 1 ? data.users[0].userId : data.settings.lastUserId;
-  data.users.forEach((user) => {
-    if (user.userId === activeUserId) {
-      data.appProfiles.forEach((ap) => {
-        if (ap.applicationName === 'AWS Account') {
-          // sso user, check for matching app profile
-          if (ap.profile.name === aws.ssoRoleName
-            && ap.searchMetadata?.AccountId === aws.accountId) {
-            appProfiles.push(extension.customizeProfiles(user, [ap])[0]);
-          }
-        }
-      });
-    }
-  });
-  extension.log(appProfiles);
-  return appProfiles[0];
-}
-
 function checkIamLogins(aws: AwsConsole) {
   extension.log('console:checkIamLogins');
   const data = aws.data as ExtensionData;
@@ -137,7 +100,7 @@ function getHeader() {
   return waitForElement('#awsc-top-level-nav');
 }
 
-function getHeaderLabel(userType:AwsConsole['userType']) {
+function getHeaderLabel(userType: AwsConsole['userType']) {
   return waitForElement('#nav-usernameMenu').then((el) => el.querySelectorAll('span')[userType === 'iam' ? 2 : 1]);
 }
 
@@ -220,13 +183,13 @@ async function init(): Promise<AwsConsole> {
     || (aws.userType === 'iam' && aws.roleName)) {
     aws.data = await extension.loadData();
   }
-  if (aws.data) { aws.user = findUser(aws); }
+  if (aws.data) { aws.user = extension.findUser(aws.data); }
   if (aws.user && aws.userType === 'sso') {
     aws.iamRole = null;
-    aws.appProfile = findAppProfile(aws);
+    aws.appProfile = extension.findAppProfile(aws.ssoRoleName!, aws.accountId!, aws.data!);
   } else if (aws.user && aws.userType === 'iam') {
     aws.iamRole = findIamRole(aws);
-    aws.appProfile = findAppProfileByRole(aws);
+    aws.appProfile = extension.findAppProfileByRole(aws.iamRole, aws.user, aws.data!);
   }
   return aws;
 }
