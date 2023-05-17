@@ -54,12 +54,10 @@
     "value": "same-origin"
   },
   "{{chrome}}.permissions": [
-    "cookies",
     "storage"
   ],
   "{{firefox}}.permissions": [
     "contextualIdentities",
-    "cookies",
     "storage"
   ],
   "{{chrome}}.optional_permissions": [
