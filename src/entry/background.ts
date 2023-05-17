@@ -1,66 +1,51 @@
 import extension from '../extension';
-import { createContainer } from '../utils';
+import { ExtensionData, ExtensionMessage } from '../types';
+import { createFirefoxContainer } from '../utils';
 
-extension.log('background');
-
-/*
-function handleMessage(request, sender, sendResponse) {
-  extension.log('background:handleMessage');
-  extension.log(`${request} ${sender}`);
-  // sendResponse({ response: 'responseText' });
-}
-*/
+extension.log('background:init');
 
 function listenConsole() {
-  if (!extension.config.browser.webRequest.onBeforeRequest.hasListener(createContainer)) {
+  if (!extension.config.browser.webRequest.onBeforeRequest.hasListener(createFirefoxContainer)) {
     extension.log('background:listenConsole');
     extension.config.browser.webRequest.onBeforeRequest.addListener(
-      createContainer,
+      createFirefoxContainer,
       {
         urls: [
-          'https://signin.aws.amazon.com/switchrole?*',
-          'https://*.amazonaws.com/federation/console?*',
-          'https://*.amazonaws-us-gov.com/federation/console?*',
-          'https://*.amazonaws.cn/federation/console?*',
+          ...extension.config.permissions.containers,
+          ...extension.config.permissions.signin,
         ],
         types: ['xmlhttprequest'],
       },
       ['blocking'],
     );
-  } else { extension.log('background:listenConsole:listeners exist'); }
+  } else { extension.log('background:listenConsole:listenerExists'); }
 }
 
-function setupContainer() {
-  extension.log('background:setupContainer');
-  // check container permissions
+extension.config.browser.runtime.onMessage.addListener((msg: ExtensionMessage) => {
   extension.checkPermissions().then((permissions) => {
-    extension.log(permissions);
-    if (permissions.containers) {
-      extension.loadData().then((data) => {
-        // check user container setting
-        const { firefoxContainers } = extension.findUser(data).custom;
-        extension.log(`background:firefoxContainers:${firefoxContainers}`);
-        if (firefoxContainers) {
-          listenConsole();
-        }
-      });
-    }
-  });
-}
-
-// extension.config.browser.runtime.onMessage.addListener(handleMessage);
-extension.config.browser.permissions.onAdded.addListener(setupContainer);
-extension.config.browser.storage.onChanged.addListener((changes) => {
-  const changeKeys = Object.keys(changes);
-  changeKeys.forEach((k) => {
-    if (k.startsWith(`${extension.config.name}-custom-`)) {
-      // user changes
-      if (changes[k].newValue.firefoxContainers) {
-        setupContainer();
-      } else {
-        extension.config.browser.webRequest.onBeforeRequest.removeListener(createContainer);
+    if (msg.action === 'enableFirefoxContainers') {
+      extension.log('background:enableFirefoxContainers');
+      if (permissions.containers) {
+        listenConsole();
+      }
+    } else if (msg.action === 'disableFirefoxContainers') {
+      extension.log('background:disableFirefoxContainers');
+      if (permissions.containers) {
+        extension.config.browser.webRequest.onBeforeRequest.removeListener(createFirefoxContainer);
       }
     }
   });
 });
-setupContainer();
+
+// startup
+extension.checkPermissions().then((permissions) => {
+  // permissions
+  if (permissions.containers) {
+    extension.loadData().then((data: ExtensionData) => {
+      // settings
+      if (data.settings.firefoxContainers) {
+        listenConsole();
+      }
+    });
+  }
+});

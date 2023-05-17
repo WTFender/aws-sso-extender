@@ -51,7 +51,7 @@
               <h3>Customize the AWS Console</h3>
               <div>
                 <div v-if="$ext.platform === 'firefox'">
-                  <PCheckbox @click="toggleContainers()" v-model="user.custom.firefoxContainers" inputId="container"
+                  <PCheckbox @click="toggleContainers()" v-model="settings.firefoxContainers" inputId="container"
                     name="container" :binary="true" style="margin-right: 10px; text-align: middle;" />
                   <label for="container">Open in Firefox Containers</label><br><br>
                 </div>
@@ -156,7 +156,7 @@
 </template>
 <script lang="ts">
 import demoData from '../demo';
-import { AppData, CustomData, ExtensionData, IamRole, UserData } from '../types';
+import { AppData, CustomData, ExtensionConfig, ExtensionData, ExtensionSettings, IamRole, UserData } from '../types';
 
 export default {
   name: 'PopupView',
@@ -185,7 +185,9 @@ export default {
       settings: {
         defaultUser: 'lastUserId',
         lastUserId: '',
-      },
+        lastProfileId: '',
+        firefoxContainers: false,
+      } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: '',
       staleHours: 1,
@@ -229,11 +231,30 @@ export default {
     },
   },
   watch: {
+    'settings.firefoxContainers': {
+      handler: function (v) {
+        if (v === true) {
+          this.$ext.config.browser.runtime.sendMessage({
+            action: 'enableFirefoxContainers',
+          });
+        } else if (v === false) {
+          this.$ext.config.browser.runtime.sendMessage({
+            action: 'disableFirefoxContainers',
+          });
+        }
+      },
+    },
+    settings: {
+      handler() {
+        if (!this.demoMode) {
+          this.$ext.saveSettings(this.settings);
+        }
+      },
+      deep: true,
+    },
     user() {
-      this.$ext.log('user change');
       if (this.user === null) { this.user = this.$ext.getDefaultUser(this.raw); };
       this.settings.lastUserId = this.user.userId;
-      if (!this.demoMode) { this.$ext.saveSettings(this.settings).then() };
       this.refreshProfiles();
       // this.reload();
     },
@@ -255,7 +276,7 @@ export default {
   },
   methods: {
     toggleContainers() {
-      this.user.custom.firefoxContainers = !this.user.custom.firefoxContainers;
+      this.settings.firefoxContainers = !this.settings.firefoxContainers;
     },
     requestPermissionsContainers() {
       this.$ext.config.browser.permissions.request({
@@ -283,11 +304,11 @@ export default {
       window.close();
     },
     requestPermissionsConsole() {
-      if (this.$ext.platform === 'firefox'){
-        this.$ext.log('requestPermissionsContainers');
+      if (this.$ext.platform === 'firefox') {
+        this.$ext.log('popup:requestPermissionsContainers');
         this.requestPermissionsContainers();
       } else {
-        this.$ext.log('requestPermissionsConsole');
+        this.$ext.log('popup:requestPermissionsConsole');
         this.$ext.config.browser.permissions.request({
           origins: [...this.$ext.config.permissions.console,],
         });
@@ -299,7 +320,7 @@ export default {
       this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
     },
     demo() {
-      this.$ext.log('demoMode');
+      this.$ext.log('popup:demoMode');
       this.demoMode = true;
       this.permissions = {
         console: true,
@@ -320,9 +341,6 @@ export default {
         this.settings.defaultUser = userId.target.value;
       } else {
         this.settings.defaultUser = userId;
-      }
-      if (!this.demoMode) {
-        this.$ext.saveSettings(this.settings);
       }
     },
     load(data: ExtensionData) {
@@ -381,7 +399,7 @@ export default {
       });
     },
     updateProfile(appProfile: AppData) {
-      this.$ext.log('updateProfile');
+      this.$ext.log('popup:updateProfile');
       this.user.custom.profiles[appProfile.profile.id] = appProfile.profile.custom as CustomData;
       this.$ext.log(this.user);
       if (this.faveProfiles.length === 0) {
@@ -415,7 +433,7 @@ export default {
       this.updateProfile(newData);
     },
     addIamRole(role: IamRole) {
-      this.$ext.log('addIamRole');
+      this.$ext.log('popup:addIamRole');
       if (role.profileId in this.user.custom.profiles) {
         this.user.custom.profiles[role.profileId].iamRoles.push(role);
       } else {

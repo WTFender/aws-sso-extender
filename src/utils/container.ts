@@ -38,37 +38,9 @@ function randomColor() {
   return availableContainerColors[Math.random() * availableContainerColors.length | 0];
 }
 
-function updateContainerName(role: IamRole) {
-  extension.log('updateContainerName');
-  extension.loadData().then((data) => {
-    const user = extension.findUser(data);
-    const ap = extension.findAppProfile(role.roleName, role.accountId, data);
-    const ssoContainerName = extension.buildLabel(
-      user.custom.sessionLabelSso,
-      user.subject,
-      ap?.profile.custom?.label || ap?.profile.name,
-      null,
-      role.accountId,
-      ap?.searchMetadata?.AccountName,
-    );
-    const iamContainerName = extension.buildLabel(
-      user.custom.sessionLabelIam,
-      user.subject,
-      ap?.profile.custom?.label || ap?.profile.name,
-      role.roleName,
-      role.accountId,
-      ap?.searchMetadata?.AccountName,
-    );
-    extension.config.browser.contextualIdentities.query({
-      name: ssoContainerName,
-    }).then((details) => {
-      details[0].name = iamContainerName;
-    }, null);
-  });
-}
-
-async function createContainer(details) {
+async function createFirefoxContainer(details) {
   extension.log('container');
+  extension.log(details);
 
   // If we're in a container already, check if iam role, update label
   if (details.cookieStoreId !== 'firefox-default') {
@@ -90,15 +62,35 @@ async function createContainer(details) {
   const data = await extension.loadData();
   const ap = await extension.findAppProfile(accountRole, accountNumber, data);
   const user = extension.findUser(data);
-  // build container label
-  const label = extension.buildLabel(
-    user.custom.sessionLabelSso,
-    user!.subject,
-    ap?.profile.custom?.label || ap?.profile.name,
-    accountRole,
-    accountName,
-    accountNumber,
-  );
+  let label;
+  // if pending iam login, use iam label
+  if (ap!.profile.id in data.iamLogins) {
+    const role: IamRole = data.iamLogins[ap!.profile.id];
+    if (role.profileId === ap!.profile.id) {
+      const iamContainerName = extension.buildLabel(
+        user.custom.sessionLabelIam,
+        user.subject,
+        ap?.profile.custom?.label || ap?.profile.name,
+        role.label || role.roleName,
+        role.accountId,
+        ap?.searchMetadata?.AccountName,
+      );
+      extension.log('iamContainerName');
+      extension.log(iamContainerName);
+      label = iamContainerName;
+    }
+  } else {
+    // use sso label
+    label = extension.buildLabel(
+      user.custom.sessionLabelSso,
+      user!.subject,
+      ap?.profile.custom?.label || ap?.profile.name,
+      accountRole,
+      accountNumber,
+      accountName,
+    );
+  }
+  extension.log('label');
   extension.log(label);
 
   let str = '';
@@ -110,7 +102,7 @@ async function createContainer(details) {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  filter.onstop = (event) => {
+  filter.onstop = async (event) => {
     // The first OPTIONS request has no response body
     if (str.length > 0) {
       // signInToken
@@ -128,20 +120,28 @@ async function createContainer(details) {
         // Generate our federation URI and open it in a container
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const url = `${object.signInFederationLocation}?Action=login&SigninToken=${object.signInToken}&Issuer=${encodeURIComponent(details.originUrl)}&Destination=${encodeURIComponent(destination)}`;
-        extension.config.browser.contextualIdentities.create({
+        const containers = await extension.config.browser.contextualIdentities.query({
           name: label,
-          color: randomColor(),
-          icon: randomIcon(),
-        }).then((container) => {
-          const createTabParams = {
-            cookieStoreId: container.cookieStoreId,
-            url,
-            pinned: false,
-          };
-          extension.config.browser.tabs.create(createTabParams);
-          extension.config.browser.tabs.remove(details.tabId);
-          extension.log(details);
         });
+        let container;
+        if (containers.length >= 1) {
+          // eslint-disable-next-line prefer-destructuring
+          container = containers[0];
+        } else {
+          container = await extension.config.browser.contextualIdentities.create({
+            name: label,
+            color: randomColor(),
+            icon: randomIcon(),
+          });
+        }
+        const createTabParams = {
+          cookieStoreId: container.cookieStoreId,
+          url,
+          pinned: false,
+        };
+        extension.config.browser.tabs.create(createTabParams);
+        extension.config.browser.tabs.remove(details.tabId);
+        extension.log(details);
       } else {
         filter.write(encoder.encode(str));
       }
@@ -152,4 +152,5 @@ async function createContainer(details) {
   return {};
 }
 
-export { createContainer, updateContainerName };
+// eslint-disable-next-line import/prefer-default-export
+export { createFirefoxContainer };

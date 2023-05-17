@@ -20,6 +20,7 @@ export interface ExtensionSettings {
   defaultUser: string
   lastUserId: string
   lastProfileId: string
+  firefoxContainers?: boolean
 }
 
 export interface ExtensionPermissions {
@@ -38,6 +39,10 @@ export interface ExtensionData {
   updatedAt?: number
 }
 
+export interface ExtensionMessage {
+  action: 'enableFirefoxContainers' | 'disableFirefoxContainers'
+}
+
 export interface ApiData {
   result: AppData[] | ProfileData[]
 }
@@ -53,7 +58,6 @@ export interface UserData {
     labelFooter: boolean,
     labelHeader: boolean,
     profiles: Record<string, CustomData>
-    firefoxContainers?: boolean,
   }
   appProfileIds: string[]
   accountId: string

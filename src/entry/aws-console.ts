@@ -1,5 +1,5 @@
 import extension from '../extension';
-import { updateContainerName, waitForElement } from '../utils';
+import { waitForElement } from '../utils';
 import {
   UserData, AppData, ExtensionData, IamRole,
 } from '../types';
@@ -70,14 +70,6 @@ function findIamRole(aws: AwsConsole): IamRole {
   return iamRoles.filter((r) => r.profileId === aws.data?.settings.lastProfileId)[0];
 }
 
-function findAppProfileByRole(aws: AwsConsole): AppData {
-  // eslint-disable-next-line vue/max-len
-  const appProfiles = aws.data!.appProfiles.filter((ap) => ap.profile.id === aws.iamRole?.profileId);
-  extension.log('findAppProfileByRole');
-  extension.log(appProfiles);
-  return extension.customizeProfiles(aws.user as UserData, appProfiles)[0];
-}
-
 function checkIamLogins(aws: AwsConsole) {
   extension.log('console:checkIamLogins');
   const data = aws.data as ExtensionData;
@@ -91,7 +83,6 @@ function checkIamLogins(aws: AwsConsole) {
         label: encodeURIComponent(sessionLabel(aws)),
       });
       extension.removeIamLogin(role.profileId);
-      updateContainerName(role);
     }
   }
 }
@@ -198,7 +189,7 @@ async function init(): Promise<AwsConsole> {
     aws.appProfile = extension.findAppProfile(aws.ssoRoleName!, aws.accountId!, aws.data!);
   } else if (aws.user && aws.userType === 'iam') {
     aws.iamRole = findIamRole(aws);
-    aws.appProfile = findAppProfileByRole(aws);
+    aws.appProfile = extension.findAppProfileByRole(aws.iamRole, aws.user, aws.data!);
   }
   return aws;
 }

@@ -37,13 +37,13 @@ class Extension {
     labelFooter: true,
     labelHeader: true,
     profiles: {},
-    firefoxContainers: false,
   };
 
   defaultSettings = {
     defaultUser: 'lastUserId',
     lastUserId: null,
     lastProfileId: null,
+    firefoxContainers: false,
   };
 
   constructor(config: ExtensionConfig) {
@@ -76,7 +76,7 @@ class Extension {
     if (profile) { label = label.replaceAll('{{profile}}', profile); }
     if (account) { label = label.replaceAll('{{account}}', account); }
     if (accountName) { label = label.replaceAll('{{accountName}}', accountName); }
-    this.log(`func:buildLabel:${label}`);
+    this.log(`buildLabel:${label}`);
     return label;
   }
 
@@ -86,7 +86,7 @@ class Extension {
         .split('; ')
         .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
     );
-    this.log(`func:getCookie:${name in cookies}`);
+    this.log(`getCookie:${name in cookies}`);
     return cookies[name];
   }
 
@@ -109,7 +109,7 @@ class Extension {
   }
 
   async checkPermissions(): Promise<ExtensionPermissions> {
-    this.log('func:checkPermissions');
+    this.log('checkPermissions');
     const history = this.config.browser.permissions.contains({
       permissions: ['history'],
     });
@@ -122,7 +122,7 @@ class Extension {
     const sso = this.config.browser.permissions.contains({
       origins: [...this.config.permissions.sso],
     });
-    const containers = this.config.browser.permissions.contains({
+    const containers = this.platform === 'firefox' ? this.config.browser.permissions.contains({
       origins: [...this.config.permissions.containers],
       permissions: [
         'activeTab',
@@ -131,7 +131,8 @@ class Extension {
         'webRequestBlocking',
         'webRequestFilterResponse',
       ],
-    });
+    }) : Promise.resolve(false);
+    // eslint-disable-next-line vue/max-len
     const data = await Promise.all([history, console, signin, sso, containers]).then((res) => ({
       history: res[0],
       console: res[1],
@@ -191,7 +192,7 @@ class Extension {
   }
 
   async removeIamLogin(profileId: string): Promise<void> {
-    this.log(`func:removeIamLogin:${profileId}`);
+    this.log(`removeIamLogin:${profileId}`);
     const logins = await this.loadIamLogins();
     delete logins[profileId];
     this.log(logins);
@@ -199,7 +200,7 @@ class Extension {
   }
 
   queueIamLogin(role: IamRole): Promise<void> {
-    this.log('func:queueIamLogin');
+    this.log('queueIamLogin');
     return this.loadIamLogins().then((logins) => {
       const iamLogins = logins;
       iamLogins[role.profileId] = role;
@@ -245,7 +246,7 @@ class Extension {
   }
 
   getDefaultUser(data: ExtensionData): UserData {
-    this.log('func:getDefaultUser');
+    this.log('getDefaultUser');
     if (data.settings.defaultUser === 'lastUserId') {
       return data.users[0];
     }
@@ -253,7 +254,7 @@ class Extension {
   }
 
   async loadData(): Promise<ExtensionData> {
-    this.log('func:loadData');
+    this.log('loadData');
     const iamLogins = await this.loadIamLogins();
     const settings = await this.loadSettings();
     let users = await this.loadUsers();
@@ -277,7 +278,7 @@ class Extension {
   }
 
   createProfileUrl(user: UserData, appProfile: AppData) {
-    this.log('func:createProfileUrl');
+    this.log('createProfileUrl');
     const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
     const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
     const appProfileName = encodeUriPlusParens(appProfile.name);
@@ -300,12 +301,12 @@ class Extension {
   }
 
   async resetData(): Promise<void> {
-    this.log('func:resetData');
+    this.log('resetData');
     await this.config.db.clear();
   }
 
   async saveData(dataKey: string, data: unknown): Promise<void> {
-    this.log(`func:saveData:${dataKey}`);
+    this.log(`saveData:${dataKey}`);
     this.log(data);
     const dataObj = {};
     dataObj[dataKey] = JSON.stringify(
@@ -322,7 +323,7 @@ class Extension {
   }
 
   saveAppProfiles(user: UserData): void {
-    this.log('func:saveAppProfiles');
+    this.log('saveAppProfiles');
     const appProfiles = this.parseAppProfiles();
     appProfiles.forEach((appProfile) => {
       this.saveData(appProfile.profile?.id, appProfile);
@@ -333,7 +334,7 @@ class Extension {
   }
 
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
-    this.log('func:customizeProfiles');
+    this.log('customizeProfiles');
     const defaults: CustomData = {
       color: this.defaultCustom.colorDefault,
       favorite: false,
@@ -373,6 +374,14 @@ class Extension {
     return appProfiles[0];
   }
 
+  findAppProfileByRole(iamRole: IamRole, user: UserData, data: ExtensionData): AppData {
+    // eslint-disable-next-line vue/max-len
+    const appProfiles = data!.appProfiles.filter((ap) => ap.profile.id === iamRole?.profileId);
+    this.log('findAppProfileByRole');
+    this.log(appProfiles);
+    return this.customizeProfiles(user, appProfiles)[0];
+  }
+
   findUser(data: ExtensionData): UserData {
     this.log('findUser');
     // eslint-disable-next-line vue/max-len
@@ -381,7 +390,7 @@ class Extension {
   }
 
   async update(user: UserData): Promise<void> {
-    this.log('func:updateData');
+    this.log('updateData');
     await this.loadData().then((data) => {
       const userIds = [user.userId, ...data.users.map((u) => u.userId)];
       this.saveData(`${this.config.name}-users`, { users: [...new Set(userIds)] });
