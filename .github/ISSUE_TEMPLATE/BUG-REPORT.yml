@@ -1,4 +1,4 @@
-name: "Bug Report 🐛"
+name: "Report a Bug 🐛"
 description: Report a bug or issue.
 labels: ["bug"]
 body:
