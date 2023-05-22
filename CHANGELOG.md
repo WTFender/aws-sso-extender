@@ -1,3 +1,6 @@
+## 1.3.4
+- Fixed Console not loading customizations
+
 ## 1.3.3
 - Readd cookie permissions for Firefox
 
