@@ -15,7 +15,7 @@ body:
     attributes:
       label: "Description"
       description: Please enter a description of your issue
-      placeholder: Please enter a description of your issue...
+      placeholder: Include a detailed description and screenshots...
     validations:
       required: true
   - type: dropdown
