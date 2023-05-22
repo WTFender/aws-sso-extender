@@ -1,5 +1,5 @@
-name: "🐛 Bug Report"
-description: Create a new ticket for a bug.
+name: "Bug Report 🐛"
+description: Report a bug or issue.
 labels: ["bug"]
 body:
   - type: input
