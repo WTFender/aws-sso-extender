@@ -5,9 +5,9 @@ body:
   - type: input
     id: version
     attributes:
-      label: "Version"
-      description: Extension Version
-      placeholder: "1.3.0"
+      label: "Extension Version"
+      description: Check in your browser at chrome:extensions or about:addons
+      placeholder: "2.1.0"
     validations:
       required: true
   - type: textarea
