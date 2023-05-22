@@ -1,0 +1,12 @@
+name: "Suggest a Feature ✨"
+description: Suggest a feature or improvement.
+labels: ["feature"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter a description
+      placeholder: Suggest a new feature or improvement...
+    validations:
+      required: true
