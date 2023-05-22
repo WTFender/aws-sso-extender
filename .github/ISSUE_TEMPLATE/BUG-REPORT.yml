@@ -1,0 +1,44 @@
+name: "🐛 Bug Report"
+description: Create a new ticket for a bug.
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: "Version"
+      description: Extension Version
+      placeholder: "1.3.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter a description of your issue
+      placeholder: Please enter a description of your issue...
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: "Browsers"
+      description: What browsers are you seeing the issue on?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Edge
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      description: What platform are you seeing the issue on?
+      multiple: true
+      options:
+        - Windows
+        - Linux
+        - Mac
+    validations:
+      required: true
