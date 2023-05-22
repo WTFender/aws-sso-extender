@@ -96,6 +96,9 @@ function getFontColor(hexcolor): 'black' | 'white' {
   return (yiq >= 180) ? 'black' : 'white';
 }
 
+function getMenu() {
+  return waitForElement('#menu--account');
+}
 function getHeader() {
   return waitForElement('#awsc-top-level-nav');
 }
@@ -166,8 +169,8 @@ async function init(): Promise<AwsConsole> {
     appProfile: null,
     iamRole: null,
   };
-  const accountMenu = document.getElementById('menu--account')!
-    .firstElementChild!.firstElementChild!;
+  const menu = await getMenu();
+  const accountMenu = menu.firstElementChild!.firstElementChild!;
   const accountPrompt = accountMenu!.firstElementChild!.getElementsByTagName('span')[0].textContent;
   if (accountPrompt === 'Currently active as: ') {
     aws.userType = 'iam';
