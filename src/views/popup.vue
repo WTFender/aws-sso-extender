@@ -5,23 +5,6 @@
 <template>
   <PToolbar style="margin: 0px; padding: 7px">
     <template #start>
-      <span class="p-input-icon-left p-toolbar-separator" style="margin: 0px">
-        <i class="pi pi-search" />
-        <InputText ref="searchBox" v-model="filterProfiles['global'].value" placeholder="Search Profiles" />
-      </span>
-      <i
-        v-if="faveProfiles.length > 0"
-        class="pi pi-star-fill menu-icon p-toolbar-separator"
-        :class="{ 'page-active': page === 'favorites' }"
-        @click="faveProfiles.length !== 0 ? setPage('favorites') : function () {}"
-      />
-    </template>
-    <template #end>
-      <i
-        class="pi pi-list menu-icon p-toolbar-separator"
-        :class="{ 'page-active': page === 'profiles' }"
-        @click="setPage('profiles')"
-      />
       <!---
       <i
         class="pi menu-icon p-toolbar-separator"
@@ -33,9 +16,49 @@
         @click="setPage('users')"
       />
       --->
-      <PrimeButton text icon="pi pi-user" :label="user.subject" iconPos="right" style="padding: 5px" />
+      <PrimeButton
+        style="margin: 0px"
+        severity="primary"
+        icon="pi pi-user"
+        :label="user.subject"
+      />
+    </template>
+    <template #center>
+      <span class="p-input-icon-left" style="margin: 0px">
+        <i class="pi pi-search" />
+        <InputText
+          ref="searchBox"
+          v-model="filterProfiles['global'].value"
+          placeholder="Search Profiles"
+        />
+      </span>
+    </template>
+    <template #end>
+      <PSelectButton
+        style="margin: 0px"
+        v-model="testYes"
+        :options="items"
+        aria-labelledby="basic"
+        optionLabel="value"
+        dataKey="value"
+      >
+        <template #option="slotProps">
+          <i :class="slotProps.option.icon"></i>
+        </template>
+      </PSelectButton>
     </template>
   </PToolbar>
+
+  <div class="card flex justify-content-center">
+    <PrimeButton
+      type="button"
+      label="Toggle"
+      @click="toggle($event)"
+      aria-haspopup="true"
+      aria-controls="menu"
+    />
+    <PMenu ref="menu" id="menu" :model="testItems" :popup="true" />
+  </div>
 
   <!--- Setup -->
   <SetupSteps
@@ -290,7 +313,7 @@
   </div>
 </template>
 <script lang="ts">
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from "primevue/api";
 import demoData from "../demo";
 import {
   AppData,
@@ -301,45 +324,63 @@ import {
   IamRole,
   UserData,
 } from "../types";
+import { ref } from "vue";
 
 export default {
   name: "PopupView",
   data() {
     return {
+      testItems: [
+        {
+          label: "Options",
+          items: [
+            {
+              label: "Update",
+              icon: "pi pi-refresh",
+              command: () => {
+                toast.add({
+                  severity: "success",
+                  summary: "Updated",
+                  detail: "Data Updated",
+                  life: 3000,
+                });
+              },
+            },
+            {
+              label: "Delete",
+              icon: "pi pi-times",
+              command: () => {
+                toast.add({
+                  severity: "warn",
+                  summary: "Delete",
+                  detail: "Data Deleted",
+                  life: 3000,
+                });
+              },
+            },
+          ],
+        },
+        {
+          label: "Navigate",
+          items: [
+            {
+              label: "Vue Website",
+              icon: "pi pi-external-link",
+              url: "https://vuejs.org/",
+            },
+            {
+              label: "Router",
+              icon: "pi pi-upload",
+              to: "/fileupload",
+            },
+          ],
+        },
+      ],
+      testYes: { icon: "pi pi-list", value: "profiles" },
       filterProfiles: {},
       items: [
-        {
-          label: "Update",
-          icon: "pi pi-refresh",
-          command: () => {
-            toast.add({
-              severity: "success",
-              summary: "Updated",
-              detail: "Data Updated",
-              life: 3000,
-            });
-          },
-        },
-        {
-          label: "Delete",
-          icon: "pi pi-times",
-          command: () => {
-            toast.add({
-              severity: "warn",
-              summary: "Delete",
-              detail: "Data Deleted",
-              life: 3000,
-            });
-          },
-        },
-        {
-          label: "Vue Website",
-          icon: "pi pi-external-link",
-          command: () => {
-            window.location.href = "https://vuejs.org/";
-          },
-        },
-        { label: "Upload", icon: "pi pi-upload", to: "/fileupload" },
+        { icon: "pi pi-list", value: "profiles" },
+        { icon: "pi pi-star", value: "favorites" },
       ],
       raw: {} as ExtensionData,
       defaultUser: "",
@@ -461,6 +502,52 @@ export default {
     },
   },
   created() {
+    const itemOptions = ref([
+      {
+        label: "Options",
+        items: [
+          {
+            label: "Update",
+            icon: "pi pi-refresh",
+            command: () => {
+              toast.add({
+                severity: "success",
+                summary: "Updated",
+                detail: "Data Updated",
+                life: 3000,
+              });
+            },
+          },
+          {
+            label: "Delete",
+            icon: "pi pi-times",
+            command: () => {
+              toast.add({
+                severity: "warn",
+                summary: "Delete",
+                detail: "Data Deleted",
+                life: 3000,
+              });
+            },
+          },
+        ],
+      },
+      {
+        label: "Navigate",
+        items: [
+          {
+            label: "Vue Website",
+            icon: "pi pi-external-link",
+            url: "https://vuejs.org/",
+          },
+          {
+            label: "Router",
+            icon: "pi pi-upload",
+            to: "/fileupload",
+          },
+        ],
+      },
+    ]);
     this.filterProfiles = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
@@ -472,6 +559,10 @@ export default {
     this.reload();
   },
   methods: {
+    toggle(event) {
+      const menu = ref();
+      this.$refs.menu.toggle(true);
+    },
     toggleContainers() {
       this.settings.firefoxContainers = !this.settings.firefoxContainers;
     },
@@ -676,7 +767,7 @@ export default {
 }
 
 .card {
-  width: 500px !important;
+  width: 550px !important;
   display: inline-block;
   margin: 0px;
   padding: 0px;
