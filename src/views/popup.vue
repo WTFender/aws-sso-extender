@@ -4,97 +4,58 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <PToolbar style="margin: 0px; padding: 7px">
-    <template #start>
-      <!---
+  <template #start>
+    <!---
       <i
         class="pi menu-icon p-toolbar-separator"
         :class="{
           'page-active': page === 'users',
           'pi-users': users.length > 1,
           'pi-user': users.length >= 1,
-        }"
-        @click="setPage('users')"
-      />
-      --->
-      <PrimeButton
-        style="margin: 0px"
-        severity="primary"
-        icon="pi pi-user"
-        :label="user.subject"
-      />
+          }"
+          @click="setPage('users')"
+        />
+        --->
+      <div class="card flex justify-content-center">
+        <PrimeButton type="button" :label="user.subject" icon="pi pi-user" style="margin: 0px" severity="primary"
+          @click="toggle" aria-haspopup="true" aria-controls="menu" />
+        <PMenu ref="menu" id="menu" :model="userMenu" :popup="true" />
+      </div>
     </template>
     <template #center>
       <span class="p-input-icon-left" style="margin: 0px">
         <i class="pi pi-search" />
-        <InputText
-          ref="searchBox"
-          v-model="filterProfiles['global'].value"
-          placeholder="Search Profiles"
-        />
+        <InputText ref="searchBox" v-model="filterProfiles['global'].value" placeholder="Search Profiles" />
       </span>
     </template>
     <template #end>
-      <PSelectButton
-        style="margin: 0px"
-        v-model="testYes"
-        :options="items"
-        aria-labelledby="basic"
-        optionLabel="value"
-        dataKey="value"
-      >
+      <PSelectButton style="margin: 0px" v-model="page" :options="items" aria-labelledby="basic" optionLabel="value"
+        dataKey="value">
         <template #option="slotProps">
-          <i :class="slotProps.option.icon"></i>
+          <i :class="slotProps.option.icon" @click="setPage(slotProps.option.value)"></i>
         </template>
       </PSelectButton>
     </template>
   </PToolbar>
 
-  <div class="card flex justify-content-center">
-    <PrimeButton
-      type="button"
-      label="Toggle"
-      @click="toggle($event)"
-      aria-haspopup="true"
-      aria-controls="menu"
-    />
-    <PMenu ref="menu" id="menu" :model="testItems" :popup="true" />
-  </div>
-
   <!--- Setup -->
-  <SetupSteps
-    v-if="!permissions.sso || !loaded"
-    :permissions="permissions"
-    :loaded="loaded"
-    @demo="demo()"
-  />
+  <SetupSteps v-if="!permissions.sso || !loaded" :permissions="permissions" :loaded="loaded" @demo="demo()" />
 
   <!--- Post-setup -->
   <div v-else>
     <div class="card">
       <!--- Profiles/Favorites page -->
-      <ProfileTable
-        v-if="page === 'favorites' || page === 'profiles'"
-        :demoMode="demoMode"
-        :settings="settings"
-        :filterProfiles="filterProfiles"
-        :app-profiles="page === 'favorites' ? faveProfiles : userProfiles"
-        :user="user"
-        @updateProfile="updateProfile"
-        @updateProfileLabel="updateProfileLabel"
-      />
+      <ProfileTable v-if="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings="settings"
+        :filterProfiles="filterProfiles" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user"
+        @updateProfile="updateProfile" @updateProfileLabel="updateProfileLabel" />
 
       <!--- User page -->
       <div v-if="page === 'users'" class="settings">
         <TabView>
           <TabPanel header="Users">
             <h3>Current User</h3>
-            <PListbox
-              v-model="user"
-              name="userSelect"
-              :options="users"
-              class="w-full md:w-14rem"
-              style="margin-bottom: 5px"
-            >
+            <PListbox v-model="user" name="userSelect" :options="users" class="w-full md:w-14rem"
+              style="margin-bottom: 5px">
               <template #option="slotProps">
                 <div class="flex align-items-center">
                   <div>
@@ -108,75 +69,40 @@
               </template>
             </PListbox>
             <h3>Default User</h3>
-            <select
-              id="defaultUserSelect"
-              name="defaultUserSelect"
-              @change="setDefaultUser($event)"
-            >
-              <option
-                v-for="u in defaultUserOptions"
-                :key="u.userId"
-                :label="u.label"
-                :value="u.userId"
-                :selected="u.userId === settings.defaultUser"
-              />
+            <select id="defaultUserSelect" name="defaultUserSelect" @change="setDefaultUser($event)">
+              <option v-for="u in defaultUserOptions" :key="u.userId" :label="u.label" :value="u.userId"
+                :selected="u.userId === settings.defaultUser" />
             </select>
             <br /><br />
-            <PrimeButton
-              class="p-button-danger reset-button"
-              label="Reset User"
-              style="margin-top: 15px"
-              @click="resetUser()"
-            />
+            <PrimeButton class="p-button-danger reset-button" label="Reset User" style="margin-top: 15px"
+              @click="resetUser()" />
           </TabPanel>
           <TabPanel header="Console">
             <div v-if="!consolePermissions">
               <p>This extension requires permissions to customize the AWS console:</p>
               <code>https://*.console.aws.amazon.com/*</code><br />
-              <PrimeButton
-                size="small"
-                icon="pi pi-lock"
-                class="p-button-success"
-                label="Request Permissions"
-                style="margin-top: 10px"
-                @click="requestPermissionsConsole()"
-              />
+              <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+                style="margin-top: 10px" @click="requestPermissionsConsole()" />
             </div>
             <div v-else>
               <h3>Customize the AWS Console</h3>
               <div>
                 <div v-if="$ext.platform === 'firefox'">
-                  <PCheckbox
-                    @click="toggleContainers()"
-                    v-model="settings.firefoxContainers"
-                    inputId="container"
-                    name="container"
-                    :binary="true"
-                    style="margin-right: 10px; text-align: middle"
-                  />
+                  <PCheckbox @click="toggleContainers()" v-model="settings.firefoxContainers" inputId="container"
+                    name="container" :binary="true" style="margin-right: 10px; text-align: middle" />
                   <label for="container">Open in Firefox Containers</label><br /><br />
                 </div>
                 <label for="sessionLabelSso" class="ml-2">SSO session Label</label>
-                <InputText
-                  id="sessionLabelSso"
-                  v-model="user.custom.sessionLabelSso"
-                  name="sessionLabelSso"
-                  class="p-inputtext-sm"
-                  style="width: 350px; margin-right: 10px"
-                  :placeholder="user.custom.sessionLabelSso"
-                />
+                <InputText id="sessionLabelSso" v-model="user.custom.sessionLabelSso" name="sessionLabelSso"
+                  class="p-inputtext-sm" style="width: 350px; margin-right: 10px"
+                  :placeholder="user.custom.sessionLabelSso" />
               </div>
               <br />
               <div>
                 <label for="sessionLabelIam" class="ml-2">IAM session Label</label>
-                <InputText
-                  id="sessionLabelIam"
-                  v-model="user.custom.sessionLabelIam"
-                  name="sessionLabelIam"
-                  class="p-inputtext-sm"
-                  style="width: 350px; margin-right: 10px"
-                  :placeholder="user.custom.sessionLabelIam"
-                />
+                <InputText id="sessionLabelIam" v-model="user.custom.sessionLabelIam" name="sessionLabelIam"
+                  class="p-inputtext-sm" style="width: 350px; margin-right: 10px"
+                  :placeholder="user.custom.sessionLabelIam" />
               </div>
               <details>
                 <summary>Use variables in your labels</summary>
@@ -188,76 +114,37 @@
               </details>
               <br />
               <div style="width: 40%; float: left">
-                <PCheckbox
-                  v-model="user.custom.labelHeader"
-                  inputId="labelHeader"
-                  name="labelHeader"
-                  :binary="true"
-                  style="margin-right: 10px"
-                />
+                <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader" :binary="true"
+                  style="margin-right: 10px" />
                 <label for="labelHeader">Label header</label><br />
-                <PCheckbox
-                  v-model="user.custom.labelFooter"
-                  inputId="labelFooter"
-                  name="labelFooter"
-                  :binary="true"
-                  style="margin-right: 10px"
-                />
+                <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter" :binary="true"
+                  style="margin-right: 10px" />
                 <label for="labelFooter" class="ml-2">Label footer</label>
               </div>
               <div>
-                <PCheckbox
-                  v-model="user.custom.colorHeader"
-                  inputId="colorHeader"
-                  name="colorHeader"
-                  :binary="true"
-                  style="margin-right: 10px"
-                />
+                <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader" :binary="true"
+                  style="margin-right: 10px" />
                 <label for="colorHeader" class="ml-2">Colorize header</label><br />
-                <PCheckbox
-                  v-model="user.custom.colorFooter"
-                  inputId="colorFooter"
-                  name="colorFooter"
-                  :binary="true"
-                  style="margin-right: 10px"
-                />
+                <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter" :binary="true"
+                  style="margin-right: 10px" />
                 <label for="colorFooter" class="ml-2">Colorize footer</label>
               </div>
               <br />
               <div style="margin-bottom: 10px">
-                <ColorPicker
-                  inputId="colorDefault"
-                  name="colorDefault"
-                  @click.prevent="colorPickerVisible = !colorPickerVisible"
-                  v-model="user.custom.colorDefault"
-                  id="colorDefault"
-                />
-                <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
-              </div>
+                <ColorPicker inputId="colorDefault" name="colorDefault"
+                  @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
+                id="colorDefault" />
+              <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
+            </div>
               <!---
-                  Colorpicker, dropdowns, and certain other elements won't stay open on firefox
-                  Workaround is to render our own dialog box on firefox with the elements
-                -->
-              <PDialog
-                v-if="$ext.platform === 'firefox'"
-                v-model:visible="colorPickerVisible"
-                :style="{ width: '50vw' }"
-              >
-                <ColorPicker
-                  v-if="colorPickerVisible"
-                  :inline="true"
-                  v-model="user.custom.colorDefault"
-                /> </PDialog
-              ><br />
-              <PrimeButton
-                ref="saveConsoleBtn"
-                size="small"
-                icon="pi pi-save"
-                class="p-button-primary"
-                label="Save"
-                style="margin-right: 10px"
-                @click="saveConsoleSettings()"
-              />
+                    Colorpicker, dropdowns, and certain other elements won't stay open on firefox
+                    Workaround is to render our own dialog box on firefox with the elements
+                  -->
+              <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+                <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault" />
+              </PDialog><br />
+              <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-save" class="p-button-primary" label="Save"
+                style="margin-right: 10px" @click="saveConsoleSettings()" />
             </div>
           </TabPanel>
           <TabPanel header="IAM Roles">
@@ -268,23 +155,11 @@
               </p>
               <code>https://*.console.aws.amazon.com/*</code><br />
               <code>https://signin.aws.amazon.com/switchrole</code>
-              <PrimeButton
-                size="small"
-                icon="pi pi-lock"
-                class="p-button-success"
-                label="Request Permissions"
-                style="margin-top: 10px"
-                @click="requestPermissionsSwitchrole()"
-              />
+              <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+                style="margin-top: 10px" @click="requestPermissionsSwitchrole()" />
             </div>
-            <IamRoles
-              v-else
-              :app-profiles="userProfiles"
-              @addIamRole="addIamRole"
-              @updateProfile="updateProfile"
-              @setPage="setPage"
-              @saveUser="saveUser"
-            />
+            <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
+              @setPage="setPage" @saveUser="saveUser" />
           </TabPanel>
           <TabPanel header="Directories" v-if="false">
             <LoginLinks :permissions="permissions" />
@@ -298,11 +173,7 @@
       <!--- Settings page -->
       <div v-if="page === 'settings'" class="settings">
         <div>
-          <PrimeButton
-            class="p-button-danger reset-button"
-            label="Reset All Data"
-            @click="reset()"
-          />
+          <PrimeButton class="p-button-danger reset-button" label="Reset All Data" @click="reset()" />
         </div>
         <br />
       </div>
@@ -325,57 +196,48 @@ import {
   UserData,
 } from "../types";
 import { ref } from "vue";
+import Button from "primevue/button";
+import Menu from "primevue/menu";
 
 export default {
   name: "PopupView",
   data() {
     return {
-      testItems: [
-        {
-          label: "Options",
-          items: [
-            {
-              label: "Update",
-              icon: "pi pi-refresh",
-              command: () => {
-                toast.add({
-                  severity: "success",
-                  summary: "Updated",
-                  detail: "Data Updated",
-                  life: 3000,
-                });
-              },
+      defaultMenu: [{
+        label: "Default Menu",
+        items: [
+          {
+            label: "Update",
+            icon: "pi pi-refresh",
+            command: () => {
+              this.$ext.log("update");
+              /*
+              toast.add({
+                severity: "success",
+                summary: "Updated",
+                detail: "Data Updated",
+                life: 3000,
+              });
+              */
             },
-            {
-              label: "Delete",
-              icon: "pi pi-times",
-              command: () => {
-                toast.add({
-                  severity: "warn",
-                  summary: "Delete",
-                  detail: "Data Deleted",
-                  life: 3000,
-                });
-              },
+          },
+          {
+            label: "Delete",
+            icon: "pi pi-times",
+            command: () => {
+              this.$ext.log("delete");
+              /*
+              toast.add({
+                severity: "warn",
+                summary: "Delete",
+                detail: "Data Deleted",
+                life: 3000,
+              });
+              */
             },
-          ],
-        },
-        {
-          label: "Navigate",
-          items: [
-            {
-              label: "Vue Website",
-              icon: "pi pi-external-link",
-              url: "https://vuejs.org/",
-            },
-            {
-              label: "Router",
-              icon: "pi pi-upload",
-              to: "/fileupload",
-            },
-          ],
-        },
-      ],
+          },
+        ],
+      }],
       testYes: { icon: "pi pi-list", value: "profiles" },
       filterProfiles: {},
       items: [
@@ -421,6 +283,26 @@ export default {
     };
   },
   computed: {
+    userMenu() {
+      const userMenu: any[] = this.defaultMenu;
+      if (this.users.length > 1) {
+        userMenu.unshift({
+          label: "Switch User",
+          items: this.users.map((user) => {
+            return {
+              label: user.name,
+              icon: "pi pi-user",
+              command: () => {
+                this.$ext.log("switch user", user);
+                this.user = user;
+                this.saveUser();
+              },
+            };
+          }),
+        });
+      }
+      return userMenu;
+    },
     consolePermissions() {
       if (this.$ext.platform === "firefox") {
         return this.permissions.console && this.permissions.containers;
@@ -464,6 +346,11 @@ export default {
     },
   },
   watch: {
+    page: {
+      handler(v) {
+        this.lastPage = v;
+      },
+    },
     "settings.firefoxContainers": {
       handler: function (v) {
         if (v === true) {
@@ -501,53 +388,12 @@ export default {
       }
     },
   },
+  mounted() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement;
+    searchBox.focus();
+  },
   created() {
-    const itemOptions = ref([
-      {
-        label: "Options",
-        items: [
-          {
-            label: "Update",
-            icon: "pi pi-refresh",
-            command: () => {
-              toast.add({
-                severity: "success",
-                summary: "Updated",
-                detail: "Data Updated",
-                life: 3000,
-              });
-            },
-          },
-          {
-            label: "Delete",
-            icon: "pi pi-times",
-            command: () => {
-              toast.add({
-                severity: "warn",
-                summary: "Delete",
-                detail: "Data Deleted",
-                life: 3000,
-              });
-            },
-          },
-        ],
-      },
-      {
-        label: "Navigate",
-        items: [
-          {
-            label: "Vue Website",
-            icon: "pi pi-external-link",
-            url: "https://vuejs.org/",
-          },
-          {
-            label: "Router",
-            icon: "pi pi-upload",
-            to: "/fileupload",
-          },
-        ],
-      },
-    ]);
     this.filterProfiles = {
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
@@ -560,8 +406,8 @@ export default {
   },
   methods: {
     toggle(event) {
-      const menu = ref();
-      this.$refs.menu.toggle(true);
+      const menu = (this.$refs.menu as any) as Menu;
+      menu.toggle(event);
     },
     toggleContainers() {
       this.settings.firefoxContainers = !this.settings.firefoxContainers;
@@ -674,7 +520,7 @@ export default {
       });
     },
     setPage(page) {
-      this.lastPage = this.page;
+      this.$ext.log(`popup:page:${page}`);
       this.page = page;
     },
     reset() {

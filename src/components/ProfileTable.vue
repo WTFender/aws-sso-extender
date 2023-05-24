@@ -225,16 +225,6 @@ export default {
       editingRows: [],
     };
   },
-  created() {
-    this.filterProfiles = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    };
-  },
-  mounted() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const searchBox = (this.$refs.searchBox as any).$el as HTMLElement;
-    searchBox.focus();
-  },
   methods: {
     setProfiles(profiles) {
       this.$ext.log("setProfiles");
