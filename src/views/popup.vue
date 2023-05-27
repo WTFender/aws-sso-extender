@@ -17,6 +17,7 @@
         />
         --->
       <PrimeButton
+        :disabled="!permissions.sso || !loaded"
         :text="page !== 'users'"
         @click="page = 'users'"
         icon="pi pi-user"
@@ -25,15 +26,14 @@
         :label="user.subject"
       />
     </template>
-    <template #center>
+    <template #center v-if="permissions.sso && loaded">
       <div v-if="page === 'users'">
         <div class="py-2">
           <PrimeButton
             v-for="tab in tabs"
             style="padding: 5px; margin: 0px"
             @click="activeTab = tab.index"
-            :raised="activeTab === tab.index"
-            text
+            :text="activeTab !== tab.index"
             size="small"
             :label="tab.label"
           />
@@ -48,8 +48,10 @@
         />
       </span>
     </template>
+    <template #center v-else><h3>AWS SSO Extender - Setup</h3></template>
     <template #end>
       <PSelectButton
+        :disabled="!permissions.sso || !loaded"
         style="margin: 0px"
         v-model="page"
         :options="items"
@@ -63,6 +65,7 @@
       </PSelectButton>
     </template>
   </PToolbar>
+  <br>
 
   <!--- Setup -->
   <SetupSteps
@@ -124,13 +127,32 @@
                 :selected="u.userId === settings.defaultUser"
               />
             </select>
-            <br /><br />
+            <h3>User Config</h3>
             <PrimeButton
+              :disabled="true"
+              icon="pi pi-download"
+              class="p-button-primary"
+              label="Export"
+              style="margin-right: 5px"
+            />
+            <PrimeButton
+              :disabled="true"
+              icon="pi pi-upload"
+              class="p-button-secondary"
+              label="Import"
+              style="margin-right: 5px"
+            />
+            <PrimeButton
+              icon="pi pi-trash"
               class="p-button-danger reset-button"
-              label="Reset User"
-              style="margin-top: 15px"
+              label="Reset"
+              style="margin-right: 5px"
               @click="resetUser()"
             />
+            <div v-if="$ext.config.debug">
+              <h3>Debug</h3>
+              <pre>{{ dataJson }}</pre>  
+            </div>
           </div>
           <div v-if="activeTab === 1">
             <div v-if="!consolePermissions">
@@ -295,9 +317,6 @@
             />
           
           </div>
-          <div v-if="activeTab === 3">
-            <pre>{{ dataJson }}</pre>
-          </div>
       </div>
 
       <!--- Settings page -->
@@ -323,14 +342,11 @@ import demoData from "../demo";
 import {
   AppData,
   CustomData,
-  ExtensionConfig,
   ExtensionData,
   ExtensionSettings,
   IamRole,
   UserData,
 } from "../types";
-import { ref } from "vue";
-import Button from "primevue/button";
 import Menu from "primevue/menu";
 
 export default {
@@ -341,7 +357,6 @@ export default {
         { index: 0, label: "Users" },
         { index: 1, label: "Console" },
         { index: 2, label: "IAM Roles" },
-        { index: 3, label: "Debug" },
       ],
       activeTab: 0,
       testYes: { icon: "pi pi-list", value: "profiles" },

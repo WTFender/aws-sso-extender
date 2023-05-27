@@ -2,10 +2,6 @@
 <!-- eslint-disable max-len -->
 <template>
   <div class="card" style="padding-left: 20px;">
-    <h2>
-      <img alt="AWS SSO Extender" src="../../public/icons/128.png" width="25" style="vertical-align:middle;">
-      Setup
-    </h2>
     <PAccordion :active-index="!permissions.sso ? 0 : 1" style="padding-right: 20px; padding-bottom: 20px;">
       <PAccordionTab :disabled="permissions.sso">
         <template #header>
