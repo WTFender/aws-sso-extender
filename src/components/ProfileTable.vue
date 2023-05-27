@@ -30,7 +30,7 @@
     selection-mode="single"
     edit-mode="row"
     class="p-datatable-sm"
-    scroll-height="400px"
+    scroll-height="500px"
     :value="appProfiles"
     row-group-mode="subheader"
     :group-rows-by="['name']"
@@ -41,7 +41,6 @@
     @rowReorder="setProfiles"
     @keydown.enter="navSelectedProfile()"
   >
-    <PColumn rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
     <PColumn
       header-style="display: none;"
       field="name"
@@ -182,8 +181,7 @@
 </template>
 
 <script lang="ts">
-import { FilterMatchMode } from "primevue/api";
-import { AppData, ExtensionSettings, UserData } from "../types";
+import { ExtensionSettings, UserData } from "../types";
 
 export default {
   name: "ProfileTable",
