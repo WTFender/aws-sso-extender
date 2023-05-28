@@ -4,8 +4,8 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <!--- Header 
-  Export and import user config
-  Chicklet IAM roles, removeable
+  todo Export and import user config
+  todo chicklet IAM roles, removeable
   -->
   <PToolbar style="margin: 0px; padding: 7px">
     <template #start>
@@ -24,6 +24,7 @@
         :disabled="!permissions.sso || !loaded"
         :text="page !== 'users'"
         @click="page = 'users'"
+        class="truncate"
         icon="pi pi-user"
         style="margin: 0px"
         severity="primary"
@@ -96,7 +97,7 @@
     <PScrollPanel
       v-show="page === 'users'"
       class="scroll"
-      style="max-width: 100%; max-height: 500px"
+      style="max-width: 100%; height: 500px"
     >
       <div v-if="activeTab === 0" class="settings">
         <h3>Switch User</h3>
@@ -135,30 +136,44 @@
         </select>
         <h3>User Config</h3>
         <PrimeButton
-          :disabled="true"
           icon="pi pi-download"
           class="p-button-primary"
           label="Export"
           style="margin-right: 5px"
+          @click="exportUser()"
         />
         <PrimeButton
-          :disabled="true"
-          icon="pi pi-upload"
+          icon="pi pi-pencil"
           class="p-button-secondary"
-          label="Import"
+          label="Edit"
           style="margin-right: 5px"
+          @click="importUser = true"
         />
+        <PDialog
+          v-model:visible="importUser"
+          header="Edit User Config"
+          :style="{ width: '500px' }"
+        >
+        
+          <PScrollPanel class="scroll" style="max-width: 100%; max-height: 300px">
+            <p>Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during SSO login.</p>
+            <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
+              dataJson
+            }}</pre>
+          </PScrollPanel>
+          <template #footer>
+            <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" autofocus />
+            <p ref="configError" style="color: red; display: none;" >Unable to save config JSON.</p>
+            
+          </template>
+        </PDialog>
         <PrimeButton
           icon="pi pi-trash"
           class="p-button-danger reset-button"
-          label="Reset"
+          label="Reset Labels"
           style="margin-right: 5px"
-          @click="resetUser()"
+          @click="resetCustom()"
         />
-        <div v-if="$ext.config.debug">
-          <h3>Debug</h3>
-          <pre>{{ dataJson }}</pre>
-        </div>
       </div>
       <div v-if="activeTab === 1" class="settings">
         <div v-if="!consolePermissions">
@@ -341,6 +356,7 @@
   <div class="footer" />
 </template>
 <script lang="ts">
+import { saveAs } from "file-saver";
 import { waitForElement } from "../utils";
 import { FilterMatchMode } from "primevue/api";
 import demoData from "../demo";
@@ -358,6 +374,7 @@ export default {
   name: "PopupView",
   data() {
     return {
+      importUser: false,
       profileTable: { icon: "pi pi-list", value: "profiles" },
       tabs: [
         { index: 0, label: "Users" },
@@ -409,6 +426,14 @@ export default {
     };
   },
   computed: {
+    userConfigUpdate() {
+      let update = false;
+      if (this.dataJson !== this.$refs.userConfigJson.innerText) {
+        update = true;
+      }
+      this.$ext.log(`popup:userConfigUpdate:${update}`)
+      return update;
+    },
     consolePermissions() {
       if (this.$ext.platform === "firefox") {
         return this.permissions.console && this.permissions.containers;
@@ -527,6 +552,20 @@ export default {
     this.reload();
   },
   methods: {
+    importUserConfig() {
+      if (this.$ext.importUserConfig(this.$refs.configJson.innerText)) {
+        this.importUser = false;
+        this.reload();
+      } else {
+        this.$refs.configError.style.display = "block";
+      }
+    },
+    exportUser() {
+      var fileToSave = new Blob([this.dataJson], {
+        type: "application/json",
+      });
+      saveAs(fileToSave, `${this.user.subject}-${this.$ext.config.name}.json`);
+    },
     toggle(event) {
       const menu = (this.$refs.menu as any) as Menu;
       menu.toggle(event);
@@ -651,7 +690,7 @@ export default {
       this.$ext.resetPermissions();
       window.close();
     },
-    resetUser() {
+    resetCustom() {
       this.user.custom = this.$ext.defaultCustom;
       this.$ext.saveUser(this.user).then(() => {
         window.close();
@@ -711,6 +750,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.truncate {
+  width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);
   border-bottom: 10px solid var(--surface-50);

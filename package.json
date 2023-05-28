@@ -22,12 +22,14 @@
     ]
   },
   "dependencies": {
+    "file-saver": "^2.0.5",
     "primeicons": "^6.0.1",
     "primevue": "^3.26.1",
     "vue": "^3.2.47",
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.5",
     "@types/webextension-polyfill": "^0.10.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@vitejs/plugin-vue": "^4.0.0",
