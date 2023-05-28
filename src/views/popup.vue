@@ -428,7 +428,7 @@ export default {
   computed: {
     userConfigUpdate() {
       let update = false;
-      if (this.dataJson !== this.$refs.userConfigJson.innerText) {
+      if (this.dataJson !== (this.$refs.userConfigJson as any).innerText) {
         update = true;
       }
       this.$ext.log(`popup:userConfigUpdate:${update}`)
@@ -489,7 +489,7 @@ export default {
         this.lastPage = v;
         if (v === "users") {
           // clear profile table selection
-          this.profileTable = { icon: null, value: null };
+          this.profileTable = { icon: '', value: '' };
         }
         if (v === "profiles" || v === "favorites") {
           waitForElement("#searchBox").then((searchBox) => {
@@ -553,11 +553,12 @@ export default {
   },
   methods: {
     importUserConfig() {
-      if (this.$ext.importUserConfig(this.$refs.configJson.innerText)) {
+      const configJson = (this.$refs.configJson as any).innerText
+      if (this.$ext.importUserConfig(configJson)) {
         this.importUser = false;
         this.reload();
       } else {
-        this.$refs.configError.style.display = "block";
+        (this.$refs.configError as any).style.display = "block";
       }
     },
     exportUser() {
