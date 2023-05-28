@@ -170,7 +170,7 @@
         <PrimeButton
           icon="pi pi-trash"
           class="p-button-danger reset-button"
-          label="Reset Labels"
+          label="Reset"
           style="margin-right: 5px"
           @click="resetCustom()"
         />

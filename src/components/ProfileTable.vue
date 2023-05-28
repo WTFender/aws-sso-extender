@@ -1,28 +1,5 @@
 <!-- eslint-disable max-len -->
 <template>
-  <!--- 
-  <DataTable v-model:editingRows="editingRows" v-model:filters="filterProfiles" v-model:selection="selectedProfile"
-    selection-mode="single" edit-mode="row" class="p-datatable-sm" scroll-height="400px" :value="appProfiles">
-    <PColumn header-style="display: none;" field="name" body-style="text-align: center;"
-      :style="{ 'min-width': '120px' }">
-      <template #body="slotProps">
-        <div>
-          <img :alt="slotProps.data.profile.name" :src="slotProps.data.icon" width="96" style="vertical-align: middle">
-          <br>
-          <span v-if="slotProps.data.applicationName !== 'AWS Account'">{{ slotProps.data.name }}</span>
-          <div v-else>
-            <span>{{ slotProps.data.searchMetadata.AccountName }}</span><br>
-            <span style="font-size: .8rem">{{ slotProps.data.searchMetadata.AccountId }}</span>
-          </div>
-        </div>
-      </template>
-    </PColumn>
-  </DataTable>
-  <br>
-  <br>
-  <br>
-  <br>
-  --->
   <DataTable
     v-model:editingRows="editingRows"
     v-model:filters="filterProfilesComputed"
