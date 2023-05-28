@@ -3,7 +3,10 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <!--- Header -->
+  <!--- Header 
+  Export and import user config
+  Chicklet IAM roles, removeable
+  -->
   <PToolbar style="margin: 0px; padding: 7px">
     <template #start>
       <!---
@@ -43,6 +46,7 @@
       <span v-else class="p-input-icon-left" style="margin: 0px">
         <i class="pi pi-search" />
         <InputText
+          id="searchBox"
           ref="searchBox"
           v-model="filterProfiles['global'].value"
           placeholder="Search Profiles"
@@ -54,14 +58,14 @@
       <PSelectButton
         :disabled="!permissions.sso || !loaded"
         style="margin: 0px"
-        v-model="page"
+        v-model="profileTable"
         :options="items"
         aria-labelledby="basic"
         optionLabel="value"
         dataKey="value"
       >
         <template #option="slotProps">
-          <i :class="slotProps.option.icon" @click="setPage(slotProps.option.value)"></i>
+          <i :class="slotProps.option.icon"></i>
         </template>
       </PSelectButton>
     </template>
@@ -71,12 +75,12 @@
     <!--- Setup -->
     <SetupSteps
       v-show="!permissions.sso || !loaded"
-      style="margin-top: 10px;"
+      style="margin-top: 10px"
       :permissions="permissions"
       :loaded="loaded"
       @demo="demo()"
     />
-    
+
     <ProfileTable
       v-show="page === 'favorites' || page === 'profiles'"
       :demoMode="demoMode"
@@ -89,83 +93,88 @@
     />
 
     <!--- User page -->
-    <PScrollPanel v-show="page === 'users'" class="scroll" style="max-width: 100%; max-height: 500px">
-        <div v-if="activeTab === 0" class="settings">
-          <h3>Switch User</h3>
-          <PListbox
-            v-model="user"
-            name="userSelect"
-            :options="users"
-            class="w-full md:w-14rem"
-            style="margin-bottom: 5px"
-          >
-            <template #option="slotProps">
-              <div class="flex align-items-center">
-                <div>
-                  {{
-                    slotProps.option.subject +
-                    " @ " +
-                    slotProps.option.managedActiveDirectoryId
-                  }}
-                </div>
+    <PScrollPanel
+      v-show="page === 'users'"
+      class="scroll"
+      style="max-width: 100%; max-height: 500px"
+    >
+      <div v-if="activeTab === 0" class="settings">
+        <h3>Switch User</h3>
+        <PListbox
+          v-model="user"
+          name="userSelect"
+          :options="users"
+          class="w-full md:w-14rem"
+          style="margin-bottom: 5px"
+        >
+          <template #option="slotProps">
+            <div class="flex align-items-center">
+              <div>
+                {{
+                  slotProps.option.subject +
+                  " @ " +
+                  slotProps.option.managedActiveDirectoryId
+                }}
               </div>
-            </template>
-          </PListbox>
-          <h3>Default User</h3>
-          <select
-            id="defaultUserSelect"
-            name="defaultUserSelect"
-            @change="setDefaultUser($event)"
-          >
-            <option
-              v-for="u in defaultUserOptions"
-              :key="u.userId"
-              :label="u.label"
-              :value="u.userId"
-              :selected="u.userId === settings.defaultUser"
-            />
-          </select>
-          <h3>User Config</h3>
-          <PrimeButton
-            :disabled="true"
-            icon="pi pi-download"
-            class="p-button-primary"
-            label="Export"
-            style="margin-right: 5px"
+            </div>
+          </template>
+        </PListbox>
+        <h3>Default User</h3>
+        <select
+          id="defaultUserSelect"
+          name="defaultUserSelect"
+          @change="setDefaultUser($event)"
+        >
+          <option
+            v-for="u in defaultUserOptions"
+            :key="u.userId"
+            :label="u.label"
+            :value="u.userId"
+            :selected="u.userId === settings.defaultUser"
           />
-          <PrimeButton
-            :disabled="true"
-            icon="pi pi-upload"
-            class="p-button-secondary"
-            label="Import"
-            style="margin-right: 5px"
-          />
-          <PrimeButton
-            icon="pi pi-trash"
-            class="p-button-danger reset-button"
-            label="Reset"
-            style="margin-right: 5px"
-            @click="resetUser()"
-          />
-          <div v-if="$ext.config.debug">
-            <h3>Debug</h3>
-            <pre>{{ dataJson }}</pre>  
-          </div>
+        </select>
+        <h3>User Config</h3>
+        <PrimeButton
+          :disabled="true"
+          icon="pi pi-download"
+          class="p-button-primary"
+          label="Export"
+          style="margin-right: 5px"
+        />
+        <PrimeButton
+          :disabled="true"
+          icon="pi pi-upload"
+          class="p-button-secondary"
+          label="Import"
+          style="margin-right: 5px"
+        />
+        <PrimeButton
+          icon="pi pi-trash"
+          class="p-button-danger reset-button"
+          label="Reset"
+          style="margin-right: 5px"
+          @click="resetUser()"
+        />
+        <div v-if="$ext.config.debug">
+          <h3>Debug</h3>
+          <pre>{{ dataJson }}</pre>
         </div>
-        <div v-if="activeTab === 1" class="settings">
-          <div v-if="!consolePermissions">
-            <p>This extension requires permissions to customize the AWS console:</p>
-            <code>https://*.console.aws.amazon.com/*</code><br />
-            <PrimeButton
-              size="small"
-              icon="pi pi-lock"
-              class="p-button-success"
-              label="Request Permissions"
-              style="margin-top: 10px"
-              @click="requestPermissionsConsole()"
-            />
-          </div>
-          <div v-else><form>
+      </div>
+      <div v-if="activeTab === 1" class="settings">
+        <div v-if="!consolePermissions">
+          <p>This extension requires permissions to customize the AWS console:</p>
+          <code>https://*.console.aws.amazon.com/*</code><br />
+          <PrimeButton
+            size="small"
+            icon="pi pi-lock"
+            class="p-button-success"
+            label="Request Permissions"
+            style="margin-top: 10px"
+            @click="requestPermissionsConsole()"
+          />
+        </div>
+        <div v-else>
+          <form>
             <h3>Customize the AWS Console</h3>
             <div>
               <div v-if="$ext.platform === 'firefox'">
@@ -180,7 +189,7 @@
                 <label for="container">Open in Firefox Containers</label><br /><br />
               </div>
               <label id="sso-label">SSO session Label</label>
-              <br>
+              <br />
               <InputText
                 aria-describedby="sso-label"
                 id="sessionLabelSso"
@@ -194,9 +203,9 @@
             <br />
             <div>
               <label id="iam-label">IAM session Label</label>
-              <br>
+              <br />
               <InputText
-              aria-describedby="iam-label"
+                aria-describedby="iam-label"
                 id="sessionLabelIam"
                 v-model="user.custom.sessionLabelIam"
                 name="sessionLabelIam"
@@ -285,36 +294,35 @@
               style="margin-right: 10px"
               @click="saveConsoleSettings()"
             />
-          </form></div>
+          </form>
         </div>
-        <div v-if="activeTab === 2" class="settings">
-
-          <div v-if="!permissions.console || !permissions.signin">
-            <p>
-              In order to switch IAM roles, this extension requires permissions to the
-              AWS console.
-            </p>
-            <code>https://*.console.aws.amazon.com/*</code><br />
-            <code>https://signin.aws.amazon.com/switchrole</code>
-            <PrimeButton
-              size="small"
-              icon="pi pi-lock"
-              class="p-button-success"
-              label="Request Permissions"
-              style="margin-top: 10px"
-              @click="requestPermissionsSwitchrole()"
-            />
-          </div>
-          <IamRoles
-            v-else
-            :app-profiles="userProfiles"
-            @addIamRole="addIamRole"
-            @updateProfile="updateProfile"
-            @setPage="setPage"
-            @saveUser="saveUser"
+      </div>
+      <div v-if="activeTab === 2" class="settings">
+        <div v-if="!permissions.console || !permissions.signin">
+          <p>
+            In order to switch IAM roles, this extension requires permissions to the AWS
+            console.
+          </p>
+          <code>https://*.console.aws.amazon.com/*</code><br />
+          <code>https://signin.aws.amazon.com/switchrole</code>
+          <PrimeButton
+            size="small"
+            icon="pi pi-lock"
+            class="p-button-success"
+            label="Request Permissions"
+            style="margin-top: 10px"
+            @click="requestPermissionsSwitchrole()"
           />
-        
         </div>
+        <IamRoles
+          v-else
+          :app-profiles="userProfiles"
+          @addIamRole="addIamRole"
+          @updateProfile="updateProfile"
+          @setPage="setPage"
+          @saveUser="saveUser"
+        />
+      </div>
     </PScrollPanel>
 
     <!--- Settings page -->
@@ -328,12 +336,12 @@
       </div>
       <br />
     </div>
-
   </div>
   <!--- Footer -->
   <div class="footer" />
 </template>
 <script lang="ts">
+import { waitForElement } from "../utils";
 import { FilterMatchMode } from "primevue/api";
 import demoData from "../demo";
 import {
@@ -350,10 +358,11 @@ export default {
   name: "PopupView",
   data() {
     return {
+      profileTable: { icon: "pi pi-list", value: "profiles" },
       tabs: [
-        { index: 0, label: "SSO Users" },
-        { index: 1, label: "AWS Console" },
-        { index: 2, label: "IAM Roles" },
+        { index: 0, label: "Users" },
+        { index: 1, label: "Console" },
+        { index: 2, label: "Roles" },
       ],
       activeTab: 0,
       filterProfiles: {},
@@ -395,7 +404,7 @@ export default {
         status: "unknown",
       },
       lastPage: "profiles",
-      page: "profiles", // profiles, favorites, users
+      page: "", // profiles, favorites, users
       updatedAt: 0,
     };
   },
@@ -443,11 +452,24 @@ export default {
     },
   },
   watch: {
+    profileTable: {
+      handler(v) {
+        if (v.value === "profiles" || v.value === "favorites") {
+          this.setPage(v.value);
+        }
+      },
+    },
     page: {
       handler(v) {
         this.lastPage = v;
-        if (this.page === 'profiles' || this.page === 'favorites') {
-          (this.$refs.searchBox as any).$el.focus();
+        if (v === "users") {
+          // clear profile table selection
+          this.profileTable = { icon: null, value: null };
+        }
+        if (v === "profiles" || v === "favorites") {
+          waitForElement("#searchBox").then((searchBox) => {
+            searchBox.focus();
+          });
         }
       },
     },
@@ -481,9 +503,14 @@ export default {
       // this.reload();
     },
     loaded(v) {
+      this.$ext.log(`popup:loaded:${v}`);
       if (v === true) {
-        if (this.faveProfiles.length > 0) {
+        if (this.faveProfiles.length >= 1) {
           this.setPage("favorites");
+          this.profileTable = { icon: "pi pi-star", value: "favorites" };
+        } else {
+          this.setPage("profiles");
+          this.profileTable = { icon: "pi pi-list", value: "profiles" };
         }
       }
     },
@@ -547,6 +574,7 @@ export default {
     refreshProfiles() {
       this.appProfiles = [];
       this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
+      this.loaded = true;
     },
     demo() {
       this.$ext.log("popup:demoMode");
@@ -585,7 +613,6 @@ export default {
           this.user = data.users.filter((u) => u.userId === this.user.userId)[0];
         }
         // profiles are refreshed/customized on user change
-        this.loaded = true;
       }
     },
     reload() {
@@ -684,17 +711,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
-    border-right: 10px solid var(--surface-50);
-    border-bottom: 10px solid var(--surface-50);
+  border-right: 10px solid var(--surface-50);
+  border-bottom: 10px solid var(--surface-50);
 }
 
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-bar) {
-    background-color: var(--surface-300);
-    border-radius: 0;
-    opacity: 1;
-    transition: background-color 0.3s;
+  background-color: var(--surface-300);
+  border-radius: 0;
+  opacity: 1;
+  transition: background-color 0.3s;
 }
 .p-rowgroup-footer td {
   font-weight: 700;
@@ -720,7 +746,7 @@ export default {
 }
 
 .card {
-  width: 550px !important;
+  width: 580px !important;
   min-height: 500px;
   display: inline-block;
   margin: 0px;
