@@ -1,14 +1,6 @@
-## 1.3.4
-- Fixed Console not loading customizations
-
-## 1.3.3
-- Readd cookie permissions for Firefox
-
-## 1.3.2
-- Fix container permissions
-
-## 1.3.1
-- Remove unneeded cookie permissions
+## 1.4.0
+- UI Improvements
+- Edit JSON User Config 📝
 
 ## 1.3.0
 - Firefox Containers for AWS Console 🦊

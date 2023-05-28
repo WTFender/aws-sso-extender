@@ -1,32 +1,75 @@
 <!-- eslint-disable max-len -->
 <template>
-  <div style="margin-bottom: 10px;">
+  <div style="margin-bottom: 10px">
     <h3>Assume IAM Roles via SSO Profiles</h3>
     <small id="arn-help">Enter the target AWS IAM Role ARN</small>
-    <InputText id="iamRoleArn" v-model="newIamRole.arn" name="arn" class="p-inputtext-sm" aria-describedby="arn-help"
-      style="width: 400px" placeholder="arn:aws:iam::123412341234:role/roleName" />
+    <InputText
+      id="iamRoleArn"
+      v-model="newIamRole.arn"
+      name="arn"
+      class="p-inputtext-sm"
+      aria-describedby="arn-help"
+      style="width: 400px"
+      placeholder="arn:aws:iam::123412341234:role/roleName"
+    />
   </div>
   <small id="label-help">Role label and color for the AWS console</small>
-  <div style="margin-bottom: 10px;">
-    <InputText id="iamRoleLabel" v-model="newIamRole.label" name="label" class="p-inputtext-sm"
-      style="width: 350px; margin-right: 10px;" placeholder="roleName" aria-describedby="label-help" />
-    <ColorPicker @click="colorPickerVisible = !colorPickerVisible" v-model="newIamRole.color" />
+  <div style="margin-bottom: 10px">
+    <InputText
+      id="iamRoleLabel"
+      v-model="newIamRole.label"
+      name="label"
+      class="p-inputtext-sm"
+      style="width: 350px; margin-right: 10px"
+      placeholder="roleName"
+      aria-describedby="label-help"
+    />
+    <ColorPicker
+      @click="colorPickerVisible = !colorPickerVisible"
+      v-model="newIamRole.color"
+    />
   </div>
-  <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+  <PDialog
+    v-if="$ext.platform === 'firefox'"
+    v-model:visible="colorPickerVisible"
+    :style="{ width: '50vw' }"
+  >
     <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="newIamRole.color" />
   </PDialog>
   <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
-  <PListbox v-model="selectedProfiles" id="awsAppProfiles" :options="awsAppProfiles" class="w-full md:w-14rem"
-    style="margin-bottom: 15px" listStyle="max-height:150px" multiple>
+  <PListbox
+    v-model="selectedProfiles"
+    id="awsAppProfiles"
+    :options="awsAppProfiles"
+    class="w-full md:w-14rem"
+    style="margin-bottom: 15px"
+    listStyle="max-height:150px"
+    multiple
+  >
     <template #option="slotProps">
-      <div class="flex align-items-center" style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px;">
+      <div
+        class="flex align-items-center"
+        style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px"
+      >
         <small>{{ slotProps.option.label }}</small>
       </div>
     </template>
   </PListbox>
-  <PrimeButton size="small" icon="pi pi-user-plus" class="p-button-primary" label="Add IAM Role"
-    style="margin-right: 10px" @click="addIamRole()" />
-  <PrimeButton size="small" icon="pi pi-trash" class="p-button-danger" label="Reset IAM Roles" @click="resetIamRoles()" />
+  <PrimeButton
+    size="small"
+    icon="pi pi-user-plus"
+    class="p-button-primary"
+    label="Add IAM Role"
+    style="margin-right: 10px"
+    @click="addIamRole()"
+  />
+  <PrimeButton
+    size="small"
+    icon="pi pi-trash"
+    class="p-button-danger"
+    label="Reset IAM Roles"
+    @click="resetIamRoles()"
+  />
 </template>
 
 <script lang="ts">

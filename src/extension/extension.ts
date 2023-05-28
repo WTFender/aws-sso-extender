@@ -402,6 +402,28 @@ class Extension {
     ].join('&');
     window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
   }
+
+  importUserConfig(jsonConfig: string): Boolean {
+    this.log('importUserConfig');
+    this.log(jsonConfig);
+    try {
+      // check top level keys
+      const requiredKeys = ['users', 'appProfiles'];
+      const config = JSON.parse(jsonConfig);
+      requiredKeys.forEach((key) => {
+        if (!(key in config)) { throw new Error(`Missing required key: ${key} of ${requiredKeys}`); }
+      });
+      config.users.forEach((user) => { this.saveUser(user); });
+      config.appProfiles.forEach((appProfile) => {
+        this.saveData(appProfile.profile.id, appProfile);
+      });
+      if ('settings' in config) { this.saveSettings(config.settings); }
+      if ('iamLogins' in config) { this.saveData(`${this.config.name}-iam-logins`, config.iamLogins); }
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export default Extension;
