@@ -32,7 +32,7 @@
     class="p-datatable-sm"
     scroll-height="500px"
     :value="appProfiles"
-    row-group-mode="subheader"
+    row-group-mode="rowspan"
     :group-rows-by="['name']"
     sortMode="single"
     responsive-layout="scroll"
@@ -144,7 +144,6 @@
       body-style="text-align:center;"
       header-style="display: none;"
     >
-      <template> </template>
     </PColumn>
     <PColumn
       :style="{ width: '20px' }"
