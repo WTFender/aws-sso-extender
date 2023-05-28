@@ -6,7 +6,6 @@ AWS SSO Extender does not store sensitive data; [read about it here](https://blo
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.x.x   | :white_check_mark: |
 | 1.x.x   | :x: |
 
 ## Reporting a Vulnerability
