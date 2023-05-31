@@ -4,22 +4,10 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <!--- Header 
-  todo Export and import user config
-  todo chicklet IAM roles, removeable
+    todo chicklet IAM roles, removeable
   -->
   <PToolbar style="margin: 0px; padding: 7px">
     <template #start>
-      <!---
-      <i
-        class="pi menu-icon p-toolbar-separator"
-        :class="{
-          'page-active': page === 'users',
-          'pi-users': users.length > 1,
-          'pi-user': users.length >= 1,
-          }"
-          @click="setPage('users')"
-        />
-        --->
       <PrimeButton
         :disabled="!permissions.sso || !loaded"
         :text="page !== 'users'"
