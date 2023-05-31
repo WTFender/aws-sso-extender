@@ -11,8 +11,8 @@
     "prepare": "husky install",
     "lint": "eslint src/* --ext .ts,.vue --config .eslintrc.cjs",
     "lint:fix": "eslint src/* --ext .ts,.vue --config .eslintrc.cjs --fix",
-    "watch:chrome": "VITE_EXT_DEBUG=true rm -rf ./dist/chrome/ && vite --mode watch:chrome --watch build",
-    "watch:firefox": "VITE_EXT_DEBUG=true rm -rf ./dist/firefox/ && vite --mode watch:firefox --watch build",
+    "watch:chrome": "rm -rf ./dist/chrome/ && VITE_EXT_DEBUG=true vite --mode watch:chrome --watch build",
+    "watch:firefox": "rm -rf ./dist/firefox/ && VITE_EXT_DEBUG=true vite --mode watch:firefox --watch build",
     "build:chrome": "rm -rf ./dist/chrome/ && vue-tsc && vite --mode build:chrome build",
     "build:firefox": "rm -rf ./dist/firefox/ && vue-tsc && vite --mode build:firefox build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest"
   },
