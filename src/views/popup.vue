@@ -150,7 +150,7 @@
             }}</pre>
           </PScrollPanel>
           <template #footer>
-            <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" autofocus />
+            <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" />
             <p ref="configError" style="color: red; display: none;" >Unable to save config JSON.</p>
             
           </template>
