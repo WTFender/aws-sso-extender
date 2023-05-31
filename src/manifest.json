@@ -16,6 +16,10 @@
       }
     }
   },
+  "{{chrome}}.background": {
+    "service_worker": "src/entry/background.ts",
+    "type": "module"
+  },
   "{{firefox}}.background": {
     "scripts": [
       "src/entry/background.ts"
@@ -71,7 +75,6 @@
     "webRequest",
     "webRequestBlocking",
     "webRequestFilterResponse",
-    "https://signin.aws.amazon.com/switchrole?*",
     "https://*.amazonaws.com/federation/console?*",
     "https://*.amazonaws-us-gov.com/federation/console?*",
     "https://*.amazonaws.cn/federation/console?*"
