@@ -26,16 +26,17 @@ function listenConsole() {
 extension.config.browser.runtime.onInstalled.addListener((details) => {
   const manifest = extension.config.browser.runtime.getManifest();
   const currentVersion = manifest.version;
+  const releaseUrl = `https://github.com/WTFender/aws-sso-extender/releases/tag/v${currentVersion}`;
   extension.log(`currentVersion: ${currentVersion}`);
   if (details.reason === 'install') {
     extension.config.browser.tabs.create({
-      url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${currentVersion}`,
+      url: releaseUrl,
     });
   } else if (details.reason === 'update') {
     if (details.previousVersion !== currentVersion) {
       extension.log(`previousVersion: ${details.previousVersion}`);
       extension.config.browser.tabs.create({
-        url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${currentVersion}`,
+        url: releaseUrl,
       });
     }
   }
