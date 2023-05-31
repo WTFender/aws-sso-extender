@@ -114,6 +114,19 @@
             v-model="data.profile.custom.color"
           />
         </PDialog>
+        <div v-if="'iamRoles' in data.profile.custom">
+          <PBadge
+            v-for="(role, idx) in data.profile.custom.iamRoles"
+            :key="idx"
+            :value="role.label || role.roleName"
+            class="role-link remove-role-link"
+            :style="{ margin: '5px', 'background-color': `#${role.color}` }"
+            icon="pi pi-times"
+          >
+            {{ role.label || role.roleName }}
+            <i class="pi pi-times" style="font-size: .5rem" @click="removeIamRole(role, data)"/>
+          </PBadge>
+        </div>
       </template>
     </PColumn>
     <PColumn
@@ -134,7 +147,7 @@
             'pi-star-fill': slotProps.data.profile.custom.favorite,
             'pi-star': !slotProps.data.profile.custom.favorite,
           }"
-          @click="fave(slotProps)"
+          @click="fave(slotProps.data)"
         />
       </template>
     </PColumn>
@@ -157,7 +170,7 @@
 </template>
 
 <script lang="ts">
-import { ExtensionSettings, UserData } from "../types";
+import { AppData, ExtensionSettings, IamRole, UserData } from "../types";
 
 export default {
   name: "ProfileTable",
@@ -200,6 +213,19 @@ export default {
     };
   },
   methods: {
+    removeIamRole(iamRole: IamRole, appProfile: AppData) {
+      this.$ext.log("removeIamRole");
+      let iamRoles: IamRole[] = [];
+      appProfile.profile.custom!.iamRoles.forEach((role) => {
+        if (role.roleName !== iamRole.roleName
+        && role.accountId !== iamRole.accountId
+        && role.profileId !== iamRole.profileId) {
+          iamRoles.push(role);
+        }
+      });
+      appProfile.profile.custom!.iamRoles = iamRoles;
+      this.$emit("updateProfile", appProfile);
+    },
     setProfiles(profiles) {
       this.$ext.log("setProfiles");
       this.$ext.log(profiles);
@@ -237,9 +263,8 @@ export default {
         (c) => `%${c.charCodeAt(0).toString(16)}`
       );
     },
-    fave(event) {
+    fave(appProfile) {
       // TODO fix favorite issue for multi users
-      const appProfile = event.data;
       appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
       this.$emit("updateProfile", appProfile);
     },
@@ -267,6 +292,11 @@ export default {
 
 .role-link:hover {
   background-color: #5e3add !important;
+  cursor: pointer;
+}
+
+.remove-role-link:hover {
+  background-color: red !important;
   cursor: pointer;
 }
 
