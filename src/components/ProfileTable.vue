@@ -218,8 +218,8 @@ export default {
       let iamRoles: IamRole[] = [];
       appProfile.profile.custom!.iamRoles.forEach((role) => {
         if (role.roleName !== iamRole.roleName
-        && role.accountId !== iamRole.accountId
-        && role.profileId !== iamRole.profileId) {
+        || role.accountId !== iamRole.accountId
+        || role.profileId !== iamRole.profileId) {
           iamRoles.push(role);
         }
       });
