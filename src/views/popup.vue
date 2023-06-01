@@ -44,8 +44,16 @@
     </template>
     <template #center v-else><h3>AWS SSO Extender - Setup</h3></template>
     <template #end>
+      <PrimeButton
+        v-if="!permissions.sso || !loaded"
+        size="small"
+        icon="pi pi-play"
+        class="p-button-success flex-center"
+        label="Demo"
+        @click="demo()"
+      />
       <PSelectButton
-        :disabled="!permissions.sso || !loaded"
+        v-else
         style="margin: 0px"
         v-model="profileTable"
         :options="items"
@@ -67,7 +75,6 @@
       style="margin-top: 10px"
       :permissions="permissions"
       :loaded="loaded"
-      @demo="demo()"
     />
 
     <ProfileTable
