@@ -1,3 +1,4 @@
+import Browser from 'webextension-polyfill';
 import {
   type ExtensionConfig,
   type UserData,
@@ -176,7 +177,7 @@ class Extension {
 
   async loadIamLogins(): Promise<IamRole[]> {
     const loginsKey = `${this.config.name}-iam-logins`;
-    const loginsData = await this.config.db.get(loginsKey);
+    const loginsData = await this.config.browser.storage.local.get(loginsKey);
     const logins = loginsData[loginsKey] === undefined ? {} : JSON.parse(loginsData[loginsKey]);
     return logins;
   }
@@ -186,7 +187,7 @@ class Extension {
     const logins = await this.loadIamLogins();
     delete logins[profileId];
     this.log(logins);
-    return this.saveData(`${this.config.name}-iam-logins`, logins);
+    return this.saveData(`${this.config.name}-iam-logins`, logins, this.config.browser.storage.local);
   }
 
   queueIamLogin(role: IamRole): Promise<void> {
@@ -194,16 +195,16 @@ class Extension {
     return this.loadIamLogins().then((logins) => {
       const iamLogins = logins;
       iamLogins[role.profileId] = role;
-      this.saveData(`${this.config.name}-iam-logins`, iamLogins);
+      this.saveData(`${this.config.name}-iam-logins`, iamLogins, this.config.browser.storage.local);
     });
   }
 
   async loadUser(userId: string): Promise<UserData> {
     const userKey = `${this.config.name}-user-${userId}`;
-    const userData = await this.config.db.get(userKey);
+    const userData = await this.config.browser.storage.sync.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
     const customKey = `${this.config.name}-custom-${userId}`;
-    const customData = await this.config.db.get(customKey);
+    const customData = await this.config.browser.storage.sync.get(customKey);
     // eslint-disable-next-line vue/max-len
     const custom = customData[customKey] === undefined ? this.defaultCustom : JSON.parse(customData[customKey]);
     user.custom = custom;
@@ -213,7 +214,7 @@ class Extension {
   async loadUsers(): Promise<UserData[]> {
     const users: Array<Promise<UserData>> = [];
     const usersKey = `${this.config.name}-users`;
-    const usersData = await this.config.db.get(usersKey);
+    const usersData = await this.config.browser.storage.sync.get(usersKey);
     const userIds = usersData[usersKey] === undefined ? [] : JSON.parse(usersData[usersKey]).users;
     userIds.forEach((userId: string) => {
       users.push(this.loadUser(userId));
@@ -224,12 +225,12 @@ class Extension {
   }
 
   async saveSettings(settings: ExtensionSettings): Promise<void> {
-    await this.saveData(`${this.config.name}-settings`, settings);
+    await this.saveData(`${this.config.name}-settings`, settings, this.config.browser.storage.sync);
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
     const setKey = `${this.config.name}-settings`;
-    const setData = await this.config.db.get(setKey);
+    const setData = await this.config.browser.storage.sync.get(setKey);
     // eslint-disable-next-line vue/max-len
     const settings = setData[setKey] === undefined ? this.defaultSettings : JSON.parse(setData[setKey]);
     return settings as ExtensionSettings;
@@ -253,8 +254,9 @@ class Extension {
     const uniqProfileIds = [...new Set(appProfileIds.flat(1))];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const appProfiles: Array<Promise<Record<string, any>>> = [];
+    // load app profiles
     uniqProfileIds.forEach((apId) => {
-      appProfiles.push(this.config.db.get(apId));
+      appProfiles.push(this.config.browser.storage.local.get(apId));
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
       updatedAt: users.length > 0 ? users[0].updatedAt : 0,
@@ -292,31 +294,36 @@ class Extension {
 
   async resetData(): Promise<void> {
     this.log('resetData');
-    await this.config.db.clear();
+    await this.config.browser.storage.sync.clear();
+    await this.config.browser.storage.local.clear();
   }
 
-  async saveData(dataKey: string, data: unknown): Promise<void> {
+  async saveData(
+    dataKey: string,
+    data: unknown,
+    db: Browser.Storage.LocalStorageArea | Browser.Storage.SyncStorageAreaSync,
+  ): Promise<void> {
     this.log(`saveData:${dataKey}`);
     this.log(data);
     const dataObj = {};
     dataObj[dataKey] = JSON.stringify(
       typeof data === 'object' ? { ...data, updatedAt: Date.now() } : data,
     );
-    await this.config.db.set(dataObj);
+    await db.set(dataObj);
   }
 
   saveUser(user: UserData): Promise<void> {
     if ('custom' in user) {
-      this.saveData(`${this.config.name}-custom-${user.userId}`, user.custom);
+      this.saveData(`${this.config.name}-custom-${user.userId}`, user.custom, this.config.browser.storage.sync);
     }
-    return this.saveData(`${this.config.name}-user-${user.userId}`, { ...user, custom: {} });
+    return this.saveData(`${this.config.name}-user-${user.userId}`, { ...user, custom: {} }, this.config.browser.storage.sync);
   }
 
   saveAppProfiles(user: UserData): void {
     this.log('saveAppProfiles');
     const appProfiles = this.parseAppProfiles();
     appProfiles.forEach((appProfile) => {
-      this.saveData(appProfile.profile?.id, appProfile);
+      this.saveData(appProfile.profile?.id, appProfile, this.config.browser.storage.local);
     });
     const appProfileIds = appProfiles.map((ap) => ap.profile?.id);
     const data = { ...user, appProfileIds };
@@ -383,7 +390,12 @@ class Extension {
     this.log('updateData');
     await this.loadData().then((data) => {
       const userIds = [user.userId, ...data.users.map((u) => u.userId)];
-      this.saveData(`${this.config.name}-users`, { users: [...new Set(userIds)] });
+      // update user list
+      this.saveData(
+        `${this.config.name}-users`,
+        { users: [...new Set(userIds)] },
+        this.config.browser.storage.sync,
+      );
       this.saveAppProfiles(user);
     });
   }
@@ -415,10 +427,10 @@ class Extension {
       });
       config.users.forEach((user) => { this.saveUser(user); });
       config.appProfiles.forEach((appProfile) => {
-        this.saveData(appProfile.profile.id, appProfile);
+        this.saveData(appProfile.profile.id, appProfile, this.config.browser.storage.local);
       });
       if ('settings' in config) { this.saveSettings(config.settings); }
-      if ('iamLogins' in config) { this.saveData(`${this.config.name}-iam-logins`, config.iamLogins); }
+      if ('iamLogins' in config) { this.saveData(`${this.config.name}-iam-logins`, config.iamLogins, this.config.browser.storage.local); }
       return true;
     } catch {
       return false;

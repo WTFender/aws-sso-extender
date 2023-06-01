@@ -12,7 +12,6 @@ export interface ExtensionConfig {
     containers: string[]
   }
   browser: Browser
-  db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
   delay: number
 }
 
