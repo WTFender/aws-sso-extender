@@ -327,18 +327,6 @@
         />
       </div>
     </PScrollPanel>
-
-    <!--- Settings page -->
-    <div v-show="page === 'settings'" class="settings">
-      <div>
-        <PrimeButton
-          class="p-button-danger reset-button"
-          label="Reset All Data"
-          @click="reset()"
-        />
-      </div>
-      <br />
-    </div>
   </div>
   <!--- Footer -->
   <div class="footer" />
@@ -672,12 +660,6 @@ export default {
     setPage(page) {
       this.$ext.log(`popup:page:${page}`);
       this.page = page;
-    },
-    reset() {
-      this.appProfiles = [];
-      this.$ext.resetData();
-      this.$ext.resetPermissions();
-      window.close();
     },
     resetCustom() {
       this.user.custom = this.$ext.defaultCustom;
