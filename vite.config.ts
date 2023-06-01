@@ -31,6 +31,12 @@ export default defineConfig(async ({ mode }) => {
   return {
     build: {
       outDir: `./dist/${platform}/`,
+      rollupOptions: {
+        output: {
+          // workaround _plugin-vue_export-helper.js
+          sanitizeFileName: (s) => s.replace(/^[\x00|_|-]/, ''),
+        }
+      }
     },
     plugins: [
       vue(),

@@ -1,3 +1,7 @@
+## 1.4.1
+- Ability to remove IAM roles from profiles
+- Show release notes on update / install
+
 ## 1.4.0
 - UI Improvements
 - Edit JSON User Config 📝
