@@ -1,6 +1,6 @@
 import extension from '../extension';
 import { ExtensionData, ExtensionMessage } from '../types';
-import { createFirefoxContainer } from '../utils';
+import { createFirefoxContainer, migrateData142 } from '../utils';
 
 extension.log('background:init');
 
@@ -35,9 +35,16 @@ extension.config.browser.runtime.onInstalled.addListener((details) => {
   } else if (details.reason === 'update') {
     if (details.previousVersion !== currentVersion) {
       extension.log(`previousVersion: ${details.previousVersion}`);
-      extension.config.browser.tabs.create({
-        url: releaseUrl,
-      });
+      if (!extension.config.debug) {
+        extension.config.browser.tabs.create({
+          url: releaseUrl,
+        });
+      }
+      // migration of app profile data from sync to local
+      if (currentVersion === '1.4.2') {
+        extension.log('migrateData142');
+        migrateData142();
+      }
     }
   }
 });

@@ -43,4 +43,26 @@ function waitForElement<TElement extends Element = HTMLElement>(
   });
 }
 
-export { waitForElement, createFirefoxContainer };
+// TODO cleanup after 1.5.0 release
+async function migrateData142() {
+  let users = await extension.loadUsers();
+  users = users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
+  const appProfileIds = users.map((u) => u.appProfileIds);
+  const uniqProfileIds = [...new Set(appProfileIds.flat(1))];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const appProfiles: Array<Promise<Record<string, any>>> = [];
+  uniqProfileIds.forEach((apId) => {
+    appProfiles.push(extension.config.browser.storage.sync.get(apId));
+  });
+  Promise.all(appProfiles).then((aps) => {
+    const parsed = aps.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
+    parsed.forEach((appProfile) => {
+      // eslint-disable-next-line vue/max-len
+      extension.saveData(appProfile.profile?.id, appProfile, extension.config.browser.storage.local);
+    });
+    const removed = extension.config.browser.storage.sync.remove(uniqProfileIds);
+    removed.then(() => { extension.log('migrateData142:removed'); });
+  });
+}
+
+export { waitForElement, createFirefoxContainer, migrateData142 };
