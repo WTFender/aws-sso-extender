@@ -326,19 +326,21 @@
           @saveUser="saveUser"
         />
       </div>
-    </PScrollPanel>
-
-    <!--- Settings page -->
-    <div v-show="page === 'settings'" class="settings">
-      <div>
-        <PrimeButton
-          class="p-button-danger reset-button"
-          label="Reset All Data"
-          @click="reset()"
-        />
+      <div v-if="activeTab === 3" class="settings">
+        <div>
+          <form> 
+            <PCheckbox
+              v-model="settings.showReleaseNotes"
+              inputId="notes"
+              name="notes"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+            />
+            <label for="notes">Show Release Notes on Update</label>
+          </form>
+        </div>
       </div>
-      <br />
-    </div>
+    </PScrollPanel>
   </div>
   <!--- Footer -->
   <div class="footer" />
@@ -368,6 +370,7 @@ export default {
         { index: 0, label: "Users" },
         { index: 1, label: "Console" },
         { index: 2, label: "Roles" },
+        { index: 3, label: "Settings"}
       ],
       activeTab: 0,
       filterProfiles: {},
@@ -400,6 +403,7 @@ export default {
         lastUserId: "",
         lastProfileId: "",
         firefoxContainers: false,
+        showReleaseNotes: true,
       } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: "",
@@ -672,12 +676,6 @@ export default {
     setPage(page) {
       this.$ext.log(`popup:page:${page}`);
       this.page = page;
-    },
-    reset() {
-      this.appProfiles = [];
-      this.$ext.resetData();
-      this.$ext.resetPermissions();
-      window.close();
     },
     resetCustom() {
       this.user.custom = this.$ext.defaultCustom;

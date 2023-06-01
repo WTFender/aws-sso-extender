@@ -1,3 +1,7 @@
+## 1.4.2
+- Refactored storage to allow for ~500 apps
+- Ability to disable release notes
+
 ## 1.4.1
 - Ability to remove IAM roles from profiles
 - Show release notes on update / install

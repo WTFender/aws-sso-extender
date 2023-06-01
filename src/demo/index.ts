@@ -155,6 +155,7 @@ const demoData: ExtensionData = {
     defaultUser: 'lastUserId',
     lastUserId: users[0].userId,
     lastProfileId: 'p-124',
+    showReleaseNotes: true,
   },
 };
 

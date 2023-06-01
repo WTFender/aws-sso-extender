@@ -12,7 +12,6 @@ export interface ExtensionConfig {
     containers: string[]
   }
   browser: Browser
-  db: browser.Storage.SyncStorageAreaSync | browser.Storage.LocalStorageArea
   delay: number
 }
 
@@ -21,6 +20,7 @@ export interface ExtensionSettings {
   lastUserId: string
   lastProfileId: string
   firefoxContainers?: boolean
+  showReleaseNotes: boolean
 }
 
 export interface ExtensionPermissions {
