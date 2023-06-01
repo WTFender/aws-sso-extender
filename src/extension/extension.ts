@@ -45,6 +45,7 @@ class Extension {
     lastUserId: null,
     lastProfileId: null,
     firefoxContainers: false,
+    showReleaseNotes: true,
   };
 
   constructor(config: ExtensionConfig) {

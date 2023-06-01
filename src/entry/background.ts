@@ -1,5 +1,5 @@
 import extension from '../extension';
-import { ExtensionData, ExtensionMessage } from '../types';
+import { ExtensionData, ExtensionMessage, ExtensionSettings } from '../types';
 import { createFirefoxContainer, migrateData142 } from '../utils';
 
 extension.log('background:init');
@@ -26,20 +26,20 @@ function listenConsole() {
 extension.config.browser.runtime.onInstalled.addListener((details) => {
   const manifest = extension.config.browser.runtime.getManifest();
   const currentVersion = manifest.version;
-  const releaseUrl = `https://github.com/WTFender/aws-sso-extender/releases/tag/v${currentVersion}`;
   extension.log(`currentVersion: ${currentVersion}`);
-  if (details.reason === 'install') {
-    extension.config.browser.tabs.create({
-      url: releaseUrl,
-    });
-  } else if (details.reason === 'update') {
+  if (details.reason === 'update') {
     if (details.previousVersion !== currentVersion) {
       extension.log(`previousVersion: ${details.previousVersion}`);
-      if (!extension.config.debug) {
-        extension.config.browser.tabs.create({
-          url: releaseUrl,
-        });
-      }
+      extension.loadSettings().then((settings: ExtensionSettings) => {
+        if (settings.showReleaseNotes) {
+          extension.config.browser.tabs.create({
+            url: `data:text/html,<h2>${extension.config.display} - Updated</h2>
+            <a href="https://github.com/WTFender/aws-sso-extender/releases/tag/v${currentVersion}">
+              ${currentVersion} Release Notes
+            </a>`,
+          });
+        }
+      });
       // migration of app profile data from sync to local
       if (currentVersion === '1.4.2') {
         extension.log('migrateData142');

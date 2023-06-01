@@ -20,6 +20,7 @@ export interface ExtensionSettings {
   lastUserId: string
   lastProfileId: string
   firefoxContainers?: boolean
+  showReleaseNotes: boolean
 }
 
 export interface ExtensionPermissions {

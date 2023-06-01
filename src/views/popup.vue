@@ -326,6 +326,20 @@
           @saveUser="saveUser"
         />
       </div>
+      <div v-if="activeTab === 3" class="settings">
+        <div>
+          <form> 
+            <PCheckbox
+              v-model="settings.showReleaseNotes"
+              inputId="notes"
+              name="notes"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+            />
+            <label for="notes">Show Release Notes on Update</label>
+          </form>
+        </div>
+      </div>
     </PScrollPanel>
   </div>
   <!--- Footer -->
@@ -356,6 +370,7 @@ export default {
         { index: 0, label: "Users" },
         { index: 1, label: "Console" },
         { index: 2, label: "Roles" },
+        { index: 3, label: "Settings"}
       ],
       activeTab: 0,
       filterProfiles: {},
@@ -388,6 +403,7 @@ export default {
         lastUserId: "",
         lastProfileId: "",
         firefoxContainers: false,
+        showReleaseNotes: true,
       } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: "",
