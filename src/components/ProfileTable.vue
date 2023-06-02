@@ -73,7 +73,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :href="demoMode ? 'about:blank' : $ext.createProfileUrl(user, slotProps.data)"
-            ><i />
+            >
             <i
               class="pi pi-external-link"
               :style="{ color: `#${slotProps.data.profile.custom.color}` }"

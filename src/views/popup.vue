@@ -101,7 +101,7 @@
           name="userSelect"
           :options="users"
           class="w-full md:w-14rem"
-          style="margin-bottom: 5px"
+          style="margin-bottom: 25px; margin-left: 20px;"
         >
           <template #option="slotProps">
             <div class="flex align-items-center">
@@ -120,6 +120,7 @@
           id="defaultUserSelect"
           name="defaultUserSelect"
           @change="setDefaultUser($event)"
+          style="margin-bottom: 10px; margin-left: 20px;"
         >
           <option
             v-for="u in defaultUserOptions"
@@ -134,7 +135,7 @@
           icon="pi pi-download"
           class="p-button-primary"
           label="Export"
-          style="margin-right: 5px"
+          style="margin-right: 5px; margin-left: 20px;"
           @click="exportUser()"
         />
         <PrimeButton
@@ -184,8 +185,8 @@
           />
         </div>
         <div v-else>
-          <form>
-            <h3>Customize the AWS Console</h3>
+          <h3>Customize the AWS Console</h3>
+          <form style="margin-left: 20px;">
             <div>
               <div v-if="$ext.platform === 'firefox'">
                 <PCheckbox
@@ -334,8 +335,9 @@
         />
       </div>
       <div v-if="activeTab === 3" class="settings">
-        <div>
-          <form> 
+        <div style="margin-bottom: 25px">
+          <h3>Extension Settings</h3>
+          <form style="margin-left: 20px;"> 
             <PCheckbox
               v-model="settings.showReleaseNotes"
               inputId="notes"
@@ -345,6 +347,19 @@
             />
             <label for="notes">Show Release Notes on Update</label>
           </form>
+        </div>
+        <div>
+          <h3>Resources</h3>
+          <div v-for="res in resources">
+            <PrimeButton
+            text
+            @click="openResource(res.url)"
+            :icon="'pi '+res.icon"
+            :label="res.label"
+            :severity="res.severity"
+          /><br>
+          </div>
+
         </div>
       </div>
     </PScrollPanel>
@@ -371,6 +386,12 @@ export default {
   name: "PopupView",
   data() {
     return {
+      resources: [
+        { icon: "pi-star", severity: "primary", label: "Request a Feature", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml" },  
+        { icon: "pi-exclamation-triangle", severity: "warning", label: "Report a Bug", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml" },
+        { icon: "pi-info-circle", severity: "secondary", label: "Release Notes", url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}` },
+        { icon: "pi-book", severity: "secondary", label: "Read more about this extension", url: "https://blog.wtfender.com/posts/aws-sso-extender/"},
+      ],
       importUser: false,
       profileTable: { icon: "pi pi-list", value: "profiles" },
       tabs: [
@@ -551,6 +572,9 @@ export default {
     this.reload();
   },
   methods: {
+    openResource(url){
+      window.open(url, "_blank");
+    },
     importUserConfig() {
       const configJson = (this.$refs.configJson as any).innerText
       if (this.$ext.importUserConfig(configJson)) {

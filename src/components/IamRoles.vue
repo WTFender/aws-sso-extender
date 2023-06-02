@@ -1,7 +1,8 @@
 <!-- eslint-disable max-len -->
 <template>
+  <h3>Assume IAM Roles via SSO Profiles</h3>
+  <div style="margin-left: 20px;">
   <div style="margin-bottom: 10px">
-    <h3>Assume IAM Roles via SSO Profiles</h3>
     <small id="arn-help">Enter the target AWS IAM Role ARN</small>
     <InputText
       id="iamRoleArn"
@@ -70,6 +71,7 @@
     label="Reset IAM Roles"
     @click="resetIamRoles()"
   />
+</div>
 </template>
 
 <script lang="ts">
