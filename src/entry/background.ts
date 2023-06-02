@@ -41,7 +41,7 @@ extension.config.browser.runtime.onInstalled.addListener((details) => {
         }
       });
       // migration of app profile data from sync to local
-      if (currentVersion === '1.4.2') {
+      if (currentVersion.startsWith('1.4.')) {
         extension.log('migrateData142');
         migrateData142();
       }
