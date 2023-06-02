@@ -58,14 +58,6 @@
         <LoginLinks />
       </PAccordionTab>
     </PAccordion>
-    <PrimeButton
-      size="small"
-      icon="pi pi-play"
-      class="p-button-success flex-center"
-      label="Demo"
-      style="margin-bottom: 15px"
-      @click="$emit('demo')"
-    />
   </div>
 </template>
 
@@ -89,7 +81,6 @@ export default {
       }),
     },
   },
-  emits: ["demo"],
   methods: {
     requestPermissionsDirectory(directoryId = null) {
       if (directoryId !== null) {

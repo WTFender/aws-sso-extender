@@ -1,3 +1,6 @@
+## 1.4.3
+- UI Improvements, add resources
+
 ## 1.4.2
 - Refactored storage to allow for ~500 apps
 - Ability to disable release notes

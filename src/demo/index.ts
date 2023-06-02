@@ -7,6 +7,8 @@ const users: UserData[] = [
       'p-123',
       'p-124',
       'p-125',
+      'p-126',
+      'p-127',
     ],
     accountId: '123412341234',
     adGUID: '',
@@ -42,7 +44,7 @@ const users: UserData[] = [
       colorDefault: '222f3e',
       profiles: {
         'p-123': {
-          color: '',
+          color: '23b0ff',
           label: null,
           favorite: true,
           iamRoles: [{
@@ -52,6 +54,24 @@ const users: UserData[] = [
             color: '23b0ff',
             label: 'DemoCrossAccountRole',
           }],
+        },
+        'p-124': {
+          color: 'FF5733',
+          label: null,
+          favorite: false,
+          iamRoles: [{
+            profileId: 'p-124',
+            accountId: '432143214321',
+            roleName: 'IAM-roleName',
+            color: 'FF5733',
+            label: 'DemoCrossAccountRole2',
+          }],
+        },
+        'p-125': {
+          color: 'FF5733',
+          label: null,
+          favorite: true,
+          iamRoles: [],
         },
       },
     },
@@ -143,6 +163,60 @@ const appProfiles: AppData[] = [
     searchMetadata: {
       AccountId: '123412341234',
       AccountName: 'Production',
+      AccountEmail: 'test@localhost',
+    },
+  },
+  {
+    applicationId: 'app-126',
+    applicationName: 'AWS Account',
+    description: 'AWS administrative console',
+    icon: 'https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png',
+    id: 'ins-126',
+    name: '012345678912 (ClientAccount1)',
+    profile: {
+      description: '',
+      id: 'p-126',
+      name: 'ViewerAccess',
+      protocol: 'SAML',
+      relayState: '',
+      url: '',
+      custom: {
+        color: '',
+        favorite: false,
+        label: null,
+        iamRoles: [],
+      },
+    },
+    searchMetadata: {
+      AccountId: '012345678912',
+      AccountName: 'ClientAccount1',
+      AccountEmail: 'test@localhost',
+    },
+  },
+  {
+    applicationId: 'app-127',
+    applicationName: 'AWS Account',
+    description: 'AWS administrative console',
+    icon: 'https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png',
+    id: 'ins-126',
+    name: '120123456789 (ClientAccount2)',
+    profile: {
+      description: '',
+      id: 'p-127',
+      name: 'ViewerAccess',
+      protocol: 'SAML',
+      relayState: '',
+      url: '',
+      custom: {
+        color: '',
+        favorite: false,
+        label: null,
+        iamRoles: [],
+      },
+    },
+    searchMetadata: {
+      AccountId: '120123456789',
+      AccountName: 'ClientAccount2',
       AccountEmail: 'test@localhost',
     },
   }];

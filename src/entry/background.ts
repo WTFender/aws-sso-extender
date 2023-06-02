@@ -1,6 +1,6 @@
 import extension from '../extension';
 import { ExtensionData, ExtensionMessage, ExtensionSettings } from '../types';
-import { createFirefoxContainer, migrateData142 } from '../utils';
+import { createFirefoxContainer, migrateData143 } from '../utils';
 
 extension.log('background:init');
 
@@ -41,9 +41,9 @@ extension.config.browser.runtime.onInstalled.addListener((details) => {
         }
       });
       // migration of app profile data from sync to local
-      if (currentVersion === '1.4.2') {
-        extension.log('migrateData142');
-        migrateData142();
+      if (currentVersion === '1.4.3') {
+        extension.log('migrateData143');
+        migrateData143();
       }
     }
   }

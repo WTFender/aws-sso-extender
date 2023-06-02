@@ -44,7 +44,7 @@ function waitForElement<TElement extends Element = HTMLElement>(
 }
 
 // TODO cleanup after 1.5.0 release
-async function migrateData142() {
+async function migrateData143() {
   let users = await extension.loadUsers();
   users = users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
   const appProfileIds = users.map((u) => u.appProfileIds);
@@ -61,8 +61,8 @@ async function migrateData142() {
       extension.saveData(appProfile.profile?.id, appProfile, extension.config.browser.storage.local);
     });
     const removed = extension.config.browser.storage.sync.remove(uniqProfileIds);
-    removed.then(() => { extension.log('migrateData142:removed'); });
+    removed.then(() => { extension.log('migrateData143:removed'); });
   });
 }
 
-export { waitForElement, createFirefoxContainer, migrateData142 };
+export { waitForElement, createFirefoxContainer, migrateData143 };
