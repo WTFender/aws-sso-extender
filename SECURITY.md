@@ -6,7 +6,7 @@ AWS SSO Extender does not store sensitive data; [read about it here](https://blo
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x.x   | :x: |
+| 1.x.x   | ✅ |
 
 ## Reporting a Vulnerability
 - For critical and sensitive security issues, [Report a Vulnerability](https://github.com/WTFender/aws-sso-extender/security/advisories/new).
