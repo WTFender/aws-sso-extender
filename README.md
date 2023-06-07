@@ -12,7 +12,7 @@
 
 ### Demo
 
-https://user-images.githubusercontent.com/12001399/229891725-044d0632-8de1-47bd-80d1-936141d93831.mp4
+https://github.com/WTFender/aws-sso-extender/assets/12001399/2fdc7459-7d76-4776-a96b-c151d8aa87ef
 
 #### Firefox Containers
 Open the AWS Console in Firefox containers with IAM & SSO labels.

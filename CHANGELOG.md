@@ -1,3 +1,6 @@
+## 1.4.4
+- Set startup page to all profiles or favorites
+
 ## 1.4.3
 - UI Improvements, add resources
 
