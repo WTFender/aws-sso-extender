@@ -41,11 +41,6 @@
     <SetupSteps v-show="!permissions.sso || !loaded" style="margin-top: 10px" :permissions="permissions"
       :loaded="loaded" />
 
-    <!--- Loading Skeleton -->
-    <div v-if="!loaded">
-      <PSkeleton v-for="idx in 6" :key="idx" shape="rectangle" height="60px" width="95%" style="margin: 10px" />
-    </div>
-
     <!--- Profiles -->
     <ProfileTable v-show="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings="settings"
       :filterProfiles="filterProfiles" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user"
