@@ -3,65 +3,32 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <!--- Header 
-    todo chicklet IAM roles, removeable
-  -->
-  <PToolbar style="margin: 0px; padding: 7px">
+  <PToolbar style="margin: 0px; padding: 7px; height: 70px;">
     <template #start>
-      <PrimeButton
-        :disabled="!permissions.sso || !loaded"
-        :text="page !== 'users'"
-        @click="page = 'users'"
-        class="truncate"
-        icon="pi pi-user"
-        style="margin: 0px"
-        severity="primary"
-        :label="user.subject"
-      />
+      <PrimeButton :disabled="!permissions.sso || !loaded" :text="page !== 'users'" @click="page = 'users'"
+        class="truncate" icon="pi pi-user" style="margin: 0px" severity="primary" :label="user.subject" />
     </template>
     <template #center v-if="permissions.sso && loaded">
       <div v-if="page === 'users'">
         <div class="py-2">
-          <PrimeButton
-            v-for="tab in tabs"
-            style="padding: 5px; margin: 0px"
-            @click="activeTab = tab.index"
-            :text="activeTab !== tab.index"
-            size="small"
-            :label="tab.label"
-          />
+          <PrimeButton v-for="tab in tabs" style="padding: 5px; margin: 0px" @click="activeTab = tab.index"
+            :text="activeTab !== tab.index" size="small" :label="tab.label" />
         </div>
       </div>
       <span v-else class="p-input-icon-left" style="margin: 0px">
         <i class="pi pi-search" />
-        <InputText
-          id="searchBox"
-          ref="searchBox"
-          v-model="filterProfiles['global'].value"
-          placeholder="Search Profiles"
-        />
+        <InputText id="searchBox" ref="searchBox" v-model="filterProfiles['global'].value"
+          placeholder="Search Profiles" />
       </span>
     </template>
-    <template #center v-else><h3>AWS SSO Extender - Setup</h3></template>
+    <template #center v-else>
+      <h3>AWS SSO Extender - Setup</h3>
+    </template>
     <template #end>
-      <PrimeButton
-        v-if="!permissions.sso || !loaded"
-        size="small"
-        icon="pi pi-play"
-        class="p-button-success flex-center"
-        label="Demo"
-        @click="demo()"
-      />
-      <PSelectButton
-        v-else
-        style="margin: 0px"
-        v-model="profileTable"
-        :options="items"
-        aria-labelledby="basic"
-        optionLabel="value"
-        dataKey="value"
-        @change="setPage(profileTable.value)"
-      >
+      <PrimeButton v-if="!permissions.sso || !loaded" size="small" icon="pi pi-play" class="p-button-success flex-center"
+        label="Demo" @click="demo()" />
+      <PSelectButton v-else style="margin: 0px" v-model="profileTable" :options="items" aria-labelledby="basic"
+        optionLabel="value" dataKey="value" @change="setPage(profileTable.value)">
         <template #option="slotProps">
           <i :class="slotProps.option.icon"></i>
         </template>
@@ -71,39 +38,25 @@
 
   <div class="card">
     <!--- Setup -->
-    <SetupSteps
-      v-show="!permissions.sso || !loaded"
-      style="margin-top: 10px"
-      :permissions="permissions"
-      :loaded="loaded"
-    />
+    <SetupSteps v-show="!permissions.sso || !loaded" style="margin-top: 10px" :permissions="permissions"
+      :loaded="loaded" />
 
-    <ProfileTable
-      v-show="page === 'favorites' || page === 'profiles'"
-      :demoMode="demoMode"
-      :settings="settings"
-      :filterProfiles="filterProfiles"
-      :app-profiles="page === 'favorites' ? faveProfiles : userProfiles"
-      :user="user"
-      @updateProfile="updateProfile"
-      @updateProfileLabel="updateProfileLabel"
-    />
+    <!--- Loading Skeleton -->
+    <div v-if="!loaded">
+      <PSkeleton v-for="idx in 6" :key="idx" shape="rectangle" height="60px" width="95%" style="margin: 10px" />
+    </div>
 
-    <!--- User page -->
-    <PScrollPanel
-      v-show="page === 'users'"
-      class="scroll"
-      style="max-width: 100%; height: 500px"
-    >
+    <!--- Profiles -->
+    <ProfileTable v-show="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings="settings"
+      :filterProfiles="filterProfiles" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user"
+      @updateProfile="updateProfile" @updateProfileLabel="updateProfileLabel" />
+
+    <!--- User (settings) page -->
+    <PScrollPanel v-show="page === 'users'" class="scroll" style="max-width: 100%; height: 500px">
       <div v-if="activeTab === 0" class="settings">
         <h3>Switch User</h3>
-        <PListbox
-          v-model="user"
-          name="userSelect"
-          :options="users"
-          class="w-full md:w-14rem"
-          style="margin-bottom: 25px; margin-left: 20px;"
-        >
+        <PListbox v-model="user" name="userSelect" :options="users" class="w-full md:w-14rem"
+          style="margin-bottom: 25px; margin-left: 20px;">
           <template #option="slotProps">
             <div class="flex align-items-center">
               <div>
@@ -117,114 +70,64 @@
           </template>
         </PListbox>
         <h3>Default User</h3>
-        <select
-          id="defaultUserSelect"
-          name="defaultUserSelect"
-          @change="setDefaultUser($event)"
-          style="margin-bottom: 10px; margin-left: 20px;"
-        >
-          <option
-            v-for="u in defaultUserOptions"
-            :key="u.userId"
-            :label="u.label"
-            :value="u.userId"
-            :selected="u.userId === settings.defaultUser"
-          />
+        <select id="defaultUserSelect" name="defaultUserSelect" @change="setDefaultUser($event)"
+          style="margin-bottom: 10px; margin-left: 20px;">
+          <option v-for="u in defaultUserOptions" :key="u.userId" :label="u.label" :value="u.userId"
+            :selected="u.userId === settings.defaultUser" />
         </select>
         <h3>User Config</h3>
-        <PrimeButton
-          icon="pi pi-download"
-          class="p-button-primary"
-          label="Export"
-          style="margin-right: 5px; margin-left: 20px;"
-          @click="exportUser()"
-        />
-        <PrimeButton
-          icon="pi pi-pencil"
-          class="p-button-secondary"
-          label="Edit"
-          style="margin-right: 5px"
-          @click="importUser = true"
-        />
-        <PDialog
-          v-model:visible="importUser"
-          header="Edit User Config"
-          :style="{ width: '500px' }"
-        >
-        
+        <PrimeButton icon="pi pi-download" class="p-button-primary" label="Export"
+          style="margin-right: 5px; margin-left: 20px;" @click="exportUser()" />
+        <PrimeButton icon="pi pi-pencil" class="p-button-secondary" label="Edit" style="margin-right: 5px"
+          @click="importUser = true" />
+        <PDialog v-model:visible="importUser" header="Edit User Config" :style="{ width: '500px' }">
+
           <PScrollPanel class="scroll" style="max-width: 100%; max-height: 300px">
-            <p>Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during SSO login.</p>
+            <p>Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during
+              SSO login.</p>
             <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
               dataJson
             }}</pre>
           </PScrollPanel>
           <template #footer>
             <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" />
-            <p ref="configError" style="color: red; display: none;" >Unable to save config JSON.</p>
-            
+            <p ref="configError" style="color: red; display: none;">Unable to save config JSON.</p>
+
           </template>
         </PDialog>
-        <PrimeButton
-          icon="pi pi-trash"
-          class="p-button-danger reset-button"
-          label="Reset"
-          style="margin-right: 5px"
-          @click="resetCustom()"
-        />
+        <PrimeButton icon="pi pi-trash" class="p-button-danger reset-button" label="Reset" style="margin-right: 5px"
+          @click="resetCustom()" />
       </div>
       <div v-if="activeTab === 1" class="settings">
         <div v-if="!consolePermissions">
           <p>This extension requires permissions to customize the AWS console:</p>
           <code>https://*.console.aws.amazon.com/*</code><br />
-          <PrimeButton
-            size="small"
-            icon="pi pi-lock"
-            class="p-button-success"
-            label="Request Permissions"
-            style="margin-top: 10px"
-            @click="requestPermissionsConsole()"
-          />
+          <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+            style="margin-top: 10px" @click="requestPermissionsConsole()" />
         </div>
         <div v-else>
           <h3>Customize the AWS Console</h3>
           <form style="margin-left: 20px;">
             <div>
               <div v-if="$ext.platform === 'firefox'">
-                <PCheckbox
-                  @click="toggleContainers()"
-                  v-model="settings.firefoxContainers"
-                  inputId="container"
-                  name="container"
-                  :binary="true"
-                  style="margin-right: 10px; text-align: middle"
-                />
+                <PCheckbox @click="toggleContainers()" v-model="settings.firefoxContainers" inputId="container"
+                  name="container" :binary="true" style="margin-right: 10px; text-align: middle" />
                 <label for="container">Open in Firefox Containers</label><br /><br />
               </div>
               <label id="sso-label">SSO session Label</label>
               <br />
-              <InputText
-                aria-describedby="sso-label"
-                id="sessionLabelSso"
-                v-model="user.custom.sessionLabelSso"
-                name="sessionLabelSso"
-                class="p-inputtext-sm"
-                style="width: 350px; margin-right: 10px"
-                :placeholder="user.custom.sessionLabelSso"
-              />
+              <InputText aria-describedby="sso-label" id="sessionLabelSso" v-model="user.custom.sessionLabelSso"
+                name="sessionLabelSso" class="p-inputtext-sm" style="width: 350px; margin-right: 10px"
+                :placeholder="user.custom.sessionLabelSso" />
             </div>
             <br />
             <div>
               <label id="iam-label">IAM session Label</label>
               <br />
-              <InputText
-                aria-describedby="iam-label"
-                id="sessionLabelIam"
-                v-model="user.custom.sessionLabelIam"
-                name="sessionLabelIam"
-                class="p-inputtext-sm"
+              <InputText aria-describedby="iam-label" id="sessionLabelIam" v-model="user.custom.sessionLabelIam"
+                name="sessionLabelIam" class="p-inputtext-sm"
                 style="width: 350px; margin-right: 10px; margin-bottom: 5px;"
-                :placeholder="user.custom.sessionLabelIam"
-              />
+                :placeholder="user.custom.sessionLabelIam" />
             </div>
             <details>
               <summary>Use variables in your labels</summary>
@@ -236,76 +139,37 @@
             </details>
             <br />
             <div style="width: 40%; float: left">
-              <PCheckbox
-                v-model="user.custom.labelHeader"
-                inputId="labelHeader"
-                name="labelHeader"
-                :binary="true"
-                style="margin-right: 10px"
-              />
+              <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader" :binary="true"
+                style="margin-right: 10px" />
               <label for="labelHeader">Label header</label><br />
-              <PCheckbox
-                v-model="user.custom.labelFooter"
-                inputId="labelFooter"
-                name="labelFooter"
-                :binary="true"
-                style="margin-right: 10px"
-              />
-              <label for="labelFooter" class="ml-2">Label footer</label>
+              <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter" :binary="true"
+                style="margin-right: 10px" />
+              <label for="labelFooter">Label footer</label>
             </div>
             <div>
-              <PCheckbox
-                v-model="user.custom.colorHeader"
-                inputId="colorHeader"
-                name="colorHeader"
-                :binary="true"
-                style="margin-right: 10px"
-              />
-              <label for="colorHeader" class="ml-2">Colorize header</label><br />
-              <PCheckbox
-                v-model="user.custom.colorFooter"
-                inputId="colorFooter"
-                name="colorFooter"
-                :binary="true"
-                style="margin-right: 10px"
-              />
-              <label for="colorFooter" class="ml-2">Colorize footer</label>
+              <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader" :binary="true"
+                style="margin-right: 10px" />
+              <label for="colorHeader">Colorize header</label><br />
+              <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter" :binary="true"
+                style="margin-right: 10px" />
+              <label for="colorFooter">Colorize footer</label>
             </div>
             <br />
             <div style="margin-bottom: 10px">
-              <ColorPicker
-                inputId="colorDefault"
-                name="colorDefault"
-                @click.prevent="colorPickerVisible = !colorPickerVisible"
-                v-model="user.custom.colorDefault"
-                id="colorDefault"
-              />
-              <label for="colorDefault" class="ml-2"> Default AWS Console color</label>
+              <ColorPicker inputId="colorDefault" name="colorDefault"
+                @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
+                id="colorDefault" />
+              <label for="colorDefault"> Default AWS Console color</label>
             </div>
             <!---
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
-            <PDialog
-              v-if="$ext.platform === 'firefox'"
-              v-model:visible="colorPickerVisible"
-              :style="{ width: '50vw' }"
-            >
-              <ColorPicker
-                v-if="colorPickerVisible"
-                :inline="true"
-                v-model="user.custom.colorDefault"
-              /> </PDialog
-            ><br />
-            <PrimeButton
-              ref="saveConsoleBtn"
-              size="small"
-              icon="pi pi-save"
-              class="p-button-primary"
-              label="Save"
-              style="margin-right: 10px"
-              @click="saveConsoleSettings()"
-            />
+            <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+              <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault" />
+            </PDialog><br />
+            <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-save" class="p-button-primary" label="Save"
+              style="margin-right: 10px" @click="saveConsoleSettings()" />
           </form>
         </div>
       </div>
@@ -317,56 +181,34 @@
           </p>
           <code>https://*.console.aws.amazon.com/*</code><br />
           <code>https://signin.aws.amazon.com/switchrole</code>
-          <PrimeButton
-            size="small"
-            icon="pi pi-lock"
-            class="p-button-success"
-            label="Request Permissions"
-            style="margin-top: 10px"
-            @click="requestPermissionsSwitchrole()"
-          />
+          <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
+            style="margin-top: 10px" @click="requestPermissionsSwitchrole()" />
         </div>
-        <IamRoles
-          v-else
-          :app-profiles="userProfiles"
-          @addIamRole="addIamRole"
-          @updateProfile="updateProfile"
-          @setPage="setPage"
-          @saveUser="saveUser"
-        />
+        <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
+          @setPage="setPage" @saveUser="saveUser" />
       </div>
       <div v-if="activeTab === 3" class="settings">
         <div style="margin-bottom: 25px">
           <h3>Extension Settings</h3>
           <form style="margin-left: 20px;">
             <div v-for="setting in settingOptions">
-              <PCheckbox
-              v-model="settings[setting.id]"
-              :inputId="setting.id"
-              :name="setting.id"
-              :binary="true"
-              style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
-            />
-            <label 
-              :for="setting.id" v-tooltip.bottom="setting.tooltip">{{setting.label}}</label>
-            </div> 
+              <PCheckbox v-model="settings[setting.id]" :inputId="setting.id" :name="setting.id" :binary="true"
+                style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;" />
+              <label :for="setting.id" v-tooltip.bottom="setting.tooltip">{{ setting.label }}</label>
+            </div>
           </form>
         </div>
         <div>
           <h3>Resources</h3>
           <div v-for="res in resources">
-            <PrimeButton
-            text
-            @click="openResource(res.url)"
-            :icon="'pi '+res.icon"
-            :label="res.label"
-            :severity="res.severity"
-          /><br>
+            <PrimeButton text @click="openResource(res.url)" :icon="'pi ' + res.icon" :label="res.label"
+              :severity="res.severity" /><br>
           </div>
 
         </div>
       </div>
     </PScrollPanel>
+
   </div>
   <!--- Footer -->
   <div class="footer" />
@@ -391,14 +233,14 @@ export default {
   data() {
     return {
       settingOptions: [
-      { label: "Show All Profiles on Open", id: "showAllProfiles", tooltip: "Show all profiles when opening the extension popup, intead of filtering to favorites (default: false)"},
+        { label: "Show All Profiles on Open", id: "showAllProfiles", tooltip: "Show all profiles when opening the extension popup, intead of filtering to favorites (default: false)" },
         { label: "Show Release Notes on Update", id: "showReleaseNotes", tooltip: "When the extension is updated, open a browser tab with a link to the release notes (default: true)" },
       ],
       resources: [
-        { icon: "pi-star", severity: "primary", label: "Request a Feature", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml" },  
+        { icon: "pi-star", severity: "primary", label: "Request a Feature", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml" },
         { icon: "pi-exclamation-triangle", severity: "warning", label: "Report a Bug", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml" },
         { icon: "pi-info-circle", severity: "secondary", label: "Release Notes", url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}` },
-        { icon: "pi-book", severity: "secondary", label: "Read more about this extension", url: "https://blog.wtfender.com/posts/aws-sso-extender/"},
+        { icon: "pi-book", severity: "secondary", label: "Read more about this extension", url: "https://blog.wtfender.com/posts/aws-sso-extender/" },
       ],
       importUser: false,
       profileTable: { icon: "pi pi-list", value: "profiles" },
@@ -406,7 +248,7 @@ export default {
         { index: 0, label: "Users" },
         { index: 1, label: "Console" },
         { index: 2, label: "Roles" },
-        { index: 3, label: "Settings"}
+        { index: 3, label: "Settings" }
       ],
       activeTab: 0,
       filterProfiles: {},
@@ -526,14 +368,14 @@ export default {
         if (this.$ext.platform === "firefox") {
           this.$ext.log(`popup:settings.firefoxContainers:${v}`);
           if (v === true) {
-          this.$ext.config.browser.runtime.sendMessage({
-            action: "enableFirefoxContainers",
-          });
-        } else if (v === false) {
-          this.$ext.config.browser.runtime.sendMessage({
-            action: "disableFirefoxContainers",
-          });
-        }
+            this.$ext.config.browser.runtime.sendMessage({
+              action: "enableFirefoxContainers",
+            });
+          } else if (v === false) {
+            this.$ext.config.browser.runtime.sendMessage({
+              action: "disableFirefoxContainers",
+            });
+          }
         }
       },
     },
@@ -557,7 +399,7 @@ export default {
       this.$ext.log(`popup:loaded:${v}`);
       this.$ext.log(this.settings.showAllProfiles)
       if (v === true) {
-        if (this.settings.showAllProfiles || this.faveProfiles.length === 0){
+        if (this.settings.showAllProfiles || this.faveProfiles.length === 0) {
           this.setPage("profiles");
         } else if (this.faveProfiles.length >= 1) {
           this.setPage("favorites");
@@ -577,7 +419,7 @@ export default {
     this.reload();
   },
   methods: {
-    openResource(url){
+    openResource(url) {
       window.open(url, "_blank");
     },
     importUserConfig() {
@@ -791,6 +633,7 @@ export default {
   opacity: 1;
   transition: background-color 0.3s;
 }
+
 .p-rowgroup-footer td {
   font-weight: 700;
 }
