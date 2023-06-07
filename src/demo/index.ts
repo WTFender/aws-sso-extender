@@ -230,6 +230,7 @@ const demoData: ExtensionData = {
     lastUserId: users[0].userId,
     lastProfileId: 'p-124',
     showReleaseNotes: true,
+    showAllProfiles: false,
   },
 };
 

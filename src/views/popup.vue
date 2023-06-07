@@ -60,6 +60,7 @@
         aria-labelledby="basic"
         optionLabel="value"
         dataKey="value"
+        @change="setPage(profileTable.value)"
       >
         <template #option="slotProps">
           <i :class="slotProps.option.icon"></i>
@@ -221,7 +222,7 @@
                 v-model="user.custom.sessionLabelIam"
                 name="sessionLabelIam"
                 class="p-inputtext-sm"
-                style="width: 350px; margin-right: 10px"
+                style="width: 350px; margin-right: 10px; margin-bottom: 5px;"
                 :placeholder="user.custom.sessionLabelIam"
               />
             </div>
@@ -337,15 +338,18 @@
       <div v-if="activeTab === 3" class="settings">
         <div style="margin-bottom: 25px">
           <h3>Extension Settings</h3>
-          <form style="margin-left: 20px;"> 
-            <PCheckbox
-              v-model="settings.showReleaseNotes"
-              inputId="notes"
-              name="notes"
+          <form style="margin-left: 20px;">
+            <div v-for="setting in settingOptions">
+              <PCheckbox
+              v-model="settings[setting.id]"
+              :inputId="setting.id"
+              :name="setting.id"
               :binary="true"
-              style="margin-right: 10px; text-align: middle"
+              style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
             />
-            <label for="notes">Show Release Notes on Update</label>
+            <label 
+              :for="setting.id" v-tooltip.bottom="setting.tooltip">{{setting.label}}</label>
+            </div> 
           </form>
         </div>
         <div>
@@ -386,6 +390,10 @@ export default {
   name: "PopupView",
   data() {
     return {
+      settingOptions: [
+      { label: "Show All Profiles on Open", id: "showAllProfiles", tooltip: "Show all profiles when opening the extension popup, intead of filtering to favorites (default: false)"},
+        { label: "Show Release Notes on Update", id: "showReleaseNotes", tooltip: "When the extension is updated, open a browser tab with a link to the release notes (default: true)" },
+      ],
       resources: [
         { icon: "pi-star", severity: "primary", label: "Request a Feature", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml" },  
         { icon: "pi-exclamation-triangle", severity: "warning", label: "Report a Bug", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml" },
@@ -432,6 +440,7 @@ export default {
         lastProfileId: "",
         firefoxContainers: false,
         showReleaseNotes: true,
+        showAllProfiles: false,
       } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: "",
@@ -497,13 +506,6 @@ export default {
     },
   },
   watch: {
-    profileTable: {
-      handler(v) {
-        if (v.value === "profiles" || v.value === "favorites") {
-          this.setPage(v.value);
-        }
-      },
-    },
     page: {
       handler(v) {
         this.lastPage = v;
@@ -512,6 +514,7 @@ export default {
           this.profileTable = { icon: '', value: '' };
         }
         if (v === "profiles" || v === "favorites") {
+          this.profileTable = { value: v, icon: `pi pi-${v === 'profiles' ? 'list' : 'star'}` }
           waitForElement("#searchBox").then((searchBox) => {
             searchBox.focus();
           });
@@ -520,7 +523,9 @@ export default {
     },
     "settings.firefoxContainers": {
       handler: function (v) {
-        if (v === true) {
+        if (this.$ext.platform === "firefox") {
+          this.$ext.log(`popup:settings.firefoxContainers:${v}`);
+          if (v === true) {
           this.$ext.config.browser.runtime.sendMessage({
             action: "enableFirefoxContainers",
           });
@@ -528,6 +533,7 @@ export default {
           this.$ext.config.browser.runtime.sendMessage({
             action: "disableFirefoxContainers",
           });
+        }
         }
       },
     },
@@ -549,13 +555,12 @@ export default {
     },
     loaded(v) {
       this.$ext.log(`popup:loaded:${v}`);
+      this.$ext.log(this.settings.showAllProfiles)
       if (v === true) {
-        if (this.faveProfiles.length >= 1) {
-          this.setPage("favorites");
-          this.profileTable = { icon: "pi pi-star", value: "favorites" };
-        } else {
+        if (this.settings.showAllProfiles || this.faveProfiles.length === 0){
           this.setPage("profiles");
-          this.profileTable = { icon: "pi pi-list", value: "profiles" };
+        } else if (this.faveProfiles.length >= 1) {
+          this.setPage("favorites");
         }
       }
     },
