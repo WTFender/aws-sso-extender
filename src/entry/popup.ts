@@ -19,6 +19,7 @@ import SelectButton from 'primevue/selectbutton';
 import TabPanel from 'primevue/tabpanel';
 import TabView from 'primevue/tabview';
 import Toolbar from 'primevue/toolbar';
+import Tooltip from 'primevue/tooltip';
 import extension from '../extension';
 import SetupSteps from '../components/SetupSteps.vue';
 import ProfileTable from '../components/ProfileTable.vue';
@@ -51,6 +52,7 @@ app.component('PSelectButton', SelectButton);
 app.component('PToolbar', Toolbar);
 app.component('TabPanel', TabPanel);
 app.component('TabView', TabView);
+app.directive('tooltip', Tooltip);
 // Custom components
 app.component('IamRoles', IamRoles);
 app.component('LoginLinks', LoginLinks);
