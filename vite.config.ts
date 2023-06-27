@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 
-type Platform = 'chrome' | 'firefox';
+type Platform = 'chrome' | 'firefox' | 'safari';
 type Action = 'build' | 'watch';
 
 function generateManifest() {
@@ -41,7 +41,7 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       vue(),
       webExtension({
-        browser: platform,
+        browser: platform === 'firefox' ? 'firefox' : 'chrome',
         manifest: action === 'watch' ? generateManifestDevtools : generateManifest,
         watchFilePaths: ['package.json', 'manifest.json'],
       }),

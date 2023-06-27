@@ -14,7 +14,8 @@
     "watch:chrome": "rm -rf ./dist/chrome/ && VITE_EXT_DEBUG=true vite --mode watch:chrome --watch build",
     "watch:firefox": "rm -rf ./dist/firefox/ && VITE_EXT_DEBUG=true vite --mode watch:firefox --watch build",
     "build:chrome": "rm -rf ./dist/chrome/ && vue-tsc && vite --mode build:chrome build",
-    "build:firefox": "rm -rf ./dist/firefox/ && vue-tsc && vite --mode build:firefox build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest"
+    "build:firefox": "rm -rf ./dist/firefox/ && vue-tsc && vite --mode build:firefox build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest",
+    "port:safari": "npm run build:chrome && xcrun safari-web-extension-converter --macos-only --swift --force ./dist/chrome --project-location ./xcode"
   },
   "lint-staged": {
     "src/**/*.+(ts|vue)": [
