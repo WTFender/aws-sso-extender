@@ -31,7 +31,7 @@
     />
   </div>
   <PDialog
-    v-if="$ext.platform === 'firefox'"
+    v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
     v-model:visible="colorPickerVisible"
     :style="{ width: '50vw' }"
   >

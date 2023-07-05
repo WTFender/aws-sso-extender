@@ -52,10 +52,10 @@
           <br />
           <code>directoryId.awsapps.com/start#/</code>
         </div>
-        <PDivider v-if="!permissions.history" type="solid">
+        <PDivider v-if="!permissions.history && $ext.platform !== 'safari'" type="solid">
           <small>Optional - Find login links in browser history</small>
         </PDivider>
-        <LoginLinks />
+        <LoginLinks v-if="$ext.platform !== 'safari'" />
       </PAccordionTab>
     </PAccordion>
   </div>

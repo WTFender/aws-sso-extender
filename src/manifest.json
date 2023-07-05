@@ -16,6 +16,10 @@
       }
     }
   },
+  "{{safari}}.background": {
+    "service_worker": "src/entry/background.ts",
+    "type": "module"
+  },
   "{{chrome}}.background": {
     "service_worker": "src/entry/background.ts",
     "type": "module"
@@ -51,12 +55,18 @@
       ]
     }
   ],
-  "content_security_policy": {
+  "{{chrome}}.content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src 'self' data: https://static.global.sso.amazonaws.com/"
+  },
+  "{{firefox}}.content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; worker-src 'none'; img-src 'self' data: https://static.global.sso.amazonaws.com/"
   },
   "{{chrome}}.cross_origin_opener_policy": {
     "value": "same-origin"
   },
+  "{{safari}}.permissions": [
+    "storage"
+  ],
   "{{chrome}}.permissions": [
     "storage"
   ],

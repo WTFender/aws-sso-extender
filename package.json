@@ -5,7 +5,7 @@
   "author": "WTFender",
   "url": "https://github.com/WTFender/aws-sso-extender",
   "private": true,
-  "version": "1.4.4",
+  "version": "1.4.5",
   "type": "module",
   "scripts": {
     "prepare": "husky install",
@@ -14,7 +14,8 @@
     "watch:chrome": "rm -rf ./dist/chrome/ && VITE_EXT_DEBUG=true vite --mode watch:chrome --watch build",
     "watch:firefox": "rm -rf ./dist/firefox/ && VITE_EXT_DEBUG=true vite --mode watch:firefox --watch build",
     "build:chrome": "rm -rf ./dist/chrome/ && vue-tsc && vite --mode build:chrome build",
-    "build:firefox": "rm -rf ./dist/firefox/ && vue-tsc && vite --mode build:firefox build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest"
+    "build:firefox": "rm -rf ./dist/firefox/ && vue-tsc && vite --mode build:firefox build && web-ext build -s ./dist/firefox/ -a ./release/firefox/ --overwrite-dest",
+    "build:safari": "rm -rf ./dist/safari/ && vue-tsc && vite --mode build:safari build && xcrun safari-web-extension-converter --macos-only --swift --force ./dist/safari --project-location ./xcode --bundle-identifier com.wtfender.aws-sso-extender --app-name 'AWS SSO Extender'"
   },
   "lint-staged": {
     "src/**/*.+(ts|vue)": [

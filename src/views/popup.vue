@@ -160,7 +160,7 @@
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
-            <PDialog v-if="$ext.platform === 'firefox'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
+            <PDialog v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
               <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault" />
             </PDialog><br />
             <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-save" class="p-button-primary" label="Save"
