@@ -1,3 +1,6 @@
+## 1.4.5
+- Safari support
+
 ## 1.4.4
 - Set startup page to all profiles or favorites
 
