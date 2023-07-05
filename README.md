@@ -4,6 +4,7 @@
 
 - [Install Chrome Extension](https://chrome.google.com/webstore/detail/aws-sso-extender/pojoaiboolahdaedebpjgnllehpofkep)
 - [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/)
+- [Install Safari Extension](https://apps.apple.com/us/app/aws-sso-extender/id6450935274)
 
 ⭐ Quickly access your Favorite AWS SSO apps  
 🎨 Customize your profiles, roles & AWS console  
