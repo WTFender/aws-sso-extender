@@ -41,7 +41,7 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       vue(),
       webExtension({
-        browser: platform === 'firefox' ? 'firefox' : 'chrome',
+        browser: platform,
         manifest: action === 'watch' ? generateManifestDevtools : generateManifest,
         watchFilePaths: ['package.json', 'manifest.json'],
       }),
