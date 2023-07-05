@@ -17,7 +17,7 @@ function encodeUriPlusParens(str) {
 class Extension {
   config: ExtensionConfig;
 
-  platform: 'chrome' | 'firefox';
+  platform: 'chrome' | 'firefox' | 'safari';
 
   consoleUrlRegex: RegExp;
 
@@ -51,7 +51,7 @@ class Extension {
 
   constructor(config: ExtensionConfig) {
     this.config = config;
-    this.platform = navigator.userAgent.indexOf('Firefox') !== -1 ? 'firefox' : 'chrome';
+    this.platform = this.checkPlatform();
     this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/;
     this.ssoUrl = '';
@@ -70,6 +70,13 @@ class Extension {
         console.log(`${this.config.name}:${v}`);
       }
     }
+  }
+
+  checkPlatform() {
+    this.log(`checkPlatform:${navigator.userAgent}`);
+    if (navigator.userAgent.indexOf('Firefox') !== -1) { return 'firefox'; }
+    if (navigator.userAgent.indexOf('Safari') !== -1) { return 'safari'; }
+    return 'chrome';
   }
 
   buildLabel(s, user, profile, role, account, accountName): string {
@@ -103,7 +110,7 @@ class Extension {
 
   async checkPermissions(): Promise<ExtensionPermissions> {
     this.log('checkPermissions');
-    const history = this.config.browser.permissions.contains({
+    const history = this.platform === 'safari' ? Promise.resolve(false) : this.config.browser.permissions.contains({
       permissions: ['history'],
     });
     const console = this.config.browser.permissions.contains({
