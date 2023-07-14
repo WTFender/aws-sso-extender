@@ -5,7 +5,6 @@
     v-model:filters="filterProfilesComputed"
     v-model:selection="selectedProfile"
     selection-mode="single"
-    edit-mode="row"
     class="p-datatable-sm"
     scroll-height="500px"
     :value="appProfiles"
@@ -13,8 +12,6 @@
     :group-rows-by="['name']"
     sortMode="single"
     responsive-layout="scroll"
-    @row-edit-cancel="colorPickerVisible = false"
-    @row-edit-save="updateProfileLabel"
     @rowReorder="setProfiles"
     @keydown.enter="navSelectedProfile()"
   >
@@ -103,17 +100,6 @@
           @click="colorPickerVisible = !colorPickerVisible"
           v-model="data.profile.custom.color"
         />
-        <PDialog
-          v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
-          v-model:visible="colorPickerVisible"
-          :style="{ width: '50vw' }"
-        >
-          <ColorPicker
-            v-if="colorPickerVisible"
-            :inline="true"
-            v-model="data.profile.custom.color"
-          />
-        </PDialog>
         <div v-if="'iamRoles' in data.profile.custom">
           <PBadge
             v-for="(role, idx) in data.profile.custom.iamRoles"
@@ -130,10 +116,26 @@
       </template>
     </PColumn>
     <PColumn
-      :row-editor="true"
-      body-style="text-align:center;"
+      :style="{ width: '20px' }"
       header-style="display: none;"
+      body-class="sso-favorite"
     >
+      <template #body="slotProps">
+        <i
+          class="pi pi-pencil"
+          @click="colorPickerVisible = !colorPickerVisible"
+        />
+        <PDialog
+          v-model:visible="colorPickerVisible"
+          :style="{ width: '50vw' }"
+        >
+          <ColorPicker
+            v-if="colorPickerVisible"
+            :inline="true"
+            v-model="slotProps.data.profile.custom.color"
+          />
+        </PDialog>
+      </template>
     </PColumn>
     <PColumn
       :style="{ width: '20px' }"
