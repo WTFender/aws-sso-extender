@@ -29,6 +29,12 @@
       @click="colorPickerVisible = !colorPickerVisible"
       v-model="newIamRole.color"
     />
+    <InputText
+      id="newIamRoleColor"
+      v-model="newIamRole.color"
+      class="p-inputtext-sm"
+      style="width: 100px; margin-left: 10px"
+    />
   </div>
   <PDialog
     v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
