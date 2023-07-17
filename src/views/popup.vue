@@ -44,7 +44,7 @@
     <!--- Profiles -->
     <ProfileTable v-show="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings="settings"
       :filterProfiles="filterProfiles" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user"
-      @updateProfile="updateProfile" @updateProfileLabel="updateProfileLabel" />
+      :permissions="permissions" @requestPermissions="requestPermissionsSwitchrole" @updateProfile="updateProfile" @updateProfileLabel="updateProfileLabel" />
 
     <!--- User (settings) page -->
     <PScrollPanel v-show="page === 'users'" class="scroll" style="max-width: 100%; height: 500px">
