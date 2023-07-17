@@ -263,6 +263,11 @@ import { getFontColor, waitForElement } from "../utils";
 export default {
   name: "ProfileTable",
   props: {
+    activeProfile: {
+      // suppress ts errors, unsure why this is required
+      required: false,
+      default: () => ({} as AppData),
+    },
     permissions: {
       type: Object,
       required: true,
@@ -291,7 +296,7 @@ export default {
       default: false,
     },
   },
-  emits: ["updateProfile", "requestPermissionsSwitchrole"],
+  emits: ["updateProfile", "requestPermissions"],
   computed : {
     consoleStyle() {
       return {
