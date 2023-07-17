@@ -1,22 +1,12 @@
+## 1.5.0
+- New profile editor
+
 ## 1.4.5
 - Safari support
-
-## 1.4.4
 - Set startup page to all profiles or favorites
-
-## 1.4.3
-- UI Improvements, add resources
-
-## 1.4.2
 - Refactored storage to allow for ~500 apps
-- Ability to disable release notes
-
-## 1.4.1
 - Ability to remove IAM roles from profiles
 - Show release notes on update / install
-
-## 1.4.0
-- UI Improvements
 - Edit JSON User Config 📝
 
 ## 1.3.0
