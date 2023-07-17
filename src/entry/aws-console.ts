@@ -1,5 +1,5 @@
 import extension from '../extension';
-import { waitForElement } from '../utils';
+import { getFontColor, waitForElement } from '../utils';
 import {
   UserData, AppData, ExtensionData, IamRole,
 } from '../types';
@@ -85,15 +85,6 @@ function checkIamLogins(aws: AwsConsole) {
       extension.removeIamLogin(role.profileId);
     }
   }
-}
-
-function getFontColor(hexcolor): 'black' | 'white' {
-  extension.log(hexcolor);
-  const r = parseInt(hexcolor.substring(1, 3), 16);
-  const g = parseInt(hexcolor.substring(3, 5), 16);
-  const b = parseInt(hexcolor.substring(5, 7), 16);
-  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-  return (yiq >= 180) ? 'black' : 'white';
 }
 
 function getMenu() {

@@ -75,6 +75,7 @@ class Extension {
   checkPlatform() {
     this.log(`checkPlatform:${navigator.userAgent}`);
     if (navigator.userAgent.indexOf('Firefox') !== -1) { return 'firefox'; }
+    if (navigator.userAgent.indexOf('Chrome') !== -1) { return 'chrome'; }
     if (navigator.userAgent.indexOf('Safari') !== -1) { return 'safari'; }
     return 'chrome';
   }
