@@ -43,6 +43,15 @@ function waitForElement<TElement extends Element = HTMLElement>(
   });
 }
 
+function getFontColor(hexcolor): 'black' | 'white' {
+  extension.log(hexcolor);
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 180) ? 'black' : 'white';
+}
+
 // TODO cleanup after 1.5.0 release
 async function migrateData143() {
   let users = await extension.loadUsers();
@@ -65,4 +74,6 @@ async function migrateData143() {
   });
 }
 
-export { waitForElement, createFirefoxContainer, migrateData143 };
+export {
+  waitForElement, createFirefoxContainer, migrateData143, getFontColor,
+};
