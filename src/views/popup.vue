@@ -109,7 +109,7 @@
                   name="container" :binary="true" style="margin-right: 10px; text-align: middle" />
                 <label for="container">Open in Firefox Containers</label><br /><br />
               </div>
-              <label id="sso-label">SSO session Label</label>
+              <small id="sso-label">SSO Console Label</small>
               <br />
               <InputText aria-describedby="sso-label" id="sessionLabelSso" v-model="user.custom.sessionLabelSso"
                 name="sessionLabelSso" class="p-inputtext-sm" style="width: 350px; margin-right: 10px"
@@ -117,7 +117,7 @@
             </div>
             <br />
             <div>
-              <label id="iam-label">IAM session Label</label>
+              <small id="iam-label">IAM Console Label</small>
               <br />
               <InputText aria-describedby="iam-label" id="sessionLabelIam" v-model="user.custom.sessionLabelIam"
                 name="sessionLabelIam" class="p-inputtext-sm"
@@ -126,6 +126,7 @@
             </div>
             <details>
               <summary>Use variables in your labels</summary>
+              <br />
               <code>{{ "\{\{user\}\}        Current AWS SSO user" }} </code><br />
               <code>{{ "\{\{role\}\}        Current IAM role" }} </code><br />
               <code>{{ "\{\{profile\}\}     Current AWS SSO profile" }} </code><br />
@@ -135,19 +136,19 @@
             <br />
             <div style="width: 40%; float: left">
               <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader" :binary="true"
-                style="margin-right: 10px" />
-              <label for="labelHeader">Label header</label><br />
+                class="setting-checkbox" />
+              <label for="labelHeader" class="setting-label">Label header</label><br />
               <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter" :binary="true"
-                style="margin-right: 10px" />
-              <label for="labelFooter">Label footer</label>
+                class="setting-checkbox" />
+              <label for="labelFooter" class="setting-label">Label footer</label>
             </div>
             <div>
               <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader" :binary="true"
-                style="margin-right: 10px" />
-              <label for="colorHeader">Colorize header</label><br />
+                class="setting-checkbox" />
+              <label for="colorHeader" class="setting-label" >Colorize header</label><br />
               <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter" :binary="true"
-                style="margin-right: 10px" />
-              <label for="colorFooter">Colorize footer</label>
+                class="setting-checkbox" />
+              <label for="colorFooter" class="setting-label">Colorize footer</label>
             </div>
             <br />
             <div style="margin-bottom: 10px">
@@ -704,4 +705,19 @@ export default {
 .settings {
   margin: 15px;
 }
+.setting-label,
+.setting-checkbox {
+  margin-right: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  vertical-align: middle;
+}
+.p-inputtext {
+  padding: 5px !important;
+}
+#searchBox {
+  padding: 10px !important;
+  padding-left: 2.5rem !important;
+}
+
 </style>

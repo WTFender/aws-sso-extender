@@ -3,7 +3,7 @@
   <h3>Assume IAM Roles via SSO Profiles</h3>
   <div style="margin-left: 20px;">
   <div style="margin-bottom: 10px">
-    <small id="arn-help">Enter the target AWS IAM Role ARN</small>
+    <small id="arn-help">IAM Role ARN</small><br />
     <InputText
       id="iamRoleArn"
       v-model="newIamRole.arn"
@@ -14,7 +14,7 @@
       placeholder="arn:aws:iam::123412341234:role/roleName"
     />
   </div>
-  <small id="label-help">Role label and color for the AWS console</small>
+  <small id="label-help">Role Label & Color</small>
   <div style="margin-bottom: 10px">
     <InputText
       id="iamRoleLabel"
@@ -177,4 +177,8 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.p-inputtext {
+  padding: 5px !important;
+}
+</style>
