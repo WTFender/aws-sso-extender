@@ -8,12 +8,12 @@
     scroll-height="500px"
     :value="appProfiles"
     row-group-mode="rowspan"
-    :group-rows-by="['name']"
-    sortMode="single"
+    sortMode="multiple"
     responsive-layout="scroll"
     @rowReorder="setProfiles"
     @keydown.enter="navSelectedProfile()"
   >
+    <!--- profile editor popup --->
     <PDialog
       v-model:visible="editorVisible"
       header="Edit Profile"
@@ -138,8 +138,10 @@
         </p>
       </template>
     </PDialog>
+    <PColumn rowReorder headerStyle="width: 3rem" :reorderableColumn="false" />
     <PColumn
-      header-style="display: none;"
+      sortable
+      header="Application"
       field="name"
       body-style="text-align: center;"
       :style="{ 'min-width': '120px' }"
@@ -166,25 +168,13 @@
         </div>
       </template>
     </PColumn>
+
+    <!--- profile & iam role links --->
     <PColumn
-      field="applicationName"
-      header-style="display: none;"
-      body-class="display: none;"
-    >
-      <template #body="" />
-    </PColumn>
-    <PColumn
-      field="profile.name"
-      header-style="display: none;"
-      body-class="display: none;"
-    >
-      <template #body="" />
-    </PColumn>
-    <PColumn
+      sortable
+      header="Profile"
       :style="{ 'min-width': '220px' }"
-      field="profile.custom.label"
-      header-style="display: none;"
-      body-class="sso-profile"
+      field="profile.name"
     >
       <template #body="slotProps">
         <div>
@@ -213,20 +203,16 @@
         </div>
       </template>
     </PColumn>
-    <PColumn
-      :style="{ width: '20px' }"
-      header-style="display: none;"
-      body-class="sso-favorite"
-    >
+
+    <!--- edit profile --->
+    <PColumn :style="{ width: '20px' }">
       <template #body="slotProps">
         <i class="pi pi-pencil" @click="editProfile(slotProps.data)" />
       </template>
     </PColumn>
-    <PColumn
-      :style="{ width: '20px' }"
-      header-style="display: none;"
-      body-class="sso-favorite"
-    >
+
+    <!--- favorite --->
+    <PColumn :style="{ width: '20px' }">
       <template #body="slotProps">
         <i
           class="pi"
@@ -238,21 +224,17 @@
         />
       </template>
     </PColumn>
+
+    <!--- inclusive search fields --->
     <PColumn
-      v-for="field in [
-        'id',
-        'applicationId',
-        'description',
-        'profile.custom.label',
-        'profile.id',
-        'profile.description',
-        'profile.protocol',
-      ]"
+      v-for="field in searchableFields"
       :field="field"
       style="display: none"
       header-style="display: none;"
     />
-    <PColumn :style="{ width: '10px' }" header-style="display: none;" />
+
+    <!--- spacing for scrollbar --->
+    <PColumn :style="{ width: '10px' }" />
   </DataTable>
 </template>
 
@@ -323,6 +305,15 @@ export default {
       activeProfile: {} as AppData,
       colorPickerVisible: false,
       editorVisible: false,
+      searchableFields: [
+        'id',
+        'applicationId',
+        'description',
+        'profile.custom.label',
+        'profile.id',
+        'profile.description',
+        'profile.protocol',
+      ],
       selectedProfile: null,
       sourceProfile: {} as AppData,
     };
@@ -360,9 +351,10 @@ export default {
     },
     setProfiles(profiles) {
       this.$ext.log("setProfiles");
+      profiles.forEach(profile => {
+
+      });
       this.$ext.log(profiles);
-      this.$ext.log(this.filterProfiles);
-      this.filterProfiles.value = profiles.value;
     },
     assumeIamRole(iamRole, appProfile) {
       // TODO notify on silent failure switching role

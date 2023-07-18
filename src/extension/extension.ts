@@ -347,6 +347,7 @@ class Extension {
       favorite: false,
       label: null,
       iamRoles: [] as IamRole[],
+      weight: 100,
     };
     const customProfiles: AppData[] = [];
     appProfiles.forEach((ap) => {
