@@ -1,3 +1,6 @@
+## 1.5.1
+- Fixed an issue with loading a large number of accounts or profiles
+
 ## 1.5.0
 - New profile editor
 
