@@ -1,19 +1,8 @@
 import extension from '../extension';
-import {
-  ApiData, AppData, ProfileData, UserData,
-} from '../types';
+import { AppData, ProfileData, UserData } from '../types';
+import api, { Semaphore } from './api';
 
 /* collect user, app, and profiles from the AWS SSO directory page */
-
-function getCookie(name) {
-  const cookies = Object.fromEntries(
-    document.cookie
-      .split('; ')
-      .map((v) => v.split(/=(.*)/s).map(decodeURIComponent)),
-  );
-  extension.log(`aws-sso:getCookie:${name in cookies}`);
-  return cookies[name];
-}
 
 function getRegion(): string {
   const region = (
@@ -21,21 +10,6 @@ function getRegion(): string {
   ).content;
   extension.log(`aws-sso:getRegion:${region}`);
   return region;
-}
-
-function getToken(): string {
-  const ssoKey = 'x-amz-sso_authn';
-  return getCookie(ssoKey);
-}
-
-async function api(path: string): Promise<ApiData> {
-  extension.log(`aws-sso:api:${path}`);
-  return fetch(`${extension.ssoUrl}${path}`, {
-    headers: { 'x-amz-sso_bearer_token': getToken() },
-  }).then(async (response) => {
-    extension.log(`aws-sso:api:${path}:results`);
-    return await response.json() as ApiData;
-  });
 }
 
 async function getUserData(): Promise<UserData> {
@@ -49,9 +23,10 @@ async function getApps(): Promise<AppData[]> {
 }
 
 async function getAppProfiles(app: AppData): Promise<ProfileData[]> {
+  await Semaphore.acquire();
   return (api(`/instance/appinstance/${app.id}/profiles`).then(
     (data) => data.result,
-  ) as Promise<ProfileData[]>);
+  ) as Promise<ProfileData[]>).finally(() => { Semaphore.release(); });
 }
 
 if (extension.ssoUrlRegex.test(window.location.href)) {
@@ -73,6 +48,8 @@ if (extension.ssoUrlRegex.test(window.location.href)) {
       Promise.all(profiles).then(() => {
         extension.update(user);
         extension.loaded = true;
+      }).catch((err) => {
+        throw new Error('Something went terribly wrong and it needs to be handled', { cause: err });
       });
     });
   });
