@@ -10,8 +10,12 @@
     />
   </div>
   <div v-else-if="foundDirs">
-    <p v-if="foundDirs.length === 0">No login links found in browser history.</p>
-    <h2 v-else>Detected Login Links</h2>
+    <p v-if="foundDirs.length === 0">
+      No login links found in browser history.
+    </p>
+    <h2 v-else>
+      Detected Login Links
+    </h2>
     <div v-for="dir in foundDirs" :key="dir">
       <PrimeButton
         class="p-button-primary"
@@ -25,7 +29,7 @@
 
 <script lang="ts">
 export default {
-  name: "LoginLinks",
+  name: 'LoginLinks',
   data() {
     return {
       permissions: {
@@ -47,13 +51,13 @@ export default {
   },
   methods: {
     openLink(link) {
-      window.open(link, "_blank");
+      window.open(link, '_blank');
     },
     setDirectories(dirs) {
       this.foundDirs = dirs;
     },
     requestHistory() {
-      this.$ext.config.browser.permissions.request({ permissions: ["history"] });
+      this.$ext.config.browser.permissions.request({ permissions: ['history'] });
       window.close();
     },
   },

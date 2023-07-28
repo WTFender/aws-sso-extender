@@ -63,7 +63,7 @@
 
 <script lang="ts">
 export default {
-  name: "SetupSteps",
+  name: 'SetupSteps',
   props: {
     loaded: {
       required: true,
