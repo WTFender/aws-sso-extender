@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import { createApp } from 'vue';
+import VueSortable from 'vue3-sortablejs';
 import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
 import Badge from 'primevue/badge';
@@ -32,6 +33,7 @@ import 'primeicons/primeicons.css';
 
 const app = createApp(Popup);
 app.use(PrimeVue);
+app.use(VueSortable);
 app.config.globalProperties.$browser = browser;
 app.config.globalProperties.$ext = extension;
 app.component('ColorPicker', ColorPicker);
