@@ -204,10 +204,12 @@
         </div>
       </div>
     </PScrollPanel>
-
   </div>
+
   <!--- Footer -->
-  <div class="footer" />
+  <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
+    <p v-if="$ext.config.debug" style="margin: 0px">{{ $ext.config.build }}</p>
+  </div>
 </template>
 <script lang="ts">
 import { saveAs } from "file-saver";
@@ -216,13 +218,12 @@ import { FilterMatchMode } from "primevue/api";
 import demoData from "../demo";
 import {
   AppData,
-  CustomData,
+  CustomData, 
   ExtensionData,
   ExtensionSettings,
   IamRole,
   UserData,
 } from "../types";
-import Menu from "primevue/menu";
 
 export default {
   name: "PopupView",
@@ -432,10 +433,6 @@ export default {
         type: "application/json",
       });
       saveAs(fileToSave, `${this.user.subject}-${this.$ext.config.name}.json`);
-    },
-    toggle(event) {
-      const menu = (this.$refs.menu as any) as Menu;
-      menu.toggle(event);
     },
     toggleContainers() {
       this.settings.firefoxContainers = !this.settings.firefoxContainers;
@@ -688,17 +685,24 @@ export default {
   cursor: inherit;
 }
 
-.footer {
+.footer, .footer-debug {
   color: #343a40;
   border-top: 1px solid #dee2e6;
   background: #f8f9fa;
   position: fixed;
   bottom: 0px;
-  height: 5px;
   left: 0px;
   right: 0px;
   overflow: hidden;
   text-align: center;
+}
+
+.footer {
+  height: 5px;
+}
+
+.footer-debug {
+  height: 20px;
 }
 
 .json,

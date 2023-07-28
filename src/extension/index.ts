@@ -7,6 +7,7 @@ const extensionConfig: ExtensionConfig = {
   name: import.meta.env.VITE_EXT_SHORT_NAME,
   display: import.meta.env.VITE_EXT_NAME,
   debug: import.meta.env.VITE_EXT_DEBUG === 'true',
+  build: Date.now().toString(),
   permissions: {
     console: ['https://*.console.aws.amazon.com/*'],
     signin: ['https://signin.aws.amazon.com/switchrole?*'],

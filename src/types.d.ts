@@ -5,6 +5,7 @@ export interface ExtensionConfig {
   name: string
   display: string
   debug: boolean
+  build: string
   permissions: {
     sso: string[]
     signin: string[]
