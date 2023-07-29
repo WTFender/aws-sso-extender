@@ -138,7 +138,7 @@
   </PDialog>
 
   <!--- profile table filters--->
-  <div v-if="tableEditor">
+  <div v-if="tableEditor" style="height: 40px; padding-top: 5px;">
     <PrimeButton
       size="small"
       :icon="sortAppIcon"
@@ -155,27 +155,30 @@
       label="Profile"
       @click="sortByProfile()"
     />
-    <PCheckbox
-      v-model="tableSettings.showIcon"
-      input-id="showIcon"
-      name="showIcon"
-      :binary="true"
+    <PrimeButton
+      size="small"
+      :icon="tableSettings.sortCustom ? 'pi pi-sort-alt' : 'pi pi-sort-alt-slash'"
+      class="filter-button"
+      :class="tableSettings.sortCustom !== false ? 'p-button-primary' : 'p-button-secondary'"
+      label="Custom"
+      @click="tableSettings.sortCustom = !tableSettings.sortCustom"
     />
-    <label for="showIcon" class="setting-label">Icon</label>
-    <PCheckbox
-      v-model="tableSettings.showAppName"
-      input-id="showAppName"
-      name="showAppName"
-      :binary="true"
+    <PrimeButton
+      size="small"
+      :icon="tableSettings.showIcon ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="tableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'"
+      label="Icons"
+      @click="tableSettings.showIcon = !tableSettings.showIcon"
     />
-    <label for="showAppName" class="setting-label">Group By App</label>
-    <PCheckbox
-      v-model="tableSettings.sortCustom"
-      input-id="sortCustom"
-      name="sortCustom"
-      :binary="true"
+    <PrimeButton
+      size="small"
+      :icon="tableSettings.showAppName ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="tableSettings.showAppName !== false ? 'p-button-primary' : 'p-button-secondary'"
+      label="Group By App"
+      @click="tableSettings.showAppName = !tableSettings.showAppName"
     />
-    <label for="sortCustom" class="setting-label">Custom Sort</label>
   </div>
 
   <!--- profile table --->
@@ -454,9 +457,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.filter-button, .filter {
+  vertical-align: middle !important;
+  padding-left: 10px !important;
+}
 .filter-button {
-  padding: 2px !important;
-  margin-left: 10px;
+  margin-left: 10px !important;
+  padding: 5px !important;
+}
+.filter {
+  margin-right: 3px;
 }
 .profile {
   border: 1px solid red;
