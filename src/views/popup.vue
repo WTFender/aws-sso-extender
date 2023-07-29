@@ -671,10 +671,6 @@ export default {
       };
       this.load(demoData);
     },
-    getUser(userId: string) {
-      const user = this.users.filter((u) => u.userId === userId)[0];
-      return user;
-    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setDefaultUser(userId: any) {
       if (userId.target instanceof Element) {
@@ -725,16 +721,6 @@ export default {
         this.permissions = perms;
         this.$ext.log(this.permissions);
       });
-    },
-    menuAction(evt) {
-      this.$ext.log(evt);
-      if (evt.value === 'users') {
-        this.setPage('users');
-      }
-      if (evt.value === 'tableEditor') {
-        this.tableEditor = !this.tableEditor;
-        if (!this.tableEditor) { this.setPage('profiles'); }
-      }
     },
     setPage(page) {
       this.$ext.log(page);

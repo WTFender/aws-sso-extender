@@ -373,7 +373,6 @@ export default {
     onReady(event) {
       this.$ext.log(event.sortable);
     },
-
     onOrderChange(event) {
       this.$ext.log(event.oldIndex);
       this.$ext.log(event.newIndex);
