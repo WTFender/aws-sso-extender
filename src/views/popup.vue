@@ -35,7 +35,7 @@
         <InputText
           id="searchBox"
           ref="searchBox"
-          v-model="filterProfiles['global'].value"
+          v-model="search"
           placeholder="Search Profiles"
         />
       </span>
@@ -88,7 +88,7 @@
       :table-editor="tableEditor"
       :demo-mode="demoMode"
       :settings="settings"
-      :filter-profiles="filterProfiles"
+      :search="search"
       :app-profiles="favorites ? faveProfiles : userProfiles"
       :user="user"
       :permissions="permissions"
@@ -371,7 +371,6 @@
 </template>
 <script lang="ts">
 import { saveAs } from 'file-saver';
-import { FilterMatchMode } from 'primevue/api';
 import { waitForElement } from '../utils';
 import demoData from '../demo';
 import {
@@ -417,7 +416,7 @@ export default {
         { index: 3, label: 'Settings' },
       ],
       activeTab: 0,
-      filterProfiles: {},
+      search: '',
       tableEditor: false,
       items: [
         { icon: 'pi pi-list', value: 'profiles' },
@@ -585,9 +584,6 @@ export default {
     },
   },
   created() {
-    this.filterProfiles = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    };
     this.$ext.config.browser.permissions.onAdded.addListener(this.handlePermissions);
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {

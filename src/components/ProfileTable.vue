@@ -223,8 +223,8 @@ export default {
       type: Object,
       required: true,
     },
-    filterProfiles: {
-      type: Object,
+    search: {
+      type: String,
       required: true,
     },
     user: {
@@ -276,12 +276,16 @@ export default {
   },
   computed: {
     sortedProfiles() {
-      const profiles = this.appProfiles;
-      profiles.forEach((profile) => {
+      const profiles: AppData[] = [];
+      this.appProfiles.forEach((profile) => {
         if (profile.applicationName === 'AWS Account') {
           profile.sortName = profile.searchMetadata!.AccountName;
         }
         profile.sortName = profile.name;
+        if (profile.name.toLowerCase().includes(this.search.toLowerCase())
+          || profile.profile.name.toLowerCase().includes(this.search.toLowerCase())) {
+          profiles.push(profile);
+        }
       });
       // sort app name
       if (this.tableSettings.sortApp === 'desc') {
@@ -318,9 +322,6 @@ export default {
         this.activeProfile.searchMetadata!.AccountId,
         this.activeProfile.searchMetadata!.AccountName,
       );
-    },
-    filterProfilesComputed() {
-      return this.filterProfiles;
     },
   },
   watch: {
