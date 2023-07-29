@@ -137,8 +137,8 @@
     </template>
   </PDialog>
 
-  <!--- profile table --->
-  <div>
+  <!--- profile table filters--->
+  <div v-if="tableEditor">
     <PrimeButton
       size="small"
       :icon="sortAppIcon"
@@ -155,8 +155,31 @@
       label="Profile"
       @click="sortByProfile()"
     />
+    <PCheckbox
+      v-model="tableSettings.showIcon"
+      input-id="showIcon"
+      name="showIcon"
+      :binary="true"
+    />
+    <label for="showIcon" class="setting-label">Icon</label>
+    <PCheckbox
+      v-model="tableSettings.showAppName"
+      input-id="showAppName"
+      name="showAppName"
+      :binary="true"
+    />
+    <label for="showAppName" class="setting-label">Group By App</label>
+    <PCheckbox
+      v-model="tableSettings.sortCustom"
+      input-id="sortCustom"
+      name="sortCustom"
+      :binary="true"
+    />
+    <label for="sortCustom" class="setting-label">Custom Sort</label>
   </div>
-  <div v-sortable="{ disabled: false, options: { animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @ready="onReady" @end="onOrderChange">
+
+  <!--- profile table --->
+  <div v-sortable="{ disabled: !tableEditor, options: { animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @ready="onReady" @end="onOrderChange">
     <div
       v-for="profile in sortedProfiles"
       :key="`${profile.id}-${profile.profile.id}`"
@@ -186,6 +209,10 @@ import { getFontColor, waitForElement } from '../utils';
 export default {
   name: 'ProfileTable',
   props: {
+    tableEditor: {
+      type: Boolean,
+      default: false,
+    },
     // eslint-disable-next-line vue/require-prop-types
     activeProfile: {
       // suppress ts errors, unsure why this is required
@@ -294,6 +321,16 @@ export default {
     },
     filterProfilesComputed() {
       return this.filterProfiles;
+    },
+  },
+  watch: {
+    'tableSettings.sortCustom': {
+      handler(v) {
+        if (v === true) {
+          this.tableSettings.sortApp = false;
+          this.tableSettings.sortProfile = false;
+        }
+      },
     },
   },
   methods: {

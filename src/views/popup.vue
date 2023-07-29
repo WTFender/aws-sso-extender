@@ -13,8 +13,15 @@
         icon="pi pi-user"
         style="margin: 0px"
         severity="primary"
-        :label="user.subject"
         @click="page = 'users'"
+      />
+      <PrimeButton
+        v-if="permissions.sso && loaded"
+        icon="pi pi-pencil"
+        style="margin: 5px"
+        severity="primary"
+        :outlined="!tableEditor"
+        @click="tableEditor = !tableEditor"
       />
     </template>
     <template v-if="permissions.sso && loaded" #center>
@@ -82,6 +89,7 @@
     <!--- Profiles -->
     <ProfileTable
       v-show="page === 'favorites' || page === 'profiles'"
+      :table-editor="tableEditor"
       :demo-mode="demoMode"
       :settings="settings"
       :filter-profiles="filterProfiles"
@@ -411,6 +419,7 @@ export default {
       ],
       activeTab: 0,
       filterProfiles: {},
+      tableEditor: false,
       items: [
         { icon: 'pi pi-list', value: 'profiles' },
         { icon: 'pi pi-star', value: 'favorites' },
