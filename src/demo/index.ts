@@ -198,7 +198,7 @@ const appProfiles: AppData[] = [
     applicationName: 'AWS Account',
     description: 'AWS administrative console',
     icon: 'https://static.global.sso.amazonaws.com/app-03e8643328913682/icons/default.png',
-    id: 'ins-126',
+    id: 'ins-127',
     name: '120123456789 (ClientAccount2)',
     profile: {
       description: '',
