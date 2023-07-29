@@ -10,9 +10,9 @@
         v-model="settingsPage"
         class="truncate"
         style="height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
-        :on-label="user.subject"
+        :on-label="'Back'"
         :off-label="user.subject"
-        on-icon="pi pi-user"
+        on-icon="pi pi-arrow-left"
         off-icon="pi pi-user"
       />
     </template>
@@ -55,6 +55,7 @@
       <div v-else>
         <ToggleButton
           v-model="tableEditor"
+          :disabled="settingsPage"
           style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
           on-label=""
           off-label=""
@@ -63,6 +64,7 @@
         />
         <ToggleButton
           v-model="favorites"
+          :disabled="settingsPage"
           style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
           on-label=""
           off-label=""
