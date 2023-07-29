@@ -19,6 +19,7 @@ import ScrollPanel from 'primevue/scrollpanel';
 import SelectButton from 'primevue/selectbutton';
 import TabPanel from 'primevue/tabpanel';
 import TabView from 'primevue/tabview';
+import ToggleButton from 'primevue/togglebutton';
 import Toolbar from 'primevue/toolbar';
 import Tooltip from 'primevue/tooltip';
 import extension from '../extension';
@@ -54,6 +55,7 @@ app.component('PSelectButton', SelectButton);
 app.component('PToolbar', Toolbar);
 app.component('TabPanel', TabPanel);
 app.component('TabView', TabView);
+app.component('ToggleButton', ToggleButton);
 app.directive('tooltip', Tooltip);
 // Custom components
 app.component('IamRoles', IamRoles);

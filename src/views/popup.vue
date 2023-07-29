@@ -5,27 +5,19 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <PToolbar style="margin: 0px; padding: 7px; height: 70px;">
-    <template #start>
-      <PrimeButton
-        :disabled="!permissions.sso || !loaded"
-        :text="page !== 'users'"
+    <template v-if="permissions.sso && loaded" #start>
+      <ToggleButton
+        v-model="settingsPage"
         class="truncate"
-        icon="pi pi-user"
-        style="margin: 0px"
-        severity="primary"
-        @click="page = 'users'"
-      />
-      <PrimeButton
-        v-if="permissions.sso && loaded"
-        icon="pi pi-pencil"
-        style="margin: 5px"
-        severity="primary"
-        :outlined="!tableEditor"
-        @click="tableEditor = !tableEditor"
+        style="height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
+        :on-label="user.subject"
+        :off-label="user.subject"
+        on-icon="pi pi-user"
+        off-icon="pi pi-user"
       />
     </template>
     <template v-if="permissions.sso && loaded" #center>
-      <div v-if="page === 'users'">
+      <div v-if="page === 'settings'">
         <div class="py-2">
           <PrimeButton
             v-for="tab in tabs"
@@ -60,20 +52,24 @@
         label="Demo"
         @click="demo()"
       />
-      <PSelectButton
-        v-else
-        v-model="profileTable"
-        style="margin: 0px"
-        :options="items"
-        aria-labelledby="basic"
-        option-label="value"
-        data-key="value"
-        @change="setPage(profileTable.value)"
-      >
-        <template #option="slotProps">
-          <i :class="slotProps.option.icon" />
-        </template>
-      </PSelectButton>
+      <div v-else>
+        <ToggleButton
+          v-model="tableEditor"
+          style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
+          on-label=""
+          off-label=""
+          on-icon="pi pi-pencil"
+          off-icon="pi pi-pencil"
+        />
+        <ToggleButton
+          v-model="favorites"
+          style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
+          on-label=""
+          off-label=""
+          on-icon="pi pi-star"
+          off-icon="pi pi-star"
+        />
+      </div>
     </template>
   </PToolbar>
 
@@ -88,12 +84,12 @@
 
     <!--- Profiles -->
     <ProfileTable
-      v-show="page === 'favorites' || page === 'profiles'"
+      v-if="!settingsPage"
       :table-editor="tableEditor"
       :demo-mode="demoMode"
       :settings="settings"
       :filter-profiles="filterProfiles"
-      :app-profiles="page === 'favorites' ? faveProfiles : userProfiles"
+      :app-profiles="favorites ? faveProfiles : userProfiles"
       :user="user"
       :permissions="permissions"
       @requestPermissions="requestPermissionsSwitchrole"
@@ -102,7 +98,7 @@
     />
 
     <!--- User (settings) page -->
-    <PScrollPanel v-show="page === 'users'" class="scroll" style="max-width: 100%; height: 500px">
+    <PScrollPanel v-show="settingsPage" class="scroll" style="max-width: 100%; height: 500px">
       <div v-if="activeTab === 0" class="settings">
         <h3>Switch User</h3>
         <PListbox
@@ -391,6 +387,9 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      settingsPage: false,
+      favorites: false,
+      isPageUser: false,
       settingOptions: [
         { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
         { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
@@ -465,6 +464,9 @@ export default {
     };
   },
   computed: {
+    isPageProfiles() {
+      return this.page === 'profiles';
+    },
     userConfigUpdate() {
       let update = false;
       if (this.dataJson !== (this.$refs.userConfigJson as any).innerText) {
@@ -513,12 +515,22 @@ export default {
     },
   },
   watch: {
+    settingsPage: {
+      handler(v) {
+        if (v === true) {
+          this.setPage('settings');
+        } else {
+          this.setPage('profiles');
+        }
+      },
+    },
     page: {
       handler(v) {
         this.lastPage = v;
-        if (v === 'users') {
+        if (v === 'settings') {
           // clear profile table selection
           this.profileTable = { icon: '', value: '' };
+          this.tableEditor = false;
         }
         if (v === 'profiles' || v === 'favorites') {
           this.profileTable = { value: v, icon: `pi pi-${v === 'profiles' ? 'list' : 'star'}` };
@@ -565,9 +577,9 @@ export default {
       this.$ext.log(this.settings.showAllProfiles);
       if (v === true) {
         if (this.settings.showAllProfiles || this.faveProfiles.length === 0) {
-          this.setPage('profiles');
+          this.favorites = false;
         } else if (this.faveProfiles.length >= 1) {
-          this.setPage('favorites');
+          this.favorites = true;
         }
       }
     },
@@ -714,7 +726,18 @@ export default {
         this.$ext.log(this.permissions);
       });
     },
+    menuAction(evt) {
+      this.$ext.log(evt);
+      if (evt.value === 'users') {
+        this.setPage('users');
+      }
+      if (evt.value === 'tableEditor') {
+        this.tableEditor = !this.tableEditor;
+        if (!this.tableEditor) { this.setPage('profiles'); }
+      }
+    },
     setPage(page) {
+      this.$ext.log(page);
       this.$ext.log(`popup:page:${page}`);
       this.page = page;
     },
@@ -779,10 +802,10 @@ export default {
 
 <style lang="scss" scoped>
 .truncate {
-  width: 150px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 150px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
