@@ -103,6 +103,7 @@ export interface AppData {
     AccountName: string
     AccountEmail: string
   }
+  sortName?: string
 }
 
 export interface ProfileData {
