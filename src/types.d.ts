@@ -14,6 +14,7 @@ export interface ExtensionConfig {
   }
   browser: Browser
   delay: number
+  version: string
 }
 
 export interface ExtensionSettings {

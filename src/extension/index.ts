@@ -20,6 +20,7 @@ const extensionConfig: ExtensionConfig = {
   },
   browser,
   delay: 750,
+  version: browser.runtime.getManifest().version,
 };
 
 export default new Extension(extensionConfig);
