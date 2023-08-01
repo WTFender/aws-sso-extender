@@ -7,7 +7,7 @@
     header="Edit Profile"
     :style="{ width: '500px' }"
   >
-    <PScrollPanel class="scroll" style="max-width: 100%; max-height: 300px">
+    <PScrollPanel class="scroll" style="max-height: 300px">
       <form style="margin-left: 10px">
         <div style="margin-bottom: 10px">
           <small id="profile-label-help">Profile Name</small>
@@ -131,19 +131,27 @@
     </PScrollPanel>
     <template #footer>
       <PrimeButton label="Save" icon="pi pi-save" @click="saveActiveProfile()" />
-      <p ref="profileError" style="color: red; display: none">
+      <p style="color: red; display: none">
         Unable to save Profile.
       </p>
     </template>
   </PDialog>
 
   <!--- profile table filters--->
-  <div v-if="tableEditor" style="height: 40px; padding-top: 5px;">
+  <div v-if="tableEditor" style="height: 40px; padding-top: 5px; background-color: #dee2e6;">
+    <PrimeButton
+      size="small"
+      :icon="newTableSettings.showIcon ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="newTableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'"
+      label="Icons"
+      @click="newTableSettings.showIcon = !newTableSettings.showIcon"
+    />
     <PrimeButton
       size="small"
       :icon="sortAppIcon"
       class="filter-button"
-      :class="tableSettings.sortApp !== false ? 'p-button-primary' : 'p-button-secondary'"
+      :class="newTableSettings.sortApp !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="App"
       @click="sortByApp()"
     />
@@ -151,54 +159,111 @@
       size="small"
       :icon="sortProfileIcon"
       class="filter-button"
-      :class="tableSettings.sortProfile !== false ? 'p-button-primary' : 'p-button-secondary'"
+      :class="newTableSettings.sortProfile !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Profile"
       @click="sortByProfile()"
     />
     <PrimeButton
+      disabled
       size="small"
-      :icon="tableSettings.sortCustom ? 'pi pi-sort-alt' : 'pi pi-sort-alt-slash'"
+      :icon="newTableSettings.sortCustom ? 'pi pi-sort-alt' : 'pi pi-sort-alt-slash'"
       class="filter-button"
-      :class="tableSettings.sortCustom !== false ? 'p-button-primary' : 'p-button-secondary'"
+      :class="newTableSettings.sortCustom !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Custom"
-      @click="tableSettings.sortCustom = !tableSettings.sortCustom"
+      @click="newTableSettings.sortCustom = !tableSettings.sortCustom"
     />
     <PrimeButton
+      :disabled="!tableSettingsChanged"
       size="small"
-      :icon="tableSettings.showIcon ? 'pi pi-check-circle' : 'pi pi-circle'"
-      class="filter-button"
-      :class="tableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'"
-      label="Icons"
-      @click="tableSettings.showIcon = !tableSettings.showIcon"
+      icon="pi pi-save"
+      class="filter-button 'p-button-primary'"
+      label="Save"
+      style="float: right; margin-right: 15px;"
+      @click="newTableSettings.sortCustom = !tableSettings.sortCustom"
     />
+    <!---
     <PrimeButton
       size="small"
-      :icon="tableSettings.showAppName ? 'pi pi-check-circle' : 'pi pi-circle'"
+      :icon="newTableSettings.showAppName ? 'pi pi-check-circle' : 'pi pi-circle'"
       class="filter-button"
-      :class="tableSettings.showAppName !== false ? 'p-button-primary' : 'p-button-secondary'"
+      :class="newTableSettings.showAppName !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Group By App"
-      @click="tableSettings.showAppName = !tableSettings.showAppName"
+      @click="newTableSettings.showAppName = !tableSettings.showAppName"
     />
+    --->
   </div>
 
   <!--- profile table --->
-  <div v-sortable="{ disabled: !tableEditor, options: { animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @ready="onReady" @end="onOrderChange">
+  <div v-sortable="{ disabled: !tableEditor, options: { group: 'name', animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @end="reorderProfiles">
     <div
       v-for="profile in sortedProfiles"
       :key="`${profile.id}-${profile.profile.id}`"
       class="profile"
     >
       <img
-        v-if="tableSettings.showIcon"
+        v-if="newTableSettings.showIcon"
         :alt="profile.name"
         :src="profile.icon"
+        class="profile-field shadow nav"
         width="96"
-        style="vertical-align: middle"
+        style="width: 100px !important; vertical-align: middle; background-color: #f3f5fb; border-radius: 25px;"
+        @click="navSelectedProfile(profile)"
       />
-      <p>{{ profile.sortName }}</p>
-      <p>{{ profile.name }}</p>
-      <p>{{ profile.profile.name }}</p>
-      <p>{{ profile.applicationName }}</p>
+      <div
+        class="profile-field nav"
+        :style="{ width: !tableSettings.showIcon ? '160px' : '120px' }"
+        @click="navSelectedProfile(profile)"
+      >
+        <p>
+          {{ profile.sortName }}
+        </p>
+      </div>
+      <div
+        class="profile-field nav"
+        :style="{ width: !tableSettings.showIcon ? '160px' : '150px' }"
+        @click="navSelectedProfile(profile)"
+      >
+        <p>{{ profile.profile.custom?.label || profile.profile.name }}</p>
+      </div>
+      <PBadge
+        v-if="tableEditor && newTableSettings.showIcon && profile.profile.custom?.iamRoles.length! > 0"
+        :value="profile.profile.custom!.iamRoles.length"
+        label="IAM Roles"
+      />
+      <div
+        v-if="(!tableEditor || !newTableSettings.showIcon) && profile.profile.custom?.iamRoles.length! > 0"
+        class="profile-field"
+        style="width: 120px;"
+      >
+        <PBadge
+          v-for="(role, idx) in profile.profile.custom?.iamRoles"
+          :key="idx"
+          :value="role.label || role.roleName"
+          class="role-link truncate"
+          :style="{ width: '120px', margin: '5px', 'background-color': `#${role.color}` }"
+          @click="assumeIamRole(role, profile)"
+        />
+      </div>
+      <i
+        v-if="!tableEditor"
+        class="pi"
+        :class="{
+          'pi-star-fill': profile.profile.custom?.favorite,
+          'pi-star': !profile.profile.custom?.favorite,
+        }"
+        style="float: right; padding-top: 10px; padding-right: 10px;"
+        @click="fave(profile)"
+      />
+      <PrimeButton
+        v-if="tableEditor"
+        :icon="'pi pi-pencil'"
+        class="p-button-secondary shadow"
+        label="Edit"
+        size="small"
+        outlined
+        style="float: right; margin-right: 5px; margin-top: 8px; padding: 10px;"
+        @click="editProfile(profile)"
+      />
     </div>
   </div>
 </template>
@@ -212,6 +277,16 @@ import { getFontColor, waitForElement } from '../utils';
 export default {
   name: 'ProfileTable',
   props: {
+    tableSettings: {
+      type: Object,
+      required: false,
+      default: () => ({
+        showIcon: true,
+        sortCustom: false,
+        sortApp: 'desc' as false | string,
+        sortProfile: false as false | string,
+      }),
+    },
     tableEditor: {
       type: Boolean,
       default: false,
@@ -253,12 +328,11 @@ export default {
   emits: ['updateProfile', 'requestPermissions'],
   data() {
     return {
-      tableSettings: {
+      newTableSettings: {
         showIcon: true,
-        showAppName: true,
         sortCustom: false,
-        sortApp: 'desc' as false | 'asc' | 'desc' | 'ascNum' | 'descNum',
-        sortProfile: false as false | 'asc' | 'desc',
+        sortApp: 'desc' as false | string,
+        sortProfile: false as false | string,
       },
       // eslint-disable-next-line vue/no-dupe-keys
       activeProfile: {} as AppData,
@@ -278,37 +352,44 @@ export default {
     };
   },
   computed: {
+    tableSettingsChanged() {
+      return JSON.stringify(this.tableSettings) !== JSON.stringify(this.newTableSettings);
+    },
     sortedProfiles() {
       const profiles: AppData[] = [];
       this.appProfiles.forEach((profile) => {
         if (profile.applicationName === 'AWS Account') {
-          profile.sortName = profile.searchMetadata!.AccountName;
+          profile.sortName = this.newTableSettings.sortApp === 'ascNum'
+            || this.newTableSettings.sortApp === 'descNum'
+            ? profile.searchMetadata!.AccountId
+            : profile.searchMetadata!.AccountName;
+        } else {
+          profile.sortName = profile.name;
         }
-        profile.sortName = profile.name;
         if (profile.name.toLowerCase().includes(this.search.toLowerCase())
           || profile.profile.name.toLowerCase().includes(this.search.toLowerCase())) {
           profiles.push(profile);
         }
       });
       // sort app name
-      if (this.tableSettings.sortApp === 'desc') {
-        profiles.sort((a, b) => a.name.localeCompare(b.name));
-      } else if (this.tableSettings.sortApp === 'asc') {
-        profiles.sort((a, b) => b.name.localeCompare(a.name));
+      if (this.newTableSettings.sortApp === 'desc' || this.newTableSettings.sortApp === 'descNum') {
+        profiles.sort((a, b) => a.sortName!.localeCompare(b.sortName!));
+      } else if (this.newTableSettings.sortApp === 'asc' || this.newTableSettings.sortApp === 'ascNum') {
+        profiles.sort((a, b) => b.sortName!.localeCompare(a.sortName!));
       }
       // sort profile name
-      if (this.tableSettings.sortProfile === 'asc') {
+      if (this.newTableSettings.sortProfile === 'asc') {
         profiles.sort((a, b) => b.profile.name.localeCompare(a.profile.name));
-      } else if (this.tableSettings.sortProfile === 'desc') {
+      } else if (this.newTableSettings.sortProfile === 'desc') {
         profiles.sort((a, b) => a.profile.name.localeCompare(b.profile.name));
       }
       return profiles;
     },
     sortAppIcon() {
-      return this.sortIcon(this.tableSettings.sortApp);
+      return this.sortIcon(this.newTableSettings.sortApp);
     },
     sortProfileIcon() {
-      return this.sortIcon(this.tableSettings.sortProfile);
+      return this.sortIcon(this.newTableSettings.sortProfile);
     },
     consoleStyle() {
       return {
@@ -328,14 +409,33 @@ export default {
     },
   },
   watch: {
-    'tableSettings.sortCustom': {
+    'newTableSettings.sortCustom': {
       handler(v) {
         if (v === true) {
-          this.tableSettings.sortApp = false;
-          this.tableSettings.sortProfile = false;
+          this.newTableSettings.sortApp = false;
+          this.newTableSettings.sortProfile = false;
         }
       },
     },
+    'newTableSettings.sortApp': {
+      handler(v) {
+        if (v === true) {
+          this.newTableSettings.sortCustom = false;
+          this.newTableSettings.sortProfile = false;
+        }
+      },
+    },
+    'newTableSettings.sortProfile': {
+      handler(v) {
+        if (v === true) {
+          this.newTableSettings.sortApp = false;
+          this.newTableSettings.sortCustom = false;
+        }
+      },
+    },
+  },
+  created() {
+    this.newTableSettings = JSON.parse(JSON.stringify(this.tableSettings));
   },
   methods: {
     sortIcon(sort) {
@@ -351,35 +451,31 @@ export default {
       return 'pi pi-sort-alt-slash';
     },
     sortByApp() {
-      this.tableSettings.sortProfile = false;
-      if (this.tableSettings.sortApp === false) {
-        this.tableSettings.sortApp = 'desc';
-      } else if (this.tableSettings.sortApp === 'desc') {
-        this.tableSettings.sortApp = 'asc';
-      } else if (this.tableSettings.sortApp === 'asc') {
-        this.tableSettings.sortApp = 'descNum';
-      } else if (this.tableSettings.sortApp === 'descNum') {
-        this.tableSettings.sortApp = 'ascNum';
-      } else if (this.tableSettings.sortApp === 'ascNum') {
-        this.tableSettings.sortApp = false;
+      if (this.newTableSettings.sortApp === false) {
+        this.newTableSettings.sortApp = 'desc';
+      } else if (this.newTableSettings.sortApp === 'desc') {
+        this.newTableSettings.sortApp = 'asc';
+      } else if (this.newTableSettings.sortApp === 'asc') {
+        this.newTableSettings.sortApp = 'descNum';
+      } else if (this.newTableSettings.sortApp === 'descNum') {
+        this.newTableSettings.sortApp = 'ascNum';
+      } else if (this.newTableSettings.sortApp === 'ascNum') {
+        this.newTableSettings.sortApp = false;
       }
     },
     sortByProfile() {
-      this.tableSettings.sortApp = false;
-      if (this.tableSettings.sortProfile === false) {
-        this.tableSettings.sortProfile = 'desc';
-      } else if (this.tableSettings.sortProfile === 'desc') {
-        this.tableSettings.sortProfile = 'asc';
-      } else if (this.tableSettings.sortProfile === 'asc') {
-        this.tableSettings.sortProfile = false;
+      if (this.newTableSettings.sortProfile === false) {
+        this.newTableSettings.sortProfile = 'desc';
+      } else if (this.newTableSettings.sortProfile === 'desc') {
+        this.newTableSettings.sortProfile = 'asc';
+      } else if (this.newTableSettings.sortProfile === 'asc') {
+        this.newTableSettings.sortProfile = false;
       }
     },
-    onReady(event) {
-      this.$ext.log(event.sortable);
-    },
-    onOrderChange(event) {
+    reorderProfiles(event) {
       this.$ext.log(event.oldIndex);
       this.$ext.log(event.newIndex);
+      this.newTableSettings.sortCustom = true;
     },
     requestPermissions() {
       this.$emit('requestPermissions');
@@ -437,8 +533,8 @@ export default {
         });
       });
     },
-    navSelectedProfile() {
-      const profileUrl = this.$ext.createProfileUrl(this.user, this.selectedProfile);
+    navSelectedProfile(profile) {
+      const profileUrl = this.$ext.createProfileUrl(this.user, profile);
       window.open(profileUrl, '_blank');
     },
     encodeUriPlusParens(str) {
@@ -457,6 +553,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.truncate {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
 .filter-button, .filter {
   vertical-align: middle !important;
   padding-left: 10px !important;
@@ -468,8 +569,30 @@ export default {
 .filter {
   margin-right: 3px;
 }
+.nav {
+  cursor: pointer;
+}
+.shadow {
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 3px 3px;
+}
 .profile {
-  border: 1px solid red;
+  height: 60px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+.profile:hover {
+  background: #f3f5fb;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 5px 5px;
+}
+.profile:hover > img {
+  box-shadow: none;
+}
+.profile-field {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
 }
 .sso-link {
   color: #495057;

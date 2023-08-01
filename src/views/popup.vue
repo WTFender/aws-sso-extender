@@ -8,6 +8,7 @@
     <template v-if="permissions.sso && loaded" #start>
       <ToggleButton
         v-model="settingsPage"
+        size="small"
         class="truncate"
         style="height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
         :on-label="'Back'"
@@ -37,6 +38,7 @@
           ref="searchBox"
           v-model="search"
           placeholder="Search Profiles"
+          size="small"
         />
       </span>
     </template>
@@ -61,6 +63,7 @@
           off-label=""
           on-icon="pi pi-pencil"
           off-icon="pi pi-pencil"
+          size="small"
         />
         <ToggleButton
           v-model="favorites"
@@ -70,12 +73,13 @@
           off-label=""
           on-icon="pi pi-star"
           off-icon="pi pi-star"
+          size="small"
         />
       </div>
     </template>
   </PToolbar>
 
-  <div class="card">
+  <div class="card" :style="tableEditor ? 'height: 500px' : ''">
     <!--- Setup -->
     <SetupSteps
       v-show="!permissions.sso || !loaded"
@@ -149,7 +153,7 @@
           icon="pi pi-pencil"
           class="p-button-secondary"
           label="Edit"
-          style="margin-right: 5px"
+          style="margin-right: 5px;"
           @click="importUser = true"
         />
         <PDialog v-model:visible="importUser" header="Edit User Config" :style="{ width: '500px' }">
@@ -829,10 +833,11 @@ export default {
 
 .card {
   width: 580px !important;
-  min-height: 500px;
+  max-height: 500px;
   display: inline-block;
   margin: 0px;
   padding: 0px;
+  padding-bottom: 19px;
   border: none;
 }
 
