@@ -214,8 +214,12 @@
         :style="{ width: !tableSettings.showIcon ? '160px' : '120px' }"
         @click="navSelectedProfile(profile)"
       >
-        <p>
-          {{ profile.sortName }}
+        <p v-if="profile.applicationName === 'AWS Account'">
+          <b>{{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountName : profile.searchMetadata!.AccountId }}</b>
+          {{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountId : profile.searchMetadata!.AccountName }}
+        </p>
+        <p v-else>
+          {{ profile.name }}
         </p>
       </div>
       <div
@@ -223,7 +227,11 @@
         :style="{ width: !tableSettings.showIcon ? '160px' : '150px' }"
         @click="navSelectedProfile(profile)"
       >
-        <p>{{ profile.profile.custom?.label || profile.profile.name }}</p>
+        <PBadge
+          :value="profile.profile.custom?.label || profile.profile.name"
+          class="role-link truncate"
+          :style="{ width: '150px', margin: '5px', 'background-color': profile.profile.custom?.color ? `#${profile.profile.custom?.color}` : 'red' }"
+        />
       </div>
       <PBadge
         v-if="tableEditor && newTableSettings.showIcon && profile.profile.custom?.iamRoles.length! > 0"
@@ -250,6 +258,7 @@
         :class="{
           'pi-star-fill': profile.profile.custom?.favorite,
           'pi-star': !profile.profile.custom?.favorite,
+          aws: profile.applicationName === 'AWS Account',
         }"
         style="float: right; padding-top: 10px; padding-right: 10px;"
         @click="fave(profile)"
@@ -258,10 +267,11 @@
         v-if="tableEditor"
         :icon="'pi pi-pencil'"
         class="p-button-secondary shadow"
+        :class="{ aws: profile.applicationName === 'AWS Account' }"
         label="Edit"
         size="small"
         outlined
-        style="float: right; margin-right: 5px; margin-top: 8px; padding: 10px;"
+        style="float: right; margin-right: 5px; padding: 8px;"
         @click="editProfile(profile)"
       />
     </div>
@@ -408,32 +418,6 @@ export default {
       );
     },
   },
-  watch: {
-    'newTableSettings.sortCustom': {
-      handler(v) {
-        if (v === true) {
-          this.newTableSettings.sortApp = false;
-          this.newTableSettings.sortProfile = false;
-        }
-      },
-    },
-    'newTableSettings.sortApp': {
-      handler(v) {
-        if (v === true) {
-          this.newTableSettings.sortCustom = false;
-          this.newTableSettings.sortProfile = false;
-        }
-      },
-    },
-    'newTableSettings.sortProfile': {
-      handler(v) {
-        if (v === true) {
-          this.newTableSettings.sortApp = false;
-          this.newTableSettings.sortCustom = false;
-        }
-      },
-    },
-  },
   created() {
     this.newTableSettings = JSON.parse(JSON.stringify(this.tableSettings));
   },
@@ -451,6 +435,8 @@ export default {
       return 'pi pi-sort-alt-slash';
     },
     sortByApp() {
+      this.newTableSettings.sortCustom = false;
+      this.newTableSettings.sortProfile = false;
       if (this.newTableSettings.sortApp === false) {
         this.newTableSettings.sortApp = 'desc';
       } else if (this.newTableSettings.sortApp === 'desc') {
@@ -464,6 +450,8 @@ export default {
       }
     },
     sortByProfile() {
+      this.newTableSettings.sortCustom = false;
+      this.newTableSettings.sortApp = false;
       if (this.newTableSettings.sortProfile === false) {
         this.newTableSettings.sortProfile = 'desc';
       } else if (this.newTableSettings.sortProfile === 'desc') {
@@ -475,6 +463,8 @@ export default {
     reorderProfiles(event) {
       this.$ext.log(event.oldIndex);
       this.$ext.log(event.newIndex);
+      this.newTableSettings.sortApp = false;
+      this.newTableSettings.sortProfile = false;
       this.newTableSettings.sortCustom = true;
     },
     requestPermissions() {
@@ -576,10 +566,9 @@ export default {
   box-shadow: rgba(149, 157, 165, 0.2) 0px 3px 3px;
 }
 .profile {
-  height: 60px;
+  padding: 5px;
   padding-left: 10px;
   padding-right: 10px;
-  padding-top: 10px;
   border-bottom: 1px solid #dee2e6;
 }
 .profile:hover {
@@ -633,6 +622,9 @@ export default {
 .pi-star-fill:hover {
   color: grey !important;
   cursor: pointer;
+}
+.aws {
+  margin-top: 8px;
 }
 
 .p-inputtext {
