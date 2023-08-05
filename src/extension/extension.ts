@@ -281,10 +281,13 @@ class Extension {
 
   createProfileUrl(user: UserData, appProfile: AppData) {
     this.log('createProfileUrl');
-    const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
-    const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+    const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml`;
     const appProfileName = encodeUriPlusParens(appProfile.name);
-    return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
+    if (appProfile.profile.name === 'Default') {
+      return `${ssoDirUrl}/default/${appProfileName}/${appProfile.id}`;
+    }
+    const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+    return `${ssoDirUrl}/custom/${appProfileName}/${appProfilePath}`;
   }
 
   parseAppProfiles(): AppData[] {
