@@ -112,7 +112,7 @@
             </div>
           </div>
           <div>
-            <h3 v-if="activeProfile.profile.custom!.iamRoles.length > 0">IAM Roles</h3>
+            <h3 v-if="activeProfile.profile.custom!.iamRoles?.length > 0">IAM Roles</h3>
             <PBadge
               v-for="(role, idx) in activeProfile.profile.custom!.iamRoles"
               :key="idx"
