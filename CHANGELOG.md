@@ -1,3 +1,7 @@
+## 1.5.2
+- Fix login to apps with default profile
+- Add AWS console subdomain
+
 ## 1.5.1
 - Fixed an issue with loading a large number of accounts or profiles
 
