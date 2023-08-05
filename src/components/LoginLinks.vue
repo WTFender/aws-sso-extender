@@ -46,6 +46,26 @@ export default {
     });
   },
   methods: {
+    async searchHistory(): Promise<string[]> {
+      const dirs: string[] = [];
+      return this.$ext.config.browser.history.search({
+        text: 'awsapps.com/start#/',
+        startTime: (Date.now() - (1000 * 60 * 60 * 24 * 30)), // 1 month ago,
+        maxResults: 1000,
+      }).then((results) => {
+        results?.forEach((site) => {
+          const match = this.$ext.ssoUrlRegex.exec(site.url as string);
+          if (match?.groups != null) {
+            if (!(match.groups.directoryId in dirs)) {
+              dirs.push(match.groups.directoryId);
+            }
+          }
+        });
+        const uniqDirs = [...new Set(dirs)];
+        this.$ext.log(uniqDirs);
+        return uniqDirs;
+      });
+    },
     openLink(link) {
       window.open(link, "_blank");
     },
