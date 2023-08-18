@@ -207,12 +207,12 @@
         class="profile-field shadow nav"
         width="96"
         style="width: 100px !important; vertical-align: middle; background-color: #f3f5fb; border-radius: 25px;"
-        @click="navSelectedProfile(profile)"
+        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       />
       <div
         class="profile-field nav"
         :style="{ width: !tableSettings.showIcon ? '160px' : '120px' }"
-        @click="navSelectedProfile(profile)"
+        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       >
         <p v-if="profile.applicationName === 'AWS Account'">
           <b>{{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountName : profile.searchMetadata!.AccountId }}</b>
@@ -225,7 +225,7 @@
       <div
         class="profile-field nav"
         :style="{ width: !tableSettings.showIcon ? '160px' : '150px' }"
-        @click="navSelectedProfile(profile)"
+        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       >
         <PBadge
           :value="profile.profile.custom?.label || profile.profile.name"
@@ -253,7 +253,6 @@
         />
       </div>
       <i
-        v-if="!tableEditor"
         class="pi"
         :class="{
           'pi-star-fill': profile.profile.custom?.favorite,
@@ -262,17 +261,6 @@
         }"
         style="float: right; padding-top: 10px; padding-right: 10px;"
         @click="fave(profile)"
-      />
-      <PrimeButton
-        v-if="tableEditor"
-        :icon="'pi pi-pencil'"
-        class="p-button-secondary shadow"
-        :class="{ aws: profile.applicationName === 'AWS Account' }"
-        label="Edit"
-        size="small"
-        outlined
-        style="float: right; margin-right: 5px; padding: 8px;"
-        @click="editProfile(profile)"
       />
     </div>
   </div>
@@ -566,6 +554,7 @@ export default {
   box-shadow: rgba(149, 157, 165, 0.2) 0px 3px 3px;
 }
 .profile {
+  min-height: 70px;
   padding: 5px;
   padding-left: 10px;
   padding-right: 10px;
