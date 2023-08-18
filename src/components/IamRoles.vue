@@ -74,7 +74,7 @@
       size="small"
       icon="pi pi-trash"
       class="p-button-danger"
-      label="Reset IAM Roles"
+      label="Reset All IAM Roles"
       @click="resetIamRoles()"
     />
   </div>
@@ -109,7 +109,7 @@ export default {
     awsAppProfiles(): AppData[] {
       const appProfiles = this.appProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
       // eslint-disable-next-line no-param-reassign
-      appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name}`; });
+      appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name} (${ap.profile.custom?.iamRoles.length})`; });
       this.$ext.log(appProfiles);
       return appProfiles;
     },
@@ -125,6 +125,7 @@ export default {
       this.newIamRole.color = color.value;
     },
     resetIamRoles() {
+      this.resetIamRolePage();
       this.appProfiles.forEach((ap) => {
         ap.profile!.custom!.iamRoles = [];
         this.$emit('updateProfile', ap);
@@ -169,9 +170,17 @@ export default {
             label: this.newIamRole.label,
           });
         });
+        this.resetIamRolePage();
         this.$emit('saveUser');
-        this.$emit('setPage', 'profiles');
       }
+    },
+    resetIamRolePage() {
+      this.newIamRole.arn = '';
+      this.newIamRole.label = '';
+      this.newIamRole.color = '#222f3e';
+      this.newIamRole.accountId = '';
+      this.newIamRole.roleName = '';
+      this.selectedProfiles = [];
     },
   },
 };
