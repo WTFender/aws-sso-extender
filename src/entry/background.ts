@@ -25,18 +25,18 @@ function listenConsole() {
 // show release notes on install & update
 extension.config.browser.runtime.onInstalled.addListener((details) => {
   const manifest = extension.config.browser.runtime.getManifest();
-  const currentVersion = manifest.version;
-  extension.log(`currentVersion: ${currentVersion}`);
+  extension.log(`currentVersion: ${manifest.version}`);
   if (details.reason === 'update') {
-    if (details.previousVersion !== currentVersion) {
+    if (details.previousVersion !== manifest.version) {
       extension.log(`previousVersion: ${details.previousVersion}`);
       extension.loadSettings().then((settings: ExtensionSettings) => {
         if (settings.showReleaseNotes) {
+          const html = `<h2>${extension.config.display} - Updated</h2>
+          <a href="https://github.com/WTFender/aws-sso-extender/releases/tag/v${manifest.version}">
+            ${manifest.version} Release Notes
+          </a>`;
           extension.config.browser.tabs.create({
-            url: `data:text/html,<h2>${extension.config.display} - Updated</h2>
-            <a href="https://github.com/WTFender/aws-sso-extender/releases/tag/v${currentVersion}">
-              ${currentVersion} Release Notes
-            </a>`,
+            url: `data:text/html;base64,${btoa(html)}`,
           });
         }
       });
