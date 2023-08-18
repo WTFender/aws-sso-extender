@@ -116,7 +116,7 @@
             :key="idx"
             :value="role.label || role.roleName"
             class="role-link remove-role-link"
-            :style="{ margin: '5px', 'background-color': `#${role.color}` }"
+            :style="{ 'background-color': `#${role.color}` }"
             icon="pi pi-times"
           >
             {{ role.label || role.roleName }}
@@ -146,6 +146,14 @@
       :class="newTableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Icons"
       @click="newTableSettings.showIcon = !newTableSettings.showIcon"
+    />
+    <PrimeButton
+      size="small"
+      :icon="newTableSettings.showIamRoles ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="newTableSettings.showIamRoles !== false ? 'p-button-primary' : 'p-button-secondary'"
+      label="IAM Roles"
+      @click="newTableSettings.showIamRoles = !newTableSettings.showIamRoles"
     />
     <PrimeButton
       size="small"
@@ -230,16 +238,11 @@
         <PBadge
           :value="profile.profile.custom?.label || profile.profile.name"
           class="role-link truncate"
-          :style="{ width: '150px', margin: '5px', 'background-color': profile.profile.custom?.color ? `#${profile.profile.custom?.color}` : 'red' }"
+          :style="{ width: '150px', 'background-color': profile.profile.custom?.color ? `#${profile.profile.custom?.color}` : 'red' }"
         />
       </div>
-      <PBadge
-        v-if="tableEditor && newTableSettings.showIcon && profile.profile.custom?.iamRoles.length! > 0"
-        :value="profile.profile.custom!.iamRoles.length"
-        label="IAM Roles"
-      />
       <div
-        v-if="(!tableEditor || !newTableSettings.showIcon) && profile.profile.custom?.iamRoles.length! > 0"
+        v-if="newTableSettings.showIamRoles && profile.profile.custom?.iamRoles.length! > 0"
         class="profile-field"
         style="width: 120px;"
       >
@@ -248,8 +251,8 @@
           :key="idx"
           :value="role.label || role.roleName"
           class="role-link truncate"
-          :style="{ width: '120px', margin: '5px', 'background-color': `#${role.color}` }"
-          @click="assumeIamRole(role, profile)"
+          :style="{ width: '120px', 'background-color': `#${role.color}` }"
+          @click="!tableEditor ? assumeIamRole(role, profile) : editProfile(profile)"
         />
       </div>
       <i
@@ -279,6 +282,7 @@ export default {
       type: Object,
       required: false,
       default: () => ({
+        showIamRoles: true,
         showIcon: true,
         sortCustom: false,
         sortApp: 'desc' as false | string,
@@ -327,6 +331,7 @@ export default {
   data() {
     return {
       newTableSettings: {
+        showIamRoles: true,
         showIcon: true,
         sortCustom: false,
         sortApp: 'desc' as false | string,
