@@ -24,6 +24,13 @@ export interface ExtensionSettings {
   firefoxContainers?: boolean
   showReleaseNotes: boolean
   showAllProfiles: boolean
+  tableSettings: {
+    showIamRoles: true
+    showIcon: true
+    sortCustom: false
+    sortApp: false | string
+    sortProfile: false | string
+  }
 }
 
 export interface ExtensionPermissions {

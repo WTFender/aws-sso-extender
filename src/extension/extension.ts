@@ -47,6 +47,13 @@ class Extension {
     firefoxContainers: false,
     showReleaseNotes: true,
     showAllProfiles: false,
+    tableSettings: {
+      showIamRoles: true,
+      showIcon: true,
+      sortCustom: false,
+      sortApp: 'desc',
+      sortProfile: false,
+    },
   };
 
   constructor(config: ExtensionConfig) {
@@ -239,6 +246,7 @@ class Extension {
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
+    this.log('loadSettings');
     const setKey = `${this.config.name}-settings`;
     const setData = await this.config.browser.storage.sync.get(setKey);
     // eslint-disable-next-line vue/max-len

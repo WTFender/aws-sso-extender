@@ -138,14 +138,14 @@
   </PDialog>
 
   <!--- profile table filters--->
-  <div v-if="tableEditor" style="height: 40px; padding-top: 5px; background-color: #dee2e6;">
+  <div v-if="tableEditor" style="background-color: #f3f5fb; border-bottom: 3px solid #dee2e6; padding-top: 10px; padding-bottom: 10px;">
     <PrimeButton
       size="small"
       :icon="newTableSettings.showIcon ? 'pi pi-check-circle' : 'pi pi-circle'"
       class="filter-button"
       :class="newTableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Icons"
-      @click="newTableSettings.showIcon = !newTableSettings.showIcon"
+      @click="newTableSettings.showIcon = !newTableSettings.showIcon; $emit('resize', newTableSettings)"
     />
     <PrimeButton
       size="small"
@@ -153,14 +153,15 @@
       class="filter-button"
       :class="newTableSettings.showIamRoles !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="IAM Roles"
-      @click="newTableSettings.showIamRoles = !newTableSettings.showIamRoles"
+      @click="newTableSettings.showIamRoles = !newTableSettings.showIamRoles; $emit('resize', newTableSettings)"
     />
+    <br v-if="!newTableSettings.showIamRoles || !newTableSettings.showIcon" />
     <PrimeButton
       size="small"
       :icon="sortAppIcon"
       class="filter-button"
       :class="newTableSettings.sortApp !== false ? 'p-button-primary' : 'p-button-secondary'"
-      label="App"
+      label="Account"
       @click="sortByApp()"
     />
     <PrimeButton
@@ -187,7 +188,7 @@
       class="filter-button 'p-button-primary'"
       label="Save"
       style="float: right; margin-right: 15px;"
-      @click="newTableSettings.sortCustom = !tableSettings.sortCustom"
+      @click="$ext.saveSettings({ ...settings, tableSettings: newTableSettings });"
     />
     <!---
     <PrimeButton
@@ -201,6 +202,35 @@
     --->
   </div>
 
+  <!-- header -->
+  <div v-if="tableEditor" class="profile">
+    <div class="pi" style="color: transparent; width: 16px;" />
+    <div
+      v-if="newTableSettings.showIcon"
+      class="profile-field nav"
+      style="width: 100px; vertical-align: middle; padding-left: 0px !important;"
+    />
+    <div
+      class="profile-field nav"
+      :style="{ width: '120px' }"
+    >
+      Account
+    </div>
+    <div
+      class="profile-field nav"
+      :style="{ width: '150px' }"
+    >
+      Profile
+    </div>
+    <div
+      v-if="newTableSettings.showIamRoles"
+      class="profile-field nav"
+      style="width: 150px;"
+    >
+      IAM Roles
+    </div>
+  </div>
+
   <!--- profile table --->
   <div v-sortable="{ disabled: !tableEditor, options: { group: 'name', animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @end="reorderProfiles">
     <div
@@ -208,76 +238,87 @@
       :key="`${profile.id}-${profile.profile.id}`"
       class="profile"
     >
+      <div
+        class="pi"
+        :class="{
+          'pi-star-fill': profile.profile.custom?.favorite,
+          'pi-star': !profile.profile.custom?.favorite,
+        }"
+        @click="fave(profile)"
+      />
       <img
         v-if="newTableSettings.showIcon"
         :alt="profile.name"
         :src="profile.icon"
-        class="profile-field shadow nav"
-        width="96"
-        style="width: 100px !important; vertical-align: middle; background-color: #f3f5fb; border-radius: 25px;"
+        class="profile-field nav"
+        style="width: 100px; vertical-align: middle; padding-left: 0px !important;"
         @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       />
       <div
         class="profile-field nav"
-        :style="{ width: !tableSettings.showIcon ? '160px' : '120px' }"
+        :style="{ width: '120px' }"
         @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       >
-        <p v-if="profile.applicationName === 'AWS Account'">
-          <b>{{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountName : profile.searchMetadata!.AccountId }}</b>
-          {{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountId : profile.searchMetadata!.AccountName }}
-        </p>
-        <p v-else>
-          {{ profile.name }}
-        </p>
+        <div v-if="profile.applicationName === 'AWS Account'">
+          <p style="margin: 0px" class="truncate" :title="profile.searchMetadata!.AccountName">
+            <b>{{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountName : profile.searchMetadata!.AccountId }}</b>
+          </p>
+          <p style="margin: 0px" class="truncate" :title="profile.searchMetadata!.AccountId">
+            {{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountId : profile.searchMetadata!.AccountName }}
+          </p>
+        </div>
+        <div v-else>
+          <p style="margin: 0px" class="truncate" :title="profile.name">
+            <b>{{ profile.name }}</b>
+          </p>
+        </div>
       </div>
       <div
         class="profile-field nav"
-        :style="{ width: !tableSettings.showIcon ? '160px' : '150px' }"
+        :style="{ width: '150px' }"
         @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       >
         <PBadge
+          v-if="profile.profile.name !== 'Default'"
           :value="profile.profile.custom?.label || profile.profile.name"
-          class="role-link truncate"
-          :style="{ width: '150px', 'background-color': profile.profile.custom?.color ? `#${profile.profile.custom?.color}` : 'red' }"
+          :title="profile.profile.custom?.label || profile.profile.name"
+          class="truncate"
+          :style="{ width: '150px', 'background-color': profile.profile.custom?.color ? `#${profile.profile.custom?.color}` : `#${user.custom.colorDefault}` }"
         />
+        <br v-else>
       </div>
       <div
         v-if="newTableSettings.showIamRoles && profile.profile.custom?.iamRoles.length! > 0"
-        class="profile-field"
-        style="width: 120px;"
+        class="profile-field nav"
+        style="width: 150px;"
       >
         <PBadge
           v-for="(role, idx) in profile.profile.custom?.iamRoles"
           :key="idx"
           :value="role.label || role.roleName"
           class="role-link truncate"
-          :style="{ width: '120px', 'background-color': `#${role.color}` }"
+          :style="{ width: '150px', 'background-color': `#${role.color}` }"
+          :title="role.label || role.roleName"
           @click="!tableEditor ? assumeIamRole(role, profile) : editProfile(profile)"
         />
       </div>
-      <i
-        class="pi"
-        :class="{
-          'pi-star-fill': profile.profile.custom?.favorite,
-          'pi-star': !profile.profile.custom?.favorite,
-          aws: profile.applicationName === 'AWS Account',
-        }"
-        style="float: right; padding-top: 10px; padding-right: 10px;"
-        @click="fave(profile)"
-      />
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import {
-  AppData, ExtensionSettings, IamRole, UserData,
+  AppData, IamRole, UserData,
 } from '../types';
 import { getFontColor, waitForElement } from '../utils';
 
 export default {
   name: 'ProfileTable',
   props: {
+    loaded: {
+      required: true,
+      type: Boolean,
+    },
     tableSettings: {
       type: Object,
       required: false,
@@ -319,7 +360,6 @@ export default {
     settings: {
       required: true,
       type: Object,
-      default: () => ({} as ExtensionSettings),
     },
     demoMode: {
       type: Boolean,
@@ -327,7 +367,7 @@ export default {
       default: false,
     },
   },
-  emits: ['updateProfile', 'requestPermissions'],
+  emits: ['updateProfile', 'requestPermissions', 'resize'],
   data() {
     return {
       newTableSettings: {
@@ -411,8 +451,19 @@ export default {
       );
     },
   },
-  created() {
-    this.newTableSettings = JSON.parse(JSON.stringify(this.tableSettings));
+  watch: {
+    loaded: {
+      handler(v) {
+        if (v) { this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings)); }
+      },
+    },
+    editorVisible: {
+      handler(v) {
+        this.$ext.log('editorVisible');
+        this.$ext.log(v);
+        this.$emit('resize', { profileEditor: v, ...this.newTableSettings });
+      },
+    },
   },
   methods: {
     sortIcon(sort) {
@@ -546,6 +597,7 @@ export default {
   padding-left: 10px !important;
 }
 .filter-button {
+  margin-bottom: 10px !important;
   margin-left: 10px !important;
   padding: 5px !important;
 }
@@ -559,37 +611,23 @@ export default {
   box-shadow: rgba(149, 157, 165, 0.2) 0px 3px 3px;
 }
 .profile {
-  min-height: 70px;
   padding: 5px;
   padding-left: 10px;
   padding-right: 10px;
   border-bottom: 1px solid #dee2e6;
 }
-.profile:hover {
-  background: #f3f5fb;
+.profile:hover  {
+  background-color: #f3f5fb;
   box-shadow: rgba(149, 157, 165, 0.2) 0px 5px 5px;
-}
-.profile:hover > img {
-  box-shadow: none;
 }
 .profile-field {
   display: inline-block;
   vertical-align: middle;
-  margin-right: 10px;
-}
-.sso-link {
-  color: #495057;
-  text-decoration: none;
-  text-overflow: ellipsis;
-  border-radius: 4pt;
-}
-
-.sso-link:hover {
-  color: #5e3add;
-  cursor: pointer;
+  padding-left: 10px;
 }
 
 .role-link {
+  margin-left: 10px;
   white-space: nowrap;
   margin-right: 5px;
 }
@@ -616,9 +654,6 @@ export default {
 .pi-star-fill:hover {
   color: grey !important;
   cursor: pointer;
-}
-.aws {
-  margin-top: 8px;
 }
 
 .p-inputtext {

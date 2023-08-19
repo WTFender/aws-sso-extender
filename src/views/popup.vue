@@ -9,10 +9,14 @@
       <ToggleButton
         v-model="settingsPage"
         size="small"
-        class="truncate"
-        style="height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
+        :style="{
+          height: '42px',
+          'margin-right': '5px',
+          border: '1px solid #ced4da',
+          width: tableSettings.showIamRoles && tableSettings.showIcon ? '150px' : '50px',
+        }"
         :on-label="'Back'"
-        :off-label="user.subject"
+        :off-label="tableSettings.showIamRoles && tableSettings.showIcon ? user.subject : ''"
         on-icon="pi pi-arrow-left"
         off-icon="pi pi-cog"
       />
@@ -37,8 +41,9 @@
           id="searchBox"
           ref="searchBox"
           v-model="search"
-          placeholder="Search Profiles"
+          :placeholder="!tableSettings.showIamRoles && !tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
+          :style="{ width: searchBoxWidth }"
         />
       </span>
     </template>
@@ -79,7 +84,10 @@
     </template>
   </PToolbar>
 
-  <div class="card" :style="tableEditor ? 'height: 500px' : ''">
+  <div
+    class="card"
+    :style="{ height: tableEditor ? '500px' : '', width: windowSize }"
+  >
     <!--- Setup -->
     <SetupSteps
       v-show="!permissions.sso || !loaded"
@@ -91,6 +99,7 @@
     <!--- Profiles -->
     <ProfileTable
       v-if="!settingsPage"
+      :loaded="loaded"
       :table-editor="tableEditor"
       :demo-mode="demoMode"
       :settings="settings"
@@ -101,6 +110,7 @@
       @requestPermissions="requestPermissionsSwitchrole"
       @updateProfile="updateProfile"
       @updateProfileLabel="updateProfileLabel"
+      @resize="resize"
     />
 
     <!--- User (settings) page -->
@@ -392,6 +402,14 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      tableSettings: {
+        profileEditor: false,
+        showIamRoles: true,
+        showIcon: true,
+        sortCustom: false,
+        sortApp: 'desc' as false | string,
+        sortProfile: false as false | string,
+      },
       settingsPage: false,
       favorites: false,
       isPageUser: false,
@@ -469,6 +487,24 @@ export default {
     };
   },
   computed: {
+    searchBoxWidth() {
+      if (!this.tableSettings.showIcon && !this.tableSettings.showIamRoles) {
+        return '135px';
+      }
+      return '235px';
+    },
+    windowSize() {
+      if (this.page === 'settings' || this.tableSettings.profileEditor) {
+        return '580px';
+      }
+      if (!this.tableSettings.showIcon && !this.tableSettings.showIamRoles) {
+        return '380px';
+      }
+      if (!this.tableSettings.showIcon || !this.tableSettings.showIamRoles) {
+        return '480px';
+      }
+      return '580px';
+    },
     isPageProfiles() {
       return this.page === 'profiles';
     },
@@ -598,6 +634,11 @@ export default {
     this.reload();
   },
   methods: {
+    resize(tableSettings) {
+      this.$ext.log('resize');
+      this.$ext.log(tableSettings);
+      this.tableSettings = tableSettings;
+    },
     openResource(url) {
       window.open(url, '_blank');
     },
@@ -780,6 +821,7 @@ export default {
           label: null,
           favorite: false,
           iamRoles: [role],
+          weight: 100,
         };
       }
       this.$ext.log(this.user);
@@ -832,12 +874,11 @@ export default {
 }
 
 .card {
-  width: 580px !important;
   max-height: 500px;
   display: inline-block;
   margin: 0px;
   padding: 0px;
-  padding-bottom: 19px;
+  padding-bottom: 3px;
   border: none;
 }
 
