@@ -446,6 +446,11 @@ export default {
       },
     },
   },
+  created() {
+    if (this.settings.tableSettings !== undefined) {
+      this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings));
+    }
+  },
   methods: {
     sortIcon(sort) {
       if (sort === 'desc') {

@@ -13,10 +13,10 @@
           height: '42px',
           'margin-right': '5px',
           border: '1px solid #ced4da',
-          width: settings.tableSettings.showIamRoles && settings.tableSettings.showIcon ? '150px' : '50px',
+          width: settingsWidth,
         }"
         :on-label="'Back'"
-        :off-label="settings.tableSettings.showIamRoles && settings.tableSettings.showIcon ? user.subject : ''"
+        :off-label="settingsLabel"
         on-icon="pi pi-arrow-left"
         off-icon="pi pi-cog"
       />
@@ -475,6 +475,12 @@ export default {
     };
   },
   computed: {
+    settingsLabel() {
+      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.subject : '';
+    },
+    settingsWidth() {
+      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '150px' : '50px';
+    },
     searchBoxWidth() {
       if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
         return '135px';
