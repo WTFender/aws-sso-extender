@@ -289,7 +289,7 @@
 
 <script lang="ts">
 import {
-  AppData, IamRole, UserData,
+  AppData, CustomData, IamRole, UserData,
 } from '../types';
 import { getFontColor, waitForElement } from '../utils';
 
@@ -478,6 +478,7 @@ export default {
       } else if (this.newTableSettings.sortApp === 'ascNum') {
         this.newTableSettings.sortApp = false;
       }
+      this.$emit('resize', { profileEditor: this.editorVisible, ...this.newTableSettings });
     },
     sortByProfile() {
       this.newTableSettings.sortCustom = false;
@@ -489,13 +490,20 @@ export default {
       } else if (this.newTableSettings.sortProfile === 'asc') {
         this.newTableSettings.sortProfile = false;
       }
+      this.$emit('resize', { profileEditor: this.editorVisible, ...this.newTableSettings });
     },
     reorderProfiles(event) {
+      this.$ext.log(event);
       this.$ext.log(event.oldIndex);
       this.$ext.log(event.newIndex);
+      const customProfiles: CustomData[] = [];
+      this.sortedProfiles.forEach((ap) => {
+        customProfiles.push(ap.profile.custom!);
+      });
       this.newTableSettings.sortApp = false;
       this.newTableSettings.sortProfile = false;
       this.newTableSettings.sortCustom = true;
+      this.$ext.log(customProfiles);
     },
     requestPermissions() {
       this.$emit('requestPermissions');
