@@ -405,7 +405,6 @@ export default {
       profileEditor: false,
       settingsPage: false,
       favorites: false,
-      isPageUser: false,
       settingOptions: [
         { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
         { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
@@ -425,7 +424,6 @@ export default {
         },
       ],
       importUser: false,
-      profileTable: { icon: 'pi pi-list', value: 'profiles' },
       tabs: [
         { index: 0, label: 'Users' },
         { index: 1, label: 'Console' },
@@ -435,12 +433,7 @@ export default {
       activeTab: 0,
       search: '',
       tableEditor: false,
-      items: [
-        { icon: 'pi pi-list', value: 'profiles' },
-        { icon: 'pi pi-star', value: 'favorites' },
-      ],
       raw: {} as ExtensionData,
-      defaultUser: '',
       colorPickerVisible: false,
       demoMode: false,
       permissions: {
@@ -466,14 +459,16 @@ export default {
         firefoxContainers: false,
         showReleaseNotes: true,
         showAllProfiles: false,
+        tableSettings: {
+          showIamRoles: true,
+          showIcon: true,
+          sortCustom: false,
+          sortApp: 'desc',
+          sortProfile: false,
+        },
       } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: '',
-      staleHours: 1,
-      status: {
-        message: '',
-        status: 'unknown',
-      },
       lastPage: 'profiles',
       page: '', // profiles, favorites, users
       updatedAt: 0,
@@ -527,13 +522,6 @@ export default {
       }));
       return options;
     },
-    staleData() {
-      const limit = this.staleHours * 1000 * 60 * 60;
-      if (Date.now() - limit > this.updatedAt) {
-        return true;
-      }
-      return false;
-    },
     faveProfiles(): AppData[] {
       return this.userProfiles.filter(
         (ap: AppData) => ap.profile.custom?.favorite === true,
@@ -551,6 +539,7 @@ export default {
   watch: {
     settingsPage: {
       handler(v) {
+        this.$ext.log(`popup:settingsPage:${v}`);
         if (v === true) {
           this.setPage('settings');
         } else {
@@ -563,11 +552,9 @@ export default {
         this.lastPage = v;
         if (v === 'settings') {
           // clear profile table selection
-          this.profileTable = { icon: '', value: '' };
           this.tableEditor = false;
         }
         if (v === 'profiles' || v === 'favorites') {
-          this.profileTable = { value: v, icon: `pi pi-${v === 'profiles' ? 'list' : 'star'}` };
           waitForElement('#searchBox').then((searchBox) => {
             searchBox.focus();
           });
@@ -746,7 +733,6 @@ export default {
             this.load(data);
           })
           .catch((error) => {
-            this.status = { status: 'unhealthy', message: 'failed to load data' };
             throw error;
           });
       }
