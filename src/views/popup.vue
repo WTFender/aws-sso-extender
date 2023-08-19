@@ -13,10 +13,10 @@
           height: '42px',
           'margin-right': '5px',
           border: '1px solid #ced4da',
-          width: tableSettings.showIamRoles && tableSettings.showIcon ? '150px' : '50px',
+          width: settings.tableSettings.showIamRoles && settings.tableSettings.showIcon ? '150px' : '50px',
         }"
         :on-label="'Back'"
-        :off-label="tableSettings.showIamRoles && tableSettings.showIcon ? user.subject : ''"
+        :off-label="settings.tableSettings.showIamRoles && settings.tableSettings.showIcon ? user.subject : ''"
         on-icon="pi pi-arrow-left"
         off-icon="pi pi-cog"
       />
@@ -41,7 +41,7 @@
           id="searchBox"
           ref="searchBox"
           v-model="search"
-          :placeholder="!tableSettings.showIamRoles && !tableSettings.showIcon ? 'Search' : 'Search Profiles'"
+          :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
           :style="{ width: searchBoxWidth }"
         />
@@ -402,14 +402,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
-      tableSettings: {
-        profileEditor: false,
-        showIamRoles: true,
-        showIcon: true,
-        sortCustom: false,
-        sortApp: 'desc' as false | string,
-        sortProfile: false as false | string,
-      },
+      profileEditor: false,
       settingsPage: false,
       favorites: false,
       isPageUser: false,
@@ -488,19 +481,19 @@ export default {
   },
   computed: {
     searchBoxWidth() {
-      if (!this.tableSettings.showIcon && !this.tableSettings.showIamRoles) {
+      if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
         return '135px';
       }
       return '235px';
     },
     windowSize() {
-      if (this.page === 'settings' || this.tableSettings.profileEditor) {
+      if (!this.loaded || this.page === 'settings' || this.profileEditor) {
         return '580px';
       }
-      if (!this.tableSettings.showIcon && !this.tableSettings.showIamRoles) {
+      if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
         return '380px';
       }
-      if (!this.tableSettings.showIcon || !this.tableSettings.showIamRoles) {
+      if (!this.settings.tableSettings.showIcon || !this.settings.tableSettings.showIamRoles) {
         return '480px';
       }
       return '580px';
@@ -635,9 +628,8 @@ export default {
   },
   methods: {
     resize(tableSettings) {
-      this.$ext.log('resize');
-      this.$ext.log(tableSettings);
-      this.tableSettings = tableSettings;
+      this.profileEditor = tableSettings.profileEditor;
+      this.settings.tableSettings = tableSettings;
     },
     openResource(url) {
       window.open(url, '_blank');

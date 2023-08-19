@@ -181,25 +181,6 @@
       label="Custom"
       @click="newTableSettings.sortCustom = !tableSettings.sortCustom"
     />
-    <PrimeButton
-      :disabled="!tableSettingsChanged"
-      size="small"
-      icon="pi pi-save"
-      class="filter-button 'p-button-primary'"
-      label="Save"
-      style="float: right; margin-right: 15px;"
-      @click="$ext.saveSettings({ ...settings, tableSettings: newTableSettings });"
-    />
-    <!---
-    <PrimeButton
-      size="small"
-      :icon="newTableSettings.showAppName ? 'pi pi-check-circle' : 'pi pi-circle'"
-      class="filter-button"
-      :class="newTableSettings.showAppName !== false ? 'p-button-primary' : 'p-button-secondary'"
-      label="Group By App"
-      @click="newTableSettings.showAppName = !tableSettings.showAppName"
-    />
-    --->
   </div>
 
   <!-- header -->
