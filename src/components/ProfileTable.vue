@@ -19,15 +19,12 @@
             :disabled="true"
           />
         </div>
-        <small id="label-help">
-          {{
-            activeProfile.applicationName === "AWS Account"
-              ? "Profile Label & Color"
-              : "Profile Label"
-          }}
+        <small v-if="activeProfile.applicationName === 'AWS Account'" id="label-help">
+          Profile Label & Color
         </small>
         <div style="margin-bottom: 10px">
           <InputText
+            v-if="activeProfile.applicationName === 'AWS Account'"
             id="profileLabel"
             v-model="activeProfile.profile.custom!.label"
             class="p-inputtext-sm"
