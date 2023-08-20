@@ -72,7 +72,7 @@
         />
         <ToggleButton
           v-model="favorites"
-          :disabled="settingsPage"
+          :disabled="settingsPage || tableEditor"
           style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
           on-label=""
           off-label=""
@@ -543,6 +543,12 @@ export default {
     },
   },
   watch: {
+    tableEditor: {
+      handler(v) {
+        this.$ext.log(`popup:tableEditor:${v}`);
+        if (v === true) { this.favorites = false; }
+      },
+    },
     settingsPage: {
       handler(v) {
         this.$ext.log(`popup:settingsPage:${v}`);
