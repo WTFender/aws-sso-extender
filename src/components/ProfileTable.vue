@@ -19,12 +19,15 @@
             :disabled="true"
           />
         </div>
-        <small v-if="activeProfile.applicationName === 'AWS Account'" id="label-help">
-          Profile Label & Color
+        <small id="label-help">
+          {{
+            activeProfile.applicationName === "AWS Account"
+              ? "Profile Label & Color"
+              : "Profile Label"
+          }}
         </small>
         <div style="margin-bottom: 10px">
           <InputText
-            v-if="activeProfile.applicationName === 'AWS Account'"
             id="profileLabel"
             v-model="activeProfile.profile.custom!.label"
             class="p-inputtext-sm"
@@ -247,7 +250,7 @@
         </div>
         <div v-else>
           <p style="margin: 0px" class="truncate" :title="profile.name">
-            <b>{{ profile.name }}</b>
+            <b>{{ profile.profile.custom?.label || profile.name }}</b>
           </p>
         </div>
       </div>
