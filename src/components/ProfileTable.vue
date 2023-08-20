@@ -388,7 +388,7 @@ export default {
             ? profile.searchMetadata!.AccountId
             : profile.searchMetadata!.AccountName;
         } else {
-          profile.sortName = profile.name;
+          profile.sortName = profile.profile.custom?.label || profile.name;
         }
         if (profile.name.toLowerCase().includes(this.search.toLowerCase())
           || profile.profile.name.toLowerCase().includes(this.search.toLowerCase())) {
