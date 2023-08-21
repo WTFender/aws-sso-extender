@@ -112,7 +112,7 @@
       @requestPermissions="requestPermissionsSwitchrole"
       @updateProfile="updateProfile"
       @updateProfileLabel="updateProfileLabel"
-      @resize="resize"
+      @updateTableSettings="updateTableSettings"
     />
 
     <!--- User (settings) page -->
@@ -628,7 +628,7 @@ export default {
     this.reload();
   },
   methods: {
-    resize(tableSettings) {
+    updateTableSettings(tableSettings) {
       this.profileEditor = tableSettings.profileEditor;
       delete tableSettings.profileEditor;
       this.settings.tableSettings = tableSettings;

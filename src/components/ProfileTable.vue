@@ -145,7 +145,7 @@
       class="filter-button"
       :class="newTableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Icons"
-      @click="newTableSettings.showIcon = !newTableSettings.showIcon; $emit('resize', newTableSettings)"
+      @click="newTableSettings.showIcon = !newTableSettings.showIcon; $emit('updateTableSettings', newTableSettings)"
     />
     <PrimeButton
       size="small"
@@ -153,7 +153,7 @@
       class="filter-button"
       :class="newTableSettings.showIamRoles !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="IAM Roles"
-      @click="newTableSettings.showIamRoles = !newTableSettings.showIamRoles; $emit('resize', newTableSettings)"
+      @click="newTableSettings.showIamRoles = !newTableSettings.showIamRoles; $emit('updateTableSettings', newTableSettings)"
     />
     <br v-if="!newTableSettings.showIamRoles || !newTableSettings.showIcon" />
     <PrimeButton
@@ -348,7 +348,7 @@ export default {
       default: false,
     },
   },
-  emits: ['updateProfile', 'requestPermissions', 'resize'],
+  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings'],
   data() {
     return {
       newTableSettings: {
@@ -442,7 +442,7 @@ export default {
       handler(v) {
         this.$ext.log('editorVisible');
         this.$ext.log(v);
-        this.$emit('resize', { profileEditor: v, ...this.newTableSettings });
+        this.$emit('updateTableSettings', { profileEditor: v, ...this.newTableSettings });
       },
     },
   },
@@ -478,7 +478,7 @@ export default {
       } else if (this.newTableSettings.sortApp === 'ascNum') {
         this.newTableSettings.sortApp = false;
       }
-      this.$emit('resize', { profileEditor: this.editorVisible, ...this.newTableSettings });
+      this.$emit('updateTableSettings', { profileEditor: this.editorVisible, ...this.newTableSettings });
     },
     sortByProfile() {
       this.newTableSettings.sortCustom = false;
@@ -490,7 +490,7 @@ export default {
       } else if (this.newTableSettings.sortProfile === 'asc') {
         this.newTableSettings.sortProfile = false;
       }
-      this.$emit('resize', { profileEditor: this.editorVisible, ...this.newTableSettings });
+      this.$emit('updateTableSettings', { profileEditor: this.editorVisible, ...this.newTableSettings });
     },
     reorderProfiles(event) {
       this.$ext.log(event);
