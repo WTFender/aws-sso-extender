@@ -231,6 +231,13 @@ const demoData: ExtensionData = {
     lastProfileId: 'p-124',
     showReleaseNotes: true,
     showAllProfiles: false,
+    tableSettings: {
+      showIamRoles: true,
+      showIcon: true,
+      sortCustom: false,
+      sortApp: 'desc',
+      sortProfile: false,
+    },
   },
 };
 
