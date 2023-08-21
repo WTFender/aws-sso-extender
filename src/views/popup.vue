@@ -4,17 +4,16 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <PToolbar style="margin: 0px; padding: 7px; height: 70px;">
+  <PToolbar style="height: 50px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
     <template v-if="permissions.sso && loaded" #start>
       <ToggleButton
         v-model="settingsPage"
         size="small"
         :style="{
-          height: '42px',
-          'margin-right': '5px',
           border: '1px solid #ced4da',
           width: settingsWidth,
         }"
+        class="toolbar-field"
         :on-label="'Back'"
         :off-label="settingsLabel"
         on-icon="pi pi-arrow-left"
@@ -41,6 +40,7 @@
           id="searchBox"
           ref="searchBox"
           v-model="search"
+          class="toolbar-field"
           :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
           :style="{ width: searchBoxWidth }"
@@ -55,7 +55,7 @@
         v-if="!permissions.sso || !loaded"
         size="small"
         icon="pi pi-play"
-        class="p-button-success flex-center"
+        class="p-button-success toolbar-field"
         label="Demo"
         @click="demo()"
       />
@@ -63,7 +63,8 @@
         <ToggleButton
           v-model="tableEditor"
           :disabled="settingsPage"
-          style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
+          style="width: 40px; border: 1px solid #ced4da;"
+          class="toolbar-field"
           on-label=""
           off-label=""
           on-icon="pi pi-pencil"
@@ -73,7 +74,8 @@
         <ToggleButton
           v-model="favorites"
           :disabled="settingsPage || tableEditor"
-          style="width: 57px; height: 42px; margin-right: 5px; border: 1px solid #ced4da;"
+          style="width: 40px; border: 1px solid #ced4da;"
+          class="toolbar-field"
           on-label=""
           off-label=""
           on-icon="pi pi-star"
@@ -479,7 +481,7 @@ export default {
       return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.subject : '';
     },
     settingsWidth() {
-      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '150px' : '50px';
+      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '130px' : '40px';
     },
     searchBoxWidth() {
       if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
@@ -628,6 +630,7 @@ export default {
   methods: {
     resize(tableSettings) {
       this.profileEditor = tableSettings.profileEditor;
+      delete tableSettings.profileEditor;
       this.settings.tableSettings = tableSettings;
     },
     openResource(url) {
@@ -871,7 +874,10 @@ export default {
   padding-bottom: 3px;
   border: none;
 }
-
+.toolbar-field {
+  height: 30px;
+  margin-right: 5px;
+}
 .menu-icon {
   font-size: 1.75rem;
   color: #dee2e6;
