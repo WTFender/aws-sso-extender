@@ -7,6 +7,7 @@
   - Sort by account ID
   - Sort by profile name
   - Custom sort (drag & drop)
+- Fix safari transparent background
 
 ## 1.5.2
 - Add AWS console subdomain
