@@ -59,7 +59,7 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = this.checkPlatform();
-    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
+    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|support|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/?$/;
     this.ssoUrl = '';
     this.loaded = false;
@@ -98,24 +98,6 @@ class Extension {
     return label;
   }
 
-  resetPermissions() {
-    this.config.browser.permissions.remove({
-      permissions: [
-        'activeTab',
-        'history',
-        'tabs',
-        'webRequest',
-        'webRequestBlocking',
-      ],
-      origins: [
-        ...this.config.permissions.sso,
-        ...this.config.permissions.console,
-        ...this.config.permissions.signin,
-        ...this.config.permissions.containers,
-      ],
-    });
-  }
-
   async checkPermissions(): Promise<ExtensionPermissions> {
     this.log('checkPermissions');
     const history = this.platform === 'safari' ? Promise.resolve(false) : this.config.browser.permissions.contains({
@@ -151,46 +133,6 @@ class Extension {
     this.log(data);
     return data;
   }
-
-  async searchHistory(): Promise<string[]> {
-    const dirs: string[] = [];
-    return this.config.browser.history.search({
-      text: 'awsapps.com/start#/',
-      startTime: (Date.now() - (1000 * 60 * 60 * 24 * 30)), // 1 month ago,
-      maxResults: 1000,
-    }).then((results) => {
-      results?.forEach((site) => {
-        const match = this.ssoUrlRegex.exec(site.url as string);
-        if (match?.groups != null) {
-          if (!(match.groups.directoryId in dirs)) {
-            dirs.push(match.groups.directoryId);
-          }
-        }
-      });
-      const uniqDirs = [...new Set(dirs)];
-      this.log(uniqDirs);
-      return uniqDirs;
-    });
-  }
-
-  checkProfiles(appProfiles: AppData[]): AppData[] {
-    this.log(appProfiles);
-    return appProfiles.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
-  }
-
-  /*
-  static calculateChecksum(c) {
-    // generate csrf token
-    let a = 1;
-    let b = 0;
-    if (!c) { return 0; }
-    for (let i = 0; i < c.length; ++i) {
-      a = (a + c.charCodeAt(i)) % 65521;
-      b = (b + a) % 65521;
-    }
-    return (b << 15) | a;
-  }
-  */
 
   async loadIamLogins(): Promise<IamRole[]> {
     const loginsKey = `${this.config.name}-iam-logins`;
@@ -302,10 +244,13 @@ class Extension {
 
   createProfileUrl(user: UserData, appProfile: AppData) {
     this.log('createProfileUrl');
-    const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml/custom`;
-    const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+    const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml`;
     const appProfileName = encodeUriPlusParens(appProfile.name);
-    return `${ssoDirUrl}/${appProfileName}/${appProfilePath}`;
+    if (appProfile.profile.name === 'Default') {
+      return `${ssoDirUrl}/default/${appProfileName}/${appProfile.id}`;
+    }
+    const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+    return `${ssoDirUrl}/custom/${appProfileName}/${appProfilePath}`;
   }
 
   parseAppProfiles(): AppData[] {
