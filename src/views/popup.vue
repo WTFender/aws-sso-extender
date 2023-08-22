@@ -382,8 +382,8 @@
   </div>
 
   <!--- Footer -->
-  <div :class="!$ext.config.debug ? 'footer-debug' : 'footer'">
-    <p v-if="!$ext.config.debug" style="margin: 0px">
+  <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
+    <p v-if="$ext.config.debug" style="margin: 0px">
       {{ `${$ext.config.debug ? 'dev' : 'prod'}-${$ext.config.version}-${$ext.config.build}` }}
     </p>
   </div>
