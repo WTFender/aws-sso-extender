@@ -867,6 +867,7 @@ export default {
 }
 
 .card {
+  background-color: white;
   max-height: 500px;
   display: inline-block;
   margin: 0px;
