@@ -25,11 +25,11 @@ export interface ExtensionSettings {
   showReleaseNotes: boolean
   showAllProfiles: boolean
   tableSettings: {
-    showIamRoles: true
-    showIcon: true
-    sortCustom: false
-    sortApp: false | string
-    sortProfile: false | string
+    showIamRoles: boolean
+    showIcon: boolean
+    sortCustom: boolean
+    sortApp: boolean | string
+    sortProfile: boolean | string
   }
 }
 

@@ -179,7 +179,6 @@
       class="filter-button"
       :class="newTableSettings.sortCustom !== false ? 'p-button-primary' : 'p-button-secondary'"
       label="Custom"
-      @click="newTableSettings.sortCustom = !tableSettings.sortCustom"
     />
   </div>
 
@@ -213,7 +212,7 @@
   </div>
 
   <!--- profile table --->
-  <div v-sortable="{ disabled: !tableEditor, options: { group: 'name', animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @end="reorderProfiles">
+  <div v-sortable="{ disabled: !tableEditor, options: { group: 'name', animation: 250, easing: 'cubic-bezier(1, 0, 0, 1)' } }" @end="sortByCustom">
     <div
       v-for="profile in sortedProfiles"
       :key="`${profile.id}-${profile.profile.id}`"
@@ -289,7 +288,7 @@
 
 <script lang="ts">
 import {
-  AppData, CustomData, IamRole, UserData,
+  AppData, IamRole, UserData,
 } from '../types';
 import { getFontColor, waitForElement } from '../utils';
 
@@ -348,7 +347,7 @@ export default {
       default: false,
     },
   },
-  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings'],
+  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser'],
   data() {
     return {
       newTableSettings: {
@@ -397,16 +396,19 @@ export default {
       });
       // sort app name
       if (this.newTableSettings.sortApp === 'desc' || this.newTableSettings.sortApp === 'descNum') {
-        profiles.sort((a, b) => a.sortName!.localeCompare(b.sortName!));
-      } else if (this.newTableSettings.sortApp === 'asc' || this.newTableSettings.sortApp === 'ascNum') {
-        profiles.sort((a, b) => b.sortName!.localeCompare(a.sortName!));
+        return profiles.sort((a, b) => a.sortName!.localeCompare(b.sortName!));
+      }
+      if (this.newTableSettings.sortApp === 'asc' || this.newTableSettings.sortApp === 'ascNum') {
+        return profiles.sort((a, b) => b.sortName!.localeCompare(a.sortName!));
       }
       // sort profile name
       if (this.newTableSettings.sortProfile === 'asc') {
-        profiles.sort((a, b) => b.profile.name.localeCompare(a.profile.name));
-      } else if (this.newTableSettings.sortProfile === 'desc') {
-        profiles.sort((a, b) => a.profile.name.localeCompare(b.profile.name));
+        return profiles.sort((a, b) => b.profile.name.localeCompare(a.profile.name));
       }
+      if (this.newTableSettings.sortProfile === 'desc') {
+        return profiles.sort((a, b) => a.profile.name.localeCompare(b.profile.name));
+      }
+      // unsorted or last custom sort
       return profiles;
     },
     sortAppIcon() {
@@ -492,18 +494,20 @@ export default {
       }
       this.$emit('updateTableSettings', { profileEditor: this.editorVisible, ...this.newTableSettings });
     },
-    reorderProfiles(event) {
-      this.$ext.log(event);
-      this.$ext.log(event.oldIndex);
-      this.$ext.log(event.newIndex);
-      const customProfiles: CustomData[] = [];
+    sortByCustom(event) {
+      const customProfileIds: string[] = [];
       this.sortedProfiles.forEach((ap) => {
-        customProfiles.push(ap.profile.custom!);
+        customProfileIds.push(ap.profile.id);
       });
+      const movedProfile = customProfileIds.splice(event.oldIndex, 1);
+      customProfileIds.splice(event.newIndex, 0, movedProfile[0]);
       this.newTableSettings.sortApp = false;
       this.newTableSettings.sortProfile = false;
       this.newTableSettings.sortCustom = true;
-      this.$ext.log(customProfiles);
+      // eslint-disable-next-line vue/no-mutating-props
+      this.user.appProfileIds = customProfileIds;
+      this.$emit('saveUser');
+      this.$emit('updateTableSettings', { profileEditor: this.editorVisible, ...this.newTableSettings });
     },
     requestPermissions() {
       this.$emit('requestPermissions');
@@ -613,6 +617,9 @@ export default {
 .profile:hover  {
   background-color: #f3f5fb;
   box-shadow: rgba(149, 157, 165, 0.2) 0px 5px 5px;
+}
+.profile:last-child {
+  padding-bottom: 8px;
 }
 .profile-field {
   display: inline-block;
