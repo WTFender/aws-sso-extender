@@ -4,7 +4,7 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <PToolbar style="height: 50px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
+  <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
     <template v-if="permissions.sso && loaded" #start>
       <ToggleButton
         v-model="settingsPage"
@@ -110,6 +110,7 @@
       :user="user"
       :permissions="permissions"
       @requestPermissions="requestPermissionsSwitchrole"
+      @saveUser="saveUser"
       @updateProfile="updateProfile"
       @updateProfileLabel="updateProfileLabel"
       @updateTableSettings="updateTableSettings"
