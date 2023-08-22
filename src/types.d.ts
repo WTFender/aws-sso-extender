@@ -130,7 +130,6 @@ export interface CustomData {
   label?: string | null
   color: string;
   iamRoles: IamRole[]
-  weight: number
 }
 
 export interface IamRole {

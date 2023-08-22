@@ -815,7 +815,6 @@ export default {
           label: null,
           favorite: false,
           iamRoles: [role],
-          weight: 100,
         };
       }
       this.$ext.log(this.user);
