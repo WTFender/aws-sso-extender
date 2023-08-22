@@ -18,6 +18,7 @@ module.exports = {
   overrides: [
     {
       files: [
+        'src/**/*.vue',
         'src/**/*.ts',
         'src/**/*.d.ts'
       ],

@@ -1,0 +1,28 @@
+{   "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "volar.inlayHints.eventArgumentInInlineHandlers": false,
+    "cSpell.words": [
+      "accordiontab",
+      "appinstance",
+      "appinstances",
+      "awsapps",
+      "Colorpicker",
+      "datatable",
+      "demouser",
+      "inputtext",
+      "linebreak",
+      "Listbox",
+      "primeicons",
+      "primevue",
+      "scrollpanel",
+      "searchbox",
+      "signin",
+      "switchrole",
+      "tabpanel",
+      "tabview",
+      "vuejs",
+      "webextension",
+      "xmlhttprequest"
+    ]
+}

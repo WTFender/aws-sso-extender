@@ -29,6 +29,7 @@
     "primeicons": "^6.0.1",
     "primevue": "^3.26.1",
     "vue": "^3.2.47",
+    "vue3-sortablejs": "^1.0.7",
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {

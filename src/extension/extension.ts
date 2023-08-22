@@ -47,6 +47,13 @@ class Extension {
     firefoxContainers: false,
     showReleaseNotes: true,
     showAllProfiles: false,
+    tableSettings: {
+      showIamRoles: true,
+      showIcon: true,
+      sortCustom: false,
+      sortApp: 'desc',
+      sortProfile: false,
+    },
   };
 
   constructor(config: ExtensionConfig) {
@@ -159,6 +166,11 @@ class Extension {
     const customData = await this.config.browser.storage.sync.get(customKey);
     // eslint-disable-next-line vue/max-len
     const custom = customData[customKey] === undefined ? this.defaultCustom : JSON.parse(customData[customKey]);
+    Object.keys(this.defaultCustom).forEach((key) => {
+      if (!Object.prototype.hasOwnProperty.call(custom, key)) {
+        custom[key] = this.defaultCustom[key];
+      }
+    });
     user.custom = custom;
     return user as UserData;
   }
@@ -181,10 +193,19 @@ class Extension {
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
+    this.log('loadSettings');
     const setKey = `${this.config.name}-settings`;
     const setData = await this.config.browser.storage.sync.get(setKey);
     // eslint-disable-next-line vue/max-len
     const settings = setData[setKey] === undefined ? this.defaultSettings : JSON.parse(setData[setKey]);
+    // replace missing settings with default settings
+    // useful when adding new settings between versions
+    Object.keys(this.defaultSettings).forEach((key) => {
+      // no key or undefined
+      if (!Object.prototype.hasOwnProperty.call(settings, key)) {
+        settings[key] = this.defaultSettings[key];
+      }
+    });
     return settings as ExtensionSettings;
   }
 
