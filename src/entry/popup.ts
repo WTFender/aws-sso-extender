@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import { createApp } from 'vue';
+import VueSortable from 'vue3-sortablejs';
 import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
 import Badge from 'primevue/badge';
@@ -18,6 +19,7 @@ import ScrollPanel from 'primevue/scrollpanel';
 import SelectButton from 'primevue/selectbutton';
 import TabPanel from 'primevue/tabpanel';
 import TabView from 'primevue/tabview';
+import ToggleButton from 'primevue/togglebutton';
 import Toolbar from 'primevue/toolbar';
 import Tooltip from 'primevue/tooltip';
 import extension from '../extension';
@@ -32,6 +34,7 @@ import 'primeicons/primeicons.css';
 
 const app = createApp(Popup);
 app.use(PrimeVue);
+app.use(VueSortable);
 app.config.globalProperties.$browser = browser;
 app.config.globalProperties.$ext = extension;
 app.component('ColorPicker', ColorPicker);
@@ -52,6 +55,7 @@ app.component('PSelectButton', SelectButton);
 app.component('PToolbar', Toolbar);
 app.component('TabPanel', TabPanel);
 app.component('TabView', TabView);
+app.component('ToggleButton', ToggleButton);
 app.directive('tooltip', Tooltip);
 // Custom components
 app.component('IamRoles', IamRoles);

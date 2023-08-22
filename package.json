@@ -5,7 +5,7 @@
   "author": "WTFender",
   "url": "https://github.com/WTFender/aws-sso-extender",
   "private": true,
-  "version": "1.5.2",
+  "version": "1.6.0",
   "type": "module",
   "scripts": {
     "prepare": "husky install",
@@ -29,6 +29,7 @@
     "primeicons": "^6.0.1",
     "primevue": "^3.26.1",
     "vue": "^3.2.47",
+    "vue3-sortablejs": "^1.0.7",
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {

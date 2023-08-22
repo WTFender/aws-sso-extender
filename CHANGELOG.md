@@ -1,11 +1,16 @@
+## 1.6.0
+- Update profile table style & sizing
+- Add table filters🎚️
+  - Show/hide icon
+  - Show/hide IAM roles
+  - Sort by account name
+  - Sort by account ID
+  - Sort by profile name
+  - Custom sort (drag & drop)
+- Fix safari transparent background
+
 ## 1.5.2
-- Fix login to apps with default profile
 - Add AWS console subdomain
-
-## 1.5.1
-- Fixed an issue with loading a large number of accounts or profiles
-
-## 1.5.0
 - New profile editor
 
 ## 1.4.5

@@ -47,6 +47,13 @@ class Extension {
     firefoxContainers: false,
     showReleaseNotes: true,
     showAllProfiles: false,
+    tableSettings: {
+      showIamRoles: true,
+      showIcon: true,
+      sortCustom: false,
+      sortApp: 'desc',
+      sortProfile: false,
+    },
   };
 
   constructor(config: ExtensionConfig) {
@@ -91,24 +98,6 @@ class Extension {
     return label;
   }
 
-  resetPermissions() {
-    this.config.browser.permissions.remove({
-      permissions: [
-        'activeTab',
-        'history',
-        'tabs',
-        'webRequest',
-        'webRequestBlocking',
-      ],
-      origins: [
-        ...this.config.permissions.sso,
-        ...this.config.permissions.console,
-        ...this.config.permissions.signin,
-        ...this.config.permissions.containers,
-      ],
-    });
-  }
-
   async checkPermissions(): Promise<ExtensionPermissions> {
     this.log('checkPermissions');
     const history = this.platform === 'safari' ? Promise.resolve(false) : this.config.browser.permissions.contains({
@@ -145,46 +134,6 @@ class Extension {
     return data;
   }
 
-  async searchHistory(): Promise<string[]> {
-    const dirs: string[] = [];
-    return this.config.browser.history.search({
-      text: 'awsapps.com/start#/',
-      startTime: (Date.now() - (1000 * 60 * 60 * 24 * 30)), // 1 month ago,
-      maxResults: 1000,
-    }).then((results) => {
-      results?.forEach((site) => {
-        const match = this.ssoUrlRegex.exec(site.url as string);
-        if (match?.groups != null) {
-          if (!(match.groups.directoryId in dirs)) {
-            dirs.push(match.groups.directoryId);
-          }
-        }
-      });
-      const uniqDirs = [...new Set(dirs)];
-      this.log(uniqDirs);
-      return uniqDirs;
-    });
-  }
-
-  checkProfiles(appProfiles: AppData[]): AppData[] {
-    this.log(appProfiles);
-    return appProfiles.map((ap) => JSON.parse(ap[Object.keys(ap)[0]]));
-  }
-
-  /*
-  static calculateChecksum(c) {
-    // generate csrf token
-    let a = 1;
-    let b = 0;
-    if (!c) { return 0; }
-    for (let i = 0; i < c.length; ++i) {
-      a = (a + c.charCodeAt(i)) % 65521;
-      b = (b + a) % 65521;
-    }
-    return (b << 15) | a;
-  }
-  */
-
   async loadIamLogins(): Promise<IamRole[]> {
     const loginsKey = `${this.config.name}-iam-logins`;
     const loginsData = await this.config.browser.storage.local.get(loginsKey);
@@ -217,6 +166,11 @@ class Extension {
     const customData = await this.config.browser.storage.sync.get(customKey);
     // eslint-disable-next-line vue/max-len
     const custom = customData[customKey] === undefined ? this.defaultCustom : JSON.parse(customData[customKey]);
+    Object.keys(this.defaultCustom).forEach((key) => {
+      if (!Object.prototype.hasOwnProperty.call(custom, key)) {
+        custom[key] = this.defaultCustom[key];
+      }
+    });
     user.custom = custom;
     return user as UserData;
   }
@@ -239,10 +193,19 @@ class Extension {
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
+    this.log('loadSettings');
     const setKey = `${this.config.name}-settings`;
     const setData = await this.config.browser.storage.sync.get(setKey);
     // eslint-disable-next-line vue/max-len
     const settings = setData[setKey] === undefined ? this.defaultSettings : JSON.parse(setData[setKey]);
+    // replace missing settings with default settings
+    // useful when adding new settings between versions
+    Object.keys(this.defaultSettings).forEach((key) => {
+      // no key or undefined
+      if (!Object.prototype.hasOwnProperty.call(settings, key)) {
+        settings[key] = this.defaultSettings[key];
+      }
+    });
     return settings as ExtensionSettings;
   }
 

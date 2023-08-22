@@ -1,131 +1,255 @@
+<!-- eslint-disable vue/max-len -->
 <!-- eslint-disable vuejs-accessibility/form-control-has-label -->
 <!-- eslint-disable prefer-destructuring -->
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <PToolbar style="margin: 0px; padding: 7px; height: 70px;">
-    <template #start>
-      <PrimeButton :disabled="!permissions.sso || !loaded" :text="page !== 'users'" @click="page = 'users'"
-        class="truncate" icon="pi pi-user" style="margin: 0px" severity="primary" :label="user.subject" />
+  <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
+    <template v-if="permissions.sso && loaded" #start>
+      <ToggleButton
+        v-model="settingsPage"
+        size="small"
+        :style="{
+          border: '1px solid #ced4da',
+          width: settingsWidth,
+        }"
+        class="toolbar-field"
+        :on-label="'Back'"
+        :off-label="settingsLabel"
+        on-icon="pi pi-arrow-left"
+        off-icon="pi pi-cog"
+      />
     </template>
-    <template #center v-if="permissions.sso && loaded">
-      <div v-if="page === 'users'">
+    <template v-if="permissions.sso && loaded" #center>
+      <div v-if="page === 'settings'">
         <div class="py-2">
-          <PrimeButton v-for="tab in tabs" style="padding: 5px; margin: 0px" @click="activeTab = tab.index"
-            :text="activeTab !== tab.index" size="small" :label="tab.label" />
+          <PrimeButton
+            v-for="tab in tabs"
+            :key="tab.index"
+            style="padding: 5px; margin: 0px"
+            :text="activeTab !== tab.index"
+            size="small"
+            :label="tab.label"
+            @click="activeTab = tab.index"
+          />
         </div>
       </div>
       <span v-else class="p-input-icon-left" style="margin: 0px">
         <i class="pi pi-search" />
-        <InputText id="searchBox" ref="searchBox" v-model="filterProfiles['global'].value"
-          placeholder="Search Profiles" />
+        <InputText
+          id="searchBox"
+          ref="searchBox"
+          v-model="search"
+          class="toolbar-field"
+          :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
+          size="small"
+          :style="{ width: searchBoxWidth }"
+        />
       </span>
     </template>
-    <template #center v-else>
+    <template v-else #center>
       <h3>AWS SSO Extender - Setup</h3>
     </template>
     <template #end>
-      <PrimeButton v-if="!permissions.sso || !loaded" size="small" icon="pi pi-play" class="p-button-success flex-center"
-        label="Demo" @click="demo()" />
-      <PSelectButton v-else style="margin: 0px" v-model="profileTable" :options="items" aria-labelledby="basic"
-        optionLabel="value" dataKey="value" @change="setPage(profileTable.value)">
-        <template #option="slotProps">
-          <i :class="slotProps.option.icon"></i>
-        </template>
-      </PSelectButton>
+      <PrimeButton
+        v-if="!permissions.sso || !loaded"
+        size="small"
+        icon="pi pi-play"
+        class="p-button-success toolbar-field"
+        label="Demo"
+        @click="demo()"
+      />
+      <div v-else>
+        <ToggleButton
+          v-model="tableEditor"
+          :disabled="settingsPage"
+          style="width: 40px; border: 1px solid #ced4da;"
+          class="toolbar-field"
+          on-label=""
+          off-label=""
+          on-icon="pi pi-pencil"
+          off-icon="pi pi-pencil"
+          size="small"
+        />
+        <ToggleButton
+          v-model="favorites"
+          :disabled="settingsPage || tableEditor"
+          style="width: 40px; border: 1px solid #ced4da;"
+          class="toolbar-field"
+          on-label=""
+          off-label=""
+          on-icon="pi pi-star"
+          off-icon="pi pi-star"
+          size="small"
+        />
+      </div>
     </template>
   </PToolbar>
 
-  <div class="card">
+  <div
+    class="card"
+    :style="{ height: tableEditor ? '500px' : '', width: windowSize }"
+  >
     <!--- Setup -->
-    <SetupSteps v-show="!permissions.sso || !loaded" style="margin-top: 10px" :permissions="permissions"
-      :loaded="loaded" />
+    <SetupSteps
+      v-show="!permissions.sso || !loaded"
+      style="margin-top: 10px"
+      :permissions="permissions"
+      :loaded="loaded"
+    />
 
     <!--- Profiles -->
-    <ProfileTable v-show="page === 'favorites' || page === 'profiles'" :demoMode="demoMode" :settings="settings"
-      :filterProfiles="filterProfiles" :app-profiles="page === 'favorites' ? faveProfiles : userProfiles" :user="user"
-      :permissions="permissions" @requestPermissions="requestPermissionsSwitchrole" @updateProfile="updateProfile" @updateProfileLabel="updateProfileLabel" />
+    <ProfileTable
+      v-if="!settingsPage"
+      :loaded="loaded"
+      :table-editor="tableEditor"
+      :demo-mode="demoMode"
+      :settings="settings"
+      :search="search"
+      :app-profiles="favorites ? faveProfiles : userProfiles"
+      :user="user"
+      :permissions="permissions"
+      @requestPermissions="requestPermissionsSwitchrole"
+      @saveUser="saveUser"
+      @updateProfile="updateProfile"
+      @updateProfileLabel="updateProfileLabel"
+      @updateTableSettings="updateTableSettings"
+    />
 
     <!--- User (settings) page -->
-    <PScrollPanel v-show="page === 'users'" class="scroll" style="max-width: 100%; height: 500px">
+    <PScrollPanel v-show="settingsPage" class="scroll" style="max-width: 100%; height: 500px">
       <div v-if="activeTab === 0" class="settings">
         <h3>Switch User</h3>
-        <PListbox v-model="user" name="userSelect" :options="users" class="w-full md:w-14rem"
-          style="margin-bottom: 25px; margin-left: 20px;">
+        <PListbox
+          v-model="user"
+          name="userSelect"
+          :options="users"
+          class="w-full md:w-14rem"
+          style="margin-bottom: 25px; margin-left: 20px;"
+        >
           <template #option="slotProps">
             <div class="flex align-items-center">
               <div>
                 {{
-                  slotProps.option.subject +
-                  " @ " +
-                  slotProps.option.managedActiveDirectoryId
+                  slotProps.option.subject
+                    + " @ "
+                    + slotProps.option.managedActiveDirectoryId
                 }}
               </div>
             </div>
           </template>
         </PListbox>
         <h3>Default User</h3>
-        <select id="defaultUserSelect" name="defaultUserSelect" @change="setDefaultUser($event)"
-          style="margin-bottom: 10px; margin-left: 20px;">
-          <option v-for="u in defaultUserOptions" :key="u.userId" :label="u.label" :value="u.userId"
-            :selected="u.userId === settings.defaultUser" />
+        <select
+          id="defaultUserSelect"
+          name="defaultUserSelect"
+          style="margin-bottom: 10px; margin-left: 20px;"
+          @change="setDefaultUser($event)"
+        >
+          <option
+            v-for="u in defaultUserOptions"
+            :key="u.userId"
+            :label="u.label"
+            :value="u.userId"
+            :selected="u.userId === settings.defaultUser"
+          />
         </select>
         <h3>User Config</h3>
-        <PrimeButton icon="pi pi-download" class="p-button-primary" label="Export"
-          style="margin-right: 5px; margin-left: 20px;" @click="exportUser()" />
-        <PrimeButton icon="pi pi-pencil" class="p-button-secondary" label="Edit" style="margin-right: 5px"
-          @click="importUser = true" />
+        <PrimeButton
+          icon="pi pi-download"
+          class="p-button-primary"
+          label="Export"
+          style="margin-right: 5px; margin-left: 20px;"
+          @click="exportUser()"
+        />
+        <PrimeButton
+          icon="pi pi-pencil"
+          class="p-button-secondary"
+          label="Edit"
+          style="margin-right: 5px;"
+          @click="importUser = true"
+        />
         <PDialog v-model:visible="importUser" header="Edit User Config" :style="{ width: '500px' }">
-
           <PScrollPanel class="scroll" style="max-width: 100%; max-height: 300px">
-            <p>Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during
-              SSO login.</p>
+            <p>
+              Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during SSO login.
+            </p>
             <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
               dataJson
             }}</pre>
           </PScrollPanel>
           <template #footer>
             <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" />
-            <p ref="configError" style="color: red; display: none;">Unable to save config JSON.</p>
-
+            <p ref="configError" style="color: red; display: none;">
+              Unable to save config JSON.
+            </p>
           </template>
         </PDialog>
-        <PrimeButton icon="pi pi-trash" class="p-button-danger reset-button" label="Reset" style="margin-right: 5px"
-          @click="resetCustom()" />
+        <PrimeButton
+          icon="pi pi-trash"
+          class="p-button-danger reset-button"
+          label="Reset"
+          style="margin-right: 5px"
+          @click="resetCustom()"
+        />
       </div>
       <div v-if="activeTab === 1" class="settings">
         <div v-if="!consolePermissions">
           <p>This extension requires permissions to customize the AWS console:</p>
           <code>https://*.console.aws.amazon.com/*</code><br />
-          <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
-            style="margin-top: 10px" @click="requestPermissionsConsole()" />
+          <PrimeButton
+            size="small"
+            icon="pi pi-lock"
+            class="p-button-success"
+            label="Request Permissions"
+            style="margin-top: 10px"
+            @click="requestPermissionsConsole()"
+          />
         </div>
         <div v-else>
           <h3>Customize the AWS Console</h3>
           <form style="margin-left: 20px;">
             <div>
               <div v-if="$ext.platform === 'firefox'">
-                <PCheckbox @click="toggleContainers()" v-model="settings.firefoxContainers" inputId="container"
-                  name="container" :binary="true" style="margin-right: 10px; text-align: middle" />
+                <PCheckbox
+                  v-model="settings.firefoxContainers"
+                  input-id="container"
+                  name="container"
+                  :binary="true"
+                  style="margin-right: 10px; text-align: middle"
+                  @click="toggleContainers()"
+                />
                 <label for="container">Open in Firefox Containers</label><br /><br />
               </div>
-              <label id="sso-label">SSO session Label</label>
+              <small id="sso-label">SSO Console Label</small>
               <br />
-              <InputText aria-describedby="sso-label" id="sessionLabelSso" v-model="user.custom.sessionLabelSso"
-                name="sessionLabelSso" class="p-inputtext-sm" style="width: 350px; margin-right: 10px"
-                :placeholder="user.custom.sessionLabelSso" />
+              <InputText
+                id="sessionLabelSso"
+                v-model="user.custom.sessionLabelSso"
+                aria-describedby="sso-label"
+                name="sessionLabelSso"
+                class="p-inputtext-sm"
+                style="width: 350px; margin-right: 10px"
+                :placeholder="user.custom.sessionLabelSso"
+              />
             </div>
             <br />
             <div>
-              <label id="iam-label">IAM session Label</label>
+              <small id="iam-label">IAM Console Label</small>
               <br />
-              <InputText aria-describedby="iam-label" id="sessionLabelIam" v-model="user.custom.sessionLabelIam"
-                name="sessionLabelIam" class="p-inputtext-sm"
+              <InputText
+                id="sessionLabelIam"
+                v-model="user.custom.sessionLabelIam"
+                aria-describedby="iam-label"
+                name="sessionLabelIam"
+                class="p-inputtext-sm"
                 style="width: 350px; margin-right: 10px; margin-bottom: 5px;"
-                :placeholder="user.custom.sessionLabelIam" />
+                :placeholder="user.custom.sessionLabelIam"
+              />
             </div>
             <details>
               <summary>Use variables in your labels</summary>
+              <br />
               <code>{{ "\{\{user\}\}        Current AWS SSO user" }} </code><br />
               <code>{{ "\{\{role\}\}        Current IAM role" }} </code><br />
               <code>{{ "\{\{profile\}\}     Current AWS SSO profile" }} </code><br />
@@ -134,26 +258,50 @@
             </details>
             <br />
             <div style="width: 40%; float: left">
-              <PCheckbox v-model="user.custom.labelHeader" inputId="labelHeader" name="labelHeader" :binary="true"
-                style="margin-right: 10px" />
-              <label for="labelHeader">Label header</label><br />
-              <PCheckbox v-model="user.custom.labelFooter" inputId="labelFooter" name="labelFooter" :binary="true"
-                style="margin-right: 10px" />
-              <label for="labelFooter">Label footer</label>
+              <PCheckbox
+                v-model="user.custom.labelHeader"
+                input-id="labelHeader"
+                name="labelHeader"
+                :binary="true"
+                class="setting-checkbox"
+              />
+              <label for="labelHeader" class="setting-label">Label header</label><br />
+              <PCheckbox
+                v-model="user.custom.labelFooter"
+                input-id="labelFooter"
+                name="labelFooter"
+                :binary="true"
+                class="setting-checkbox"
+              />
+              <label for="labelFooter" class="setting-label">Label footer</label>
             </div>
             <div>
-              <PCheckbox v-model="user.custom.colorHeader" inputId="colorHeader" name="colorHeader" :binary="true"
-                style="margin-right: 10px" />
-              <label for="colorHeader">Colorize header</label><br />
-              <PCheckbox v-model="user.custom.colorFooter" inputId="colorFooter" name="colorFooter" :binary="true"
-                style="margin-right: 10px" />
-              <label for="colorFooter">Colorize footer</label>
+              <PCheckbox
+                v-model="user.custom.colorHeader"
+                input-id="colorHeader"
+                name="colorHeader"
+                :binary="true"
+                class="setting-checkbox"
+              />
+              <label for="colorHeader" class="setting-label">Colorize header</label><br />
+              <PCheckbox
+                v-model="user.custom.colorFooter"
+                input-id="colorFooter"
+                name="colorFooter"
+                :binary="true"
+                class="setting-checkbox"
+              />
+              <label for="colorFooter" class="setting-label">Colorize footer</label>
             </div>
             <br />
             <div style="margin-bottom: 10px">
-              <ColorPicker inputId="colorDefault" name="colorDefault"
-                @click.prevent="colorPickerVisible = !colorPickerVisible" v-model="user.custom.colorDefault"
-                id="colorDefault" />
+              <ColorPicker
+                id="colorDefault"
+                v-model="user.custom.colorDefault"
+                input-id="colorDefault"
+                name="colorDefault"
+                @click.prevent="colorPickerVisible = !colorPickerVisible"
+              />
               <label for="colorDefault"> Default AWS Console color</label>
             </div>
             <!---
@@ -161,10 +309,17 @@
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
             <PDialog v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
-              <ColorPicker v-if="colorPickerVisible" :inline="true" v-model="user.custom.colorDefault" />
+              <ColorPicker v-if="colorPickerVisible" v-model="user.custom.colorDefault" :inline="true" />
             </PDialog><br />
-            <PrimeButton ref="saveConsoleBtn" size="small" icon="pi pi-save" class="p-button-primary" label="Save"
-              style="margin-right: 10px" @click="saveConsoleSettings()" />
+            <PrimeButton
+              ref="saveConsoleBtn"
+              size="small"
+              icon="pi pi-save"
+              class="p-button-primary"
+              label="Save"
+              style="margin-right: 10px"
+              @click="saveConsoleSettings()"
+            />
           </form>
         </div>
       </div>
@@ -176,43 +331,67 @@
           </p>
           <code>https://*.console.aws.amazon.com/*</code><br />
           <code>https://signin.aws.amazon.com/switchrole</code>
-          <PrimeButton size="small" icon="pi pi-lock" class="p-button-success" label="Request Permissions"
-            style="margin-top: 10px" @click="requestPermissionsSwitchrole()" />
+          <PrimeButton
+            size="small"
+            icon="pi pi-lock"
+            class="p-button-success"
+            label="Request Permissions"
+            style="margin-top: 10px"
+            @click="requestPermissionsSwitchrole()"
+          />
         </div>
-        <IamRoles v-else :app-profiles="userProfiles" @addIamRole="addIamRole" @updateProfile="updateProfile"
-          @setPage="setPage" @saveUser="saveUser" />
+        <IamRoles
+          v-else
+          :app-profiles="userProfiles"
+          @addIamRole="addIamRole"
+          @updateProfile="updateProfile"
+          @setPage="setPage"
+          @saveUser="saveUser"
+        />
       </div>
       <div v-if="activeTab === 3" class="settings">
         <div style="margin-bottom: 25px">
           <h3>Extension Settings</h3>
           <form style="margin-left: 20px;">
-            <div v-for="setting in settingOptions">
-              <PCheckbox v-model="settings[setting.id]" :inputId="setting.id" :name="setting.id" :binary="true"
-                style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;" />
-              <label :for="setting.id" v-tooltip.bottom="setting.tooltip">{{ setting.label }}</label>
+            <div v-for="setting in settingOptions" :key="setting.id">
+              <PCheckbox
+                v-model="settings[setting.id]"
+                :input-id="setting.id"
+                :name="setting.id"
+                :binary="true"
+                style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+              />
+              <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
             </div>
           </form>
         </div>
         <div>
           <h3>Resources</h3>
-          <div v-for="res in resources">
-            <PrimeButton text @click="openResource(res.url)" :icon="'pi ' + res.icon" :label="res.label"
-              :severity="res.severity" /><br>
+          <div v-for="res in resources" :key="res.label">
+            <PrimeButton
+              text
+              :icon="'pi ' + res.icon"
+              :label="res.label"
+              :severity="res.severity"
+              @click="openResource(res.url)"
+            /><br>
           </div>
-
         </div>
       </div>
     </PScrollPanel>
-
   </div>
+
   <!--- Footer -->
-  <div class="footer" />
+  <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
+    <p v-if="$ext.config.debug" style="margin: 0px">
+      {{ `${$ext.config.debug ? 'dev' : 'prod'}-${$ext.config.version}-${$ext.config.build}` }}
+    </p>
+  </div>
 </template>
 <script lang="ts">
-import { saveAs } from "file-saver";
-import { waitForElement } from "../utils";
-import { FilterMatchMode } from "primevue/api";
-import demoData from "../demo";
+import { saveAs } from 'file-saver';
+import { waitForElement } from '../utils';
+import demoData from '../demo';
 import {
   AppData,
   CustomData,
@@ -220,39 +399,44 @@ import {
   ExtensionSettings,
   IamRole,
   UserData,
-} from "../types";
-import Menu from "primevue/menu";
+} from '../types';
 
 export default {
-  name: "PopupView",
+  name: 'PopupView',
   data() {
     return {
+      profileEditor: false,
+      settingsPage: false,
+      favorites: false,
       settingOptions: [
-        { label: "Show All Profiles on Open", id: "showAllProfiles", tooltip: "Show all profiles when opening the extension popup, intead of filtering to favorites (default: false)" },
-        { label: "Show Release Notes on Update", id: "showReleaseNotes", tooltip: "When the extension is updated, open a browser tab with a link to the release notes (default: true)" },
+        { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
+        { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
       ],
       resources: [
-        { icon: "pi-star", severity: "primary", label: "Request a Feature", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml" },
-        { icon: "pi-exclamation-triangle", severity: "warning", label: "Report a Bug", url: "https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml" },
-        { icon: "pi-info-circle", severity: "secondary", label: "Release Notes", url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}` },
-        { icon: "pi-book", severity: "secondary", label: "Read more about this extension", url: "https://blog.wtfender.com/posts/aws-sso-extender/" },
+        {
+          icon: 'pi-star', severity: 'primary', label: 'Request a Feature', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml',
+        },
+        {
+          icon: 'pi-exclamation-triangle', severity: 'warning', label: 'Report a Bug', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml',
+        },
+        {
+          icon: 'pi-info-circle', severity: 'secondary', label: 'Release Notes', url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}`,
+        },
+        {
+          icon: 'pi-book', severity: 'secondary', label: 'Read more about this extension', url: 'https://blog.wtfender.com/posts/aws-sso-extender/',
+        },
       ],
       importUser: false,
-      profileTable: { icon: "pi pi-list", value: "profiles" },
       tabs: [
-        { index: 0, label: "Users" },
-        { index: 1, label: "Console" },
-        { index: 2, label: "Roles" },
-        { index: 3, label: "Settings" }
+        { index: 0, label: 'Users' },
+        { index: 1, label: 'Console' },
+        { index: 2, label: 'Roles' },
+        { index: 3, label: 'Settings' },
       ],
       activeTab: 0,
-      filterProfiles: {},
-      items: [
-        { icon: "pi pi-list", value: "profiles" },
-        { icon: "pi pi-star", value: "favorites" },
-      ],
+      search: '',
+      tableEditor: false,
       raw: {} as ExtensionData,
-      defaultUser: "",
       colorPickerVisible: false,
       demoMode: false,
       permissions: {
@@ -263,8 +447,8 @@ export default {
         containers: false,
       },
       setupSteps: [
-        { id: "permissions", title: "Required Permissions", ref: this.permissions },
-        { id: "login", title: "Login to AWS SSO", ref: this.loaded },
+        { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
+        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
       ],
       loaded: false,
       user: {
@@ -272,43 +456,71 @@ export default {
       } as UserData,
       users: [] as UserData[],
       settings: {
-        defaultUser: "lastUserId",
-        lastUserId: "",
-        lastProfileId: "",
+        defaultUser: 'lastUserId',
+        lastUserId: '',
+        lastProfileId: '',
         firefoxContainers: false,
         showReleaseNotes: true,
         showAllProfiles: false,
+        tableSettings: {
+          showIamRoles: true,
+          showIcon: true,
+          sortCustom: false,
+          sortApp: 'desc',
+          sortProfile: false,
+        },
       } as ExtensionSettings,
       appProfiles: [] as AppData[],
-      dataJson: "",
-      staleHours: 1,
-      status: {
-        message: "",
-        status: "unknown",
-      },
-      lastPage: "profiles",
-      page: "", // profiles, favorites, users
+      dataJson: '',
+      lastPage: 'profiles',
+      page: '', // profiles, favorites, users
       updatedAt: 0,
     };
   },
   computed: {
+    settingsLabel() {
+      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.subject : '';
+    },
+    settingsWidth() {
+      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '130px' : '40px';
+    },
+    searchBoxWidth() {
+      if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
+        return '135px';
+      }
+      return '235px';
+    },
+    windowSize() {
+      if (!this.loaded || this.page === 'settings' || this.profileEditor) {
+        return '580px';
+      }
+      if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
+        return '380px';
+      }
+      if (!this.settings.tableSettings.showIcon || !this.settings.tableSettings.showIamRoles) {
+        return '480px';
+      }
+      return '580px';
+    },
+    isPageProfiles() {
+      return this.page === 'profiles';
+    },
     userConfigUpdate() {
       let update = false;
       if (this.dataJson !== (this.$refs.userConfigJson as any).innerText) {
         update = true;
       }
-      this.$ext.log(`popup:userConfigUpdate:${update}`)
+      this.$ext.log(`popup:userConfigUpdate:${update}`);
       return update;
     },
     consolePermissions() {
-      if (this.$ext.platform === "firefox") {
+      if (this.$ext.platform === 'firefox') {
         return this.permissions.console && this.permissions.containers;
-      } else {
-        return this.permissions.console;
       }
+      return this.permissions.console;
     },
     defaultUserOptions() {
-      let options = [{ userId: "lastUserId", label: "Last sign-in activity" }];
+      let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
       options = options.concat(this.userOptions);
       return options;
     },
@@ -319,16 +531,9 @@ export default {
       }));
       return options;
     },
-    staleData() {
-      const limit = this.staleHours * 1000 * 60 * 60;
-      if (Date.now() - limit > this.updatedAt) {
-        return true;
-      }
-      return false;
-    },
     faveProfiles(): AppData[] {
       return this.userProfiles.filter(
-        (ap: AppData) => ap.profile.custom?.favorite === true
+        (ap: AppData) => ap.profile.custom?.favorite === true,
       );
     },
     userProfiles() {
@@ -337,38 +542,51 @@ export default {
         return [];
       }
       // eslint-disable-next-line vue/max-len
-      return this.appProfiles.filter((ap: AppData) =>
-        this.user.appProfileIds.includes(ap.profile.id)
-      );
+      return this.appProfiles.filter((ap: AppData) => this.user.appProfileIds.includes(ap.profile.id));
     },
   },
   watch: {
+    tableEditor: {
+      handler(v) {
+        this.$ext.log(`popup:tableEditor:${v}`);
+        if (v === true) { this.favorites = false; }
+      },
+    },
+    settingsPage: {
+      handler(v) {
+        this.$ext.log(`popup:settingsPage:${v}`);
+        if (v === true) {
+          this.setPage('settings');
+        } else {
+          this.setPage('profiles');
+        }
+      },
+    },
     page: {
       handler(v) {
         this.lastPage = v;
-        if (v === "users") {
+        if (v === 'settings') {
           // clear profile table selection
-          this.profileTable = { icon: '', value: '' };
+          this.tableEditor = false;
         }
-        if (v === "profiles" || v === "favorites") {
-          this.profileTable = { value: v, icon: `pi pi-${v === 'profiles' ? 'list' : 'star'}` }
-          waitForElement("#searchBox").then((searchBox) => {
+        if (v === 'profiles' || v === 'favorites') {
+          waitForElement('#searchBox').then((searchBox) => {
             searchBox.focus();
           });
         }
       },
     },
-    "settings.firefoxContainers": {
-      handler: function (v) {
-        if (this.$ext.platform === "firefox") {
+    'settings.firefoxContainers': {
+      handler(v) {
+        if (this.$ext.platform === 'firefox') {
           this.$ext.log(`popup:settings.firefoxContainers:${v}`);
           if (v === true) {
             this.$ext.config.browser.runtime.sendMessage({
-              action: "enableFirefoxContainers",
+              action: 'enableFirefoxContainers',
             });
           } else if (v === false) {
             this.$ext.config.browser.runtime.sendMessage({
-              action: "disableFirefoxContainers",
+              action: 'disableFirefoxContainers',
             });
           }
         }
@@ -392,20 +610,17 @@ export default {
     },
     loaded(v) {
       this.$ext.log(`popup:loaded:${v}`);
-      this.$ext.log(this.settings.showAllProfiles)
+      this.$ext.log(this.settings.showAllProfiles);
       if (v === true) {
         if (this.settings.showAllProfiles || this.faveProfiles.length === 0) {
-          this.setPage("profiles");
+          this.favorites = false;
         } else if (this.faveProfiles.length >= 1) {
-          this.setPage("favorites");
+          this.favorites = true;
         }
       }
     },
   },
   created() {
-    this.filterProfiles = {
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    };
     this.$ext.config.browser.permissions.onAdded.addListener(this.handlePermissions);
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {
@@ -414,27 +629,28 @@ export default {
     this.reload();
   },
   methods: {
+    updateTableSettings(tableSettings) {
+      this.profileEditor = tableSettings.profileEditor;
+      delete tableSettings.profileEditor;
+      this.settings.tableSettings = tableSettings;
+    },
     openResource(url) {
-      window.open(url, "_blank");
+      window.open(url, '_blank');
     },
     importUserConfig() {
-      const configJson = (this.$refs.configJson as any).innerText
+      const configJson = (this.$refs.configJson as any).innerText;
       if (this.$ext.importUserConfig(configJson)) {
         this.importUser = false;
         this.reload();
       } else {
-        (this.$refs.configError as any).style.display = "block";
+        (this.$refs.configError as any).style.display = 'block';
       }
     },
     exportUser() {
-      var fileToSave = new Blob([this.dataJson], {
-        type: "application/json",
+      const fileToSave = new Blob([this.dataJson], {
+        type: 'application/json',
       });
       saveAs(fileToSave, `${this.user.subject}-${this.$ext.config.name}.json`);
-    },
-    toggle(event) {
-      const menu = (this.$refs.menu as any) as Menu;
-      menu.toggle(event);
     },
     toggleContainers() {
       this.settings.firefoxContainers = !this.settings.firefoxContainers;
@@ -446,11 +662,11 @@ export default {
           ...this.$ext.config.permissions.containers,
         ],
         permissions: [
-          "activeTab",
-          "tabs",
-          "webRequest",
-          "webRequestBlocking",
-          "webRequestFilterResponse",
+          'activeTab',
+          'tabs',
+          'webRequest',
+          'webRequestBlocking',
+          'webRequestFilterResponse',
         ],
       });
       window.close();
@@ -465,11 +681,11 @@ export default {
       window.close();
     },
     requestPermissionsConsole() {
-      if (this.$ext.platform === "firefox") {
-        this.$ext.log("popup:requestPermissionsContainers");
+      if (this.$ext.platform === 'firefox') {
+        this.$ext.log('popup:requestPermissionsContainers');
         this.requestPermissionsContainers();
       } else {
-        this.$ext.log("popup:requestPermissionsConsole");
+        this.$ext.log('popup:requestPermissionsConsole');
         this.$ext.config.browser.permissions.request({
           origins: [...this.$ext.config.permissions.console],
         });
@@ -482,7 +698,7 @@ export default {
       this.loaded = true;
     },
     demo() {
-      this.$ext.log("popup:demoMode");
+      this.$ext.log('popup:demoMode');
       this.demoMode = true;
       this.permissions = {
         console: true,
@@ -492,10 +708,6 @@ export default {
         containers: true,
       };
       this.load(demoData);
-    },
-    getUser(userId: string) {
-      const user = this.users.filter((u) => u.userId === userId)[0];
-      return user;
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setDefaultUser(userId: any) {
@@ -515,6 +727,7 @@ export default {
         if (!this.loaded || !this.user) {
           this.user = this.$ext.getDefaultUser(data);
         } else {
+          // eslint-disable-next-line prefer-destructuring
           this.user = data.users.filter((u) => u.userId === this.user.userId)[0];
         }
         // profiles are refreshed/customized on user change
@@ -525,7 +738,8 @@ export default {
         this.settings = demoData.settings;
         this.users = demoData.users;
         this.appProfiles = demoData.appProfiles;
-        if (this.user.userId !== "demoUserId1") {
+        if (this.user.userId !== 'demoUserId1') {
+          // eslint-disable-next-line prefer-destructuring
           this.user = demoData.users[0];
         }
       } else {
@@ -535,7 +749,6 @@ export default {
             this.load(data);
           })
           .catch((error) => {
-            this.status = { status: "unhealthy", message: "failed to load data" };
             throw error;
           });
       }
@@ -547,6 +760,7 @@ export default {
       });
     },
     setPage(page) {
+      this.$ext.log(page);
       this.$ext.log(`popup:page:${page}`);
       this.page = page;
     },
@@ -557,12 +771,12 @@ export default {
       });
     },
     updateProfile(appProfile: AppData) {
-      this.$ext.log("popup:updateProfile");
+      this.$ext.log('popup:updateProfile');
       this.user.custom.profiles[appProfile.profile.id] = appProfile.profile
         .custom as CustomData;
       this.$ext.log(this.user);
       if (this.faveProfiles.length === 0) {
-        this.setPage("profiles");
+        this.setPage('profiles');
       }
       this.saveUser();
     },
@@ -575,29 +789,29 @@ export default {
       this.saveUser();
     },
     saveUser() {
-      if (!this.demoMode && this.user.userId !== "demoUserId1") {
+      if (!this.demoMode && this.user.userId !== 'demoUserId1') {
         this.$ext.saveUser(this.user).then(() => {
           this.reload();
         });
       }
     },
     updateProfileLabel(event) {
-      let { newData } = event;
-      if ("profile.custom.label" in newData) {
-        newData.profile.custom.label = newData["profile.custom.label"];
+      const { newData } = event;
+      if ('profile.custom.label' in newData) {
+        newData.profile.custom.label = newData['profile.custom.label'];
       }
-      if ("profile.custom.color" in newData) {
-        newData.profile.custom.color = newData["profile.custom.color"];
+      if ('profile.custom.color' in newData) {
+        newData.profile.custom.color = newData['profile.custom.color'];
       }
       this.updateProfile(newData);
     },
     addIamRole(role: IamRole) {
-      this.$ext.log("popup:addIamRole");
+      this.$ext.log('popup:addIamRole');
       if (role.profileId in this.user.custom.profiles) {
         this.user.custom.profiles[role.profileId].iamRoles.push(role);
       } else {
         this.user.custom.profiles[role.profileId] = {
-          color: "",
+          color: '',
           label: null,
           favorite: false,
           iamRoles: [role],
@@ -611,10 +825,10 @@ export default {
 
 <style lang="scss" scoped>
 .truncate {
-  width: 150px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 150px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
@@ -653,14 +867,18 @@ export default {
 }
 
 .card {
-  width: 580px !important;
-  min-height: 500px;
+  background-color: white;
+  max-height: 500px;
   display: inline-block;
   margin: 0px;
   padding: 0px;
+  padding-bottom: 3px;
   border: none;
 }
-
+.toolbar-field {
+  height: 30px;
+  margin-right: 5px;
+}
 .menu-icon {
   font-size: 1.75rem;
   color: #dee2e6;
@@ -687,21 +905,43 @@ export default {
   cursor: inherit;
 }
 
-.footer {
+.footer, .footer-debug {
   color: #343a40;
   border-top: 1px solid #dee2e6;
   background: #f8f9fa;
   position: fixed;
   bottom: 0px;
-  height: 5px;
   left: 0px;
   right: 0px;
   overflow: hidden;
   text-align: center;
 }
 
+.footer {
+  height: 5px;
+}
+
+.footer-debug {
+  height: 20px;
+}
+
 .json,
 .settings {
   margin: 15px;
 }
+.setting-label,
+.setting-checkbox {
+  margin-right: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  vertical-align: middle;
+}
+.p-inputtext {
+  padding: 5px !important;
+}
+#searchBox {
+  padding: 10px !important;
+  padding-left: 2.5rem !important;
+}
+
 </style>

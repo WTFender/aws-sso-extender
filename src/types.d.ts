@@ -5,6 +5,7 @@ export interface ExtensionConfig {
   name: string
   display: string
   debug: boolean
+  build: string
   permissions: {
     sso: string[]
     signin: string[]
@@ -13,6 +14,7 @@ export interface ExtensionConfig {
   }
   browser: Browser
   delay: number
+  version: string
 }
 
 export interface ExtensionSettings {
@@ -22,6 +24,13 @@ export interface ExtensionSettings {
   firefoxContainers?: boolean
   showReleaseNotes: boolean
   showAllProfiles: boolean
+  tableSettings: {
+    showIamRoles: boolean
+    showIcon: boolean
+    sortCustom: boolean
+    sortApp: boolean | string
+    sortProfile: boolean | string
+  }
 }
 
 export interface ExtensionPermissions {
@@ -102,6 +111,7 @@ export interface AppData {
     AccountName: string
     AccountEmail: string
   }
+  sortName?: string
 }
 
 export interface ProfileData {
