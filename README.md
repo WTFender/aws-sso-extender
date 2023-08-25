@@ -15,10 +15,6 @@
 
 https://github.com/WTFender/aws-sso-extender/assets/12001399/2fdc7459-7d76-4776-a96b-c151d8aa87ef
 
-#### Firefox Containers
-Open the AWS Console in Firefox containers with IAM & SSO labels.
-![ff-containers](https://github.com/WTFender/aws-sso-extender/assets/12001399/f9a46635-cdf3-4058-937a-ad782ff9c109)
-
 ## Dev & Build
 ```
 npm install
@@ -32,3 +28,14 @@ npm run build:firefox # prod
 2. Update version in `package.json`
 3. Open PR to `release` branch to build packages
 4. Upload packages to publishers
+
+#### Screenshots
+<img src="./img/faves.png" width="500">
+<img src="./img/console.png" width="500">
+<img src="./img/edit.png" width="500">
+<img src="./img/console-settings.png" width="500">
+<img src="./img/roles.png" width="500">
+
+#### Firefox Containers
+Open the AWS Console in Firefox containers with IAM & SSO labels.  
+<img src="./img/ff-containers.png" width="500">
