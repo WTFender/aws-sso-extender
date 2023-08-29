@@ -1,3 +1,6 @@
+## 1.6.1
+- Fix profile fonts
+
 ## 1.6.0
 - Update profile table style & sizing
 - Add table filters🎚️
