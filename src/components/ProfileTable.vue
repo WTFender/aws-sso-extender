@@ -191,20 +191,20 @@
       style="width: 100px; vertical-align: middle; padding-left: 0px !important;"
     />
     <div
-      class="profile-field nav"
+      class="profile-field nav table-header"
       :style="{ width: '120px' }"
     >
       Account
     </div>
     <div
-      class="profile-field nav"
+      class="profile-field nav table-header"
       :style="{ width: '150px' }"
     >
       Profile
     </div>
     <div
       v-if="newTableSettings.showIamRoles"
-      class="profile-field nav"
+      class="profile-field nav table-header"
       style="width: 150px;"
     >
       IAM Roles
@@ -240,15 +240,15 @@
         @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
       >
         <div v-if="profile.applicationName === 'AWS Account'">
-          <p style="margin: 0px" class="truncate" :title="profile.searchMetadata!.AccountName">
+          <p style="margin: 0px" class="truncate app-title" :title="profile.searchMetadata!.AccountName">
             <b>{{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountName : profile.searchMetadata!.AccountId }}</b>
           </p>
-          <p style="margin: 0px" class="truncate" :title="profile.searchMetadata!.AccountId">
+          <p style="margin: 0px" class="truncate app-subtitle" :title="profile.searchMetadata!.AccountId">
             {{ newTableSettings.sortApp === 'asc' || newTableSettings.sortApp === 'desc' ? profile.searchMetadata!.AccountId : profile.searchMetadata!.AccountName }}
           </p>
         </div>
         <div v-else>
-          <p style="margin: 0px" class="truncate" :title="profile.name">
+          <p style="margin: 0px" class="truncate app-title" :title="profile.name">
             <b>{{ profile.profile.custom?.label || profile.name }}</b>
           </p>
         </div>
@@ -589,6 +589,9 @@ export default {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+.table-header, .app-title, .app-subtitle {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 }
 .filter-button, .filter {
   vertical-align: middle !important;
