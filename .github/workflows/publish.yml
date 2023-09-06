@@ -38,16 +38,16 @@ jobs:
       - name: Build Firefox Extension
         run: npm run build:firefox
 
-#     - name: Publish Chrome Store
-#       run: |
-#         npx chrome-webstore-upload upload \
-#           --auto-publish
-#           --extension-id ${{ secrets.EXTENSION_ID }} \
-#           --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
-#           --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
-#           --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-#           --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip \
-#
+      - name: Publish Chrome Store
+        run: |
+          npx chrome-webstore-upload upload \
+            --auto-publish
+            --extension-id ${{ secrets.EXTENSION_ID }} \
+            --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
+            --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
+            --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
+            --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip \
+          npx chrome-webstore-upload publish --extension-id ${{ secrets.EXTENSION_ID }}
 
       - name: Publish Mozilla Store
         run: |
