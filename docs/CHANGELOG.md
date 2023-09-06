@@ -1,3 +1,6 @@
+## 1.6.2
+- Support all AWS console languages
+
 ## 1.6.1
 - Fix profile fonts
 

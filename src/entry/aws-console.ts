@@ -6,6 +6,20 @@ import {
 
 /* assume IAM roles for SSO users / redirect to switchrole */
 
+const accountPrompts = [
+  'Account ID: ',
+  'Konto-ID: ',
+  'ID de cuenta: ',
+  'ID de compte: ',
+  'アカウント ID: ',
+  'ID Akun: ',
+  'ID account: ',
+  'ID da conta: ',
+  '계정 ID: ',
+  '账户 ID: ',
+  '帳戶 ID: ',
+];
+
 type AwsConsole = {
   userType: 'iam' | 'sso' | null
   accountId: string | null
@@ -163,11 +177,13 @@ async function init(): Promise<AwsConsole> {
   const menu = await getMenu();
   const accountMenu = menu.firstElementChild!.firstElementChild!;
   const accountPrompt = accountMenu!.firstElementChild!.getElementsByTagName('span')[0].textContent;
+  extension.log(accountPrompt);
   if (accountPrompt === 'Currently active as: ') {
     aws.userType = 'iam';
     aws.accountId = accountMenu!.lastElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
     aws.roleName = accountMenu!.firstElementChild!.getElementsByTagName('span')[1].textContent!;
-  } if (accountPrompt === 'Account ID: ') {
+  }
+  if (accountPrompts.includes(accountPrompt!)) {
     aws.userType = 'sso';
     aws.accountId = accountMenu!.firstElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
     aws.roleName = accountMenu!.lastElementChild!.getAttribute('title')!;
