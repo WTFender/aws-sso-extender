@@ -46,9 +46,8 @@ jobs:
             --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
             --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
             --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-            --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip \
-          npx chrome-webstore-upload publish --extension-id ${{ secrets.EXTENSION_ID }}
-
+            --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip
+            
       - name: Publish Mozilla Store
         run: |
           npx web-ext sign \
