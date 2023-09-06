@@ -38,4 +38,4 @@ npm run build:firefox # prod
 
 #### Firefox Containers
 Open the AWS Console in Firefox containers with IAM & SSO labels.  
-<img src="./img/ff-containers.png" width="500">
+<img src="./docs/img/ff-containers.png" width="500">
