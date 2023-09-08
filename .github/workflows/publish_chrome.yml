@@ -38,7 +38,7 @@ jobs:
       - name: Publish Chrome Store
         run: |
           npx chrome-webstore-upload upload \
-            --auto-publish
+            --auto-publish \
             --extension-id ${{ secrets.EXTENSION_ID }} \
             --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
             --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
