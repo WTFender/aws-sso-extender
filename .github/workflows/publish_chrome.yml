@@ -5,6 +5,7 @@ on:
     workflows: ["Create Release"]
     types: [completed]
     branches: [release]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: release
       - uses: actions/setup-node@v3
         with:
           node-version: 16
