@@ -1,0 +1,46 @@
+name: Publish Chrome Extension
+
+on:
+  workflow_run:
+    workflows: ["Create Release"]
+    types: [completed]
+    branches: [release]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish Chrome Extension
+    # only run if the release workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - id: setup
+        run: |
+          npm ci
+          sudo apt-get install jq zip
+          mkdir -p release/chrome release/firefox
+          echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+
+      - id: lint
+        run: npm run lint
+
+      - name: Build Chrome Extension
+        run: |
+          npm run build:chrome
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
+
+      - name: Publish Chrome Store
+        run: |
+          npx chrome-webstore-upload upload \
+            --auto-publish
+            --extension-id ${{ secrets.EXTENSION_ID }} \
+            --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
+            --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
+            --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
+            --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip

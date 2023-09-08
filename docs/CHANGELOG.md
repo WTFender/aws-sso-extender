@@ -1,3 +1,6 @@
+## 1.6.3
+- Improve spacing, font and image sizes
+
 ## 1.6.2
 - Support all AWS console languages
 

@@ -10,6 +10,7 @@
         v-model="settingsPage"
         size="small"
         :style="{
+          fontSize: '12px',
           border: '1px solid #ced4da',
           width: settingsWidth,
         }"
@@ -43,7 +44,7 @@
           class="toolbar-field"
           :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
-          :style="{ width: searchBoxWidth }"
+          :style="{ width: searchBoxWidth, fontSize: '12px' }"
         />
       </span>
     </template>
@@ -824,13 +825,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.truncate {
-  width: 150px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);
   border-bottom: 10px solid var(--surface-50);

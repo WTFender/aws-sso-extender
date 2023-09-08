@@ -30,12 +30,12 @@ npm run build:firefox # prod
 4. Upload packages to publishers
 
 #### Screenshots
-<img src="./img/faves.png" width="500">
-<img src="./img/console.png" width="500">
-<img src="./img/edit.png" width="500">
-<img src="./img/console-settings.png" width="500">
-<img src="./img/roles.png" width="500">
+<img src="./docs/img/faves.png" width="500">
+<img src="./docs/img/console.png" width="500">
+<img src="./docs/img/edit.png" width="500">
+<img src="./docs/img/console-settings.png" width="500">
+<img src="./docs/img/roles.png" width="500">
 
 #### Firefox Containers
 Open the AWS Console in Firefox containers with IAM & SSO labels.  
-<img src="./img/ff-containers.png" width="500">
+<img src="./docs/img/ff-containers.png" width="500">
