@@ -1,6 +1,6 @@
 import extension from '../extension';
 import { AppData, ProfileData, UserData } from '../types';
-import api, { Semaphore } from './api';
+import api, { Semaphore } from '../utils/api';
 
 /* collect user, app, and profiles from the AWS SSO directory page */
 
