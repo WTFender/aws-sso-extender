@@ -1,3 +1,7 @@
+## 1.6.4
+- Firefox: Opening a profile will switch to existing container/tab
+- Firefox: Add profile indicator if container/tab is open
+
 ## 1.6.3
 - Improve spacing, font and image sizes
 
