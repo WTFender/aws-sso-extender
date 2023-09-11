@@ -290,7 +290,8 @@
       </div>
       <span
         v-if="settings.firefoxContainers && profile.applicationName === 'AWS Account'"
-        :style="{ color: isContainerOpen(profile) ? 'green' : 'transparent' }">●</span>
+        :style="{ color: isContainerOpen(profile) ? 'green' : 'transparent' }"
+      >●</span>
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
@@ -344,7 +345,9 @@
 </template>
 
 <script lang="ts">
-import { AppData, IamRole, UserData } from '../types';
+import {
+  AppData, ContextualIdentity, IamRole, UserData,
+} from '../types';
 import { getFontColor, waitForElement } from '../utils';
 
 export default {
@@ -406,7 +409,7 @@ export default {
   data() {
     return {
       activeFirefoxContainer: null,
-      firefoxContainerNames: [],
+      firefoxContainerNames: [] as ContextualIdentity[],
       newTableSettings: {
         showIamRoles: true,
         showIcon: true,

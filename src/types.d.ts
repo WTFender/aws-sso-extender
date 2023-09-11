@@ -1,5 +1,7 @@
 import { Browser } from 'webextension-polyfill';
 
+export type ContextualIdentity = typeof Browser.contextualIdentities.ContextualIdentity;
+
 export interface ExtensionConfig {
   id: string
   name: string
