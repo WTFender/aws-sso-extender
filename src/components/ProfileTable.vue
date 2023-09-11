@@ -288,6 +288,9 @@
           </p>
         </div>
       </div>
+      <span
+        v-if="settings.firefoxContainers && profile.applicationName === 'AWS Account'"
+        :style="{ color: isContainerOpen(profile) ? 'green' : 'transparent' }">●</span>
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
@@ -318,13 +321,17 @@
           :key="idx"
           :value="role.label || role.roleName"
           class="role-link truncate"
-          :style="{ width: '100%', 'background-color': `#${role.color}`, verticalAlign: 'middle' }"
+          :style="{
+            width: '100%',
+            'background-color': `#${role.color}`,
+            verticalAlign: 'middle',
+          }"
           :title="role.label || role.roleName"
           @click="!tableEditor ? assumeIamRole(role, profile) : editProfile(profile)"
         />
       </div>
       <div
-        style="float: right; margin-top: 5px;"
+        style="float: right; margin-top: 5px"
         class="pi"
         :class="{
           'pi-star-fill': profile.profile.custom?.favorite,
@@ -398,6 +405,8 @@ export default {
   emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser'],
   data() {
     return {
+      activeFirefoxContainer: null,
+      firefoxContainerNames: [],
       newTableSettings: {
         showIamRoles: true,
         showIcon: true,
@@ -505,6 +514,11 @@ export default {
         if (v) {
           this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings));
         }
+        // get firefox containers
+        if (this.$ext.platform === 'firefox' && this.settings.firefoxContainers) {
+          this.$ext.log('getFirefoxContainers');
+          this.getFirefoxContainers();
+        }
       },
     },
     editorVisible: {
@@ -521,6 +535,51 @@ export default {
     }
   },
   methods: {
+    async getFirefoxContainers() {
+      const containers = await this.$ext.config.browser.contextualIdentities.query({});
+      this.$ext.log(containers);
+      containers.forEach((container) => {
+        this.firefoxContainerNames.push(container.name);
+      });
+      // eslint-disable-next-line vue/max-len
+      const activeContainers = await this.$ext.browser.tabs.query({
+        currentWindow: true,
+        active: true,
+      });
+      if (activeContainers.length > 0) {
+        this.activeFirefoxContainer = activeContainers[0].name;
+      }
+    },
+    isContainerOpen(profile) {
+      this.$ext.log('isContainerOpen');
+      this.$ext.log(profile);
+      this.$ext.log(this.firefoxContainerNames);
+      if (this.firefoxContainerNames.includes(this.sessionLabelSso(profile))) {
+        return true;
+      }
+      return false;
+    },
+    /*
+    isActiveContainer(profile) {
+      this.$ext.log('isActiveContainer');
+      this.$ext.log(profile);
+      this.$ext.log(this.activeFirefoxContainer);
+      if (this.activeFirefoxContainer === this.sessionLabelSso(profile)) {
+        return true;
+      }
+      return false;
+    },
+    */
+    sessionLabelSso(profile) {
+      return this.$ext.buildLabel(
+        this.user.custom.sessionLabelSso,
+        this.user.subject,
+        profile.profile.custom!.label || profile.profile.name,
+        null,
+        profile.searchMetadata!.AccountId,
+        profile.searchMetadata!.AccountName,
+      );
+    },
     sortIcon(sort) {
       if (sort === 'desc') {
         return 'pi pi-sort-alpha-down';
@@ -647,9 +706,28 @@ export default {
         });
       });
     },
-    navSelectedProfile(profile) {
+    async navSelectedProfile(profile) {
+      let nav = true;
       const profileUrl = this.$ext.createProfileUrl(this.user, profile);
-      window.open(profileUrl, '_blank');
+      if (this.$ext.platform === 'firefox' && this.settings.firefoxContainers) {
+        const containers = await this.$ext.config.browser.contextualIdentities.query({
+          name: this.sessionLabelSso(profile),
+        });
+        if (containers.length >= 1) {
+          // eslint-disable-next-line vue/max-len
+          const tabs = this.$ext.config.browser.tabs.query({
+            cookieStoreId: containers[0].cookieStoreId,
+          });
+          // highlight existing tabs
+          (await tabs).forEach((tab) => {
+            this.$ext.config.browser.tabs.highlight({ tabs: tab.index! });
+            nav = false;
+          });
+        }
+      }
+      if (nav === true) {
+        window.open(profileUrl, '_blank');
+      }
     },
     encodeUriPlusParens(str) {
       return encodeURIComponent(str).replace(

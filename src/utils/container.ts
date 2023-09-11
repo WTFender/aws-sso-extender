@@ -85,7 +85,7 @@ async function createFirefoxContainer(details) {
       user.custom.sessionLabelSso,
       user!.subject,
       ap?.profile.custom?.label || ap?.profile.name,
-      accountRole,
+      null,
       accountNumber,
       accountName,
     );
@@ -114,26 +114,18 @@ async function createFirefoxContainer(details) {
       if (object.signInToken) {
         let { destination } = object;
         if (!destination) {
+          // TODO does this need multilang or multiregion support?
           destination = 'https://console.aws.amazon.com';
         }
 
         // Generate our federation URI and open it in a container
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const url = `${object.signInFederationLocation}?Action=login&SigninToken=${object.signInToken}&Issuer=${encodeURIComponent(details.originUrl)}&Destination=${encodeURIComponent(destination)}`;
-        const containers = await extension.config.browser.contextualIdentities.query({
+        const container = await extension.config.browser.contextualIdentities.create({
           name: label,
+          color: randomColor(),
+          icon: randomIcon(),
         });
-        let container;
-        if (containers.length >= 1) {
-          // eslint-disable-next-line prefer-destructuring
-          container = containers[0];
-        } else {
-          container = await extension.config.browser.contextualIdentities.create({
-            name: label,
-            color: randomColor(),
-            icon: randomIcon(),
-          });
-        }
         const createTabParams = {
           cookieStoreId: container.cookieStoreId,
           url,
