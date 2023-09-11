@@ -14,7 +14,7 @@ jobs:
   publish:
     name: Publish Chrome Extension
     # only run if the release workflow was successful
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -46,4 +46,4 @@ jobs:
             --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} \
             --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} \
             --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} \
-            --source release/chrome/aws-sso-extender-${{ steps.setup.outputs.version }}.zip
+            --source release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
