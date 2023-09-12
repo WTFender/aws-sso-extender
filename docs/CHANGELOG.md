@@ -1,3 +1,6 @@
+## 1.6.5
+- Fixed an issue with duplicate firefox containers
+
 ## 1.6.4
 - Firefox: Opening a profile will switch to existing container/tab
 - Firefox: Add profile indicator if container/tab is open
