@@ -1,6 +1,10 @@
 import extension from '../extension';
 import { IamRole } from '../types';
 
+// Credit for the majority of this code
+// goes to pyro2927 and his great SSO extension!
+// https://github.com/pyro2927/AWS_SSO_Containers
+
 const availableContainerIcons = [
   'fingerprint',
   'briefcase',
@@ -117,15 +121,23 @@ async function createFirefoxContainer(details) {
           // TODO does this need multilang or multiregion support?
           destination = 'https://console.aws.amazon.com';
         }
-
-        // Generate our federation URI and open it in a container
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        let container;
         const url = `${object.signInFederationLocation}?Action=login&SigninToken=${object.signInToken}&Issuer=${encodeURIComponent(details.originUrl)}&Destination=${encodeURIComponent(destination)}`;
-        const container = await extension.config.browser.contextualIdentities.create({
+        const containers = await extension.config.browser.contextualIdentities.query({
           name: label,
-          color: randomColor(),
-          icon: randomIcon(),
         });
+        if (containers.length >= 1) {
+          // use existing container if it exists
+          // eslint-disable-next-line prefer-destructuring
+          container = containers[0];
+        } else {
+          // create a new container if it doesn't
+          container = await extension.config.browser.contextualIdentities.create({
+            name: label,
+            color: randomColor(),
+            icon: randomIcon(),
+          });
+        }
         const createTabParams = {
           cookieStoreId: container.cookieStoreId,
           url,
