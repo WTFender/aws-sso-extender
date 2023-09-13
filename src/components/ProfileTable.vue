@@ -396,6 +396,11 @@ export default {
       type: Object,
       default: () => ({} as UserData),
     },
+    users: {
+      required: true,
+      type: Array,
+      default: () => ([] as UserData[]),
+    },
     appProfiles: {
       type: Array as () => AppData[],
       required: true,
@@ -721,10 +726,11 @@ export default {
       });
     },
     findUserByProfileId(profileId) {
-      let user = null;
+      // eslint-disable-next-line prefer-destructuring
+      let user = this.user;
       this.users.forEach((u) => {
-        if (u.appProfileIds.includes(profileId)) {
-          user = u;
+        if ((u as UserData).appProfileIds.includes(profileId)) {
+          user = (u as UserData);
         }
       });
       return user;

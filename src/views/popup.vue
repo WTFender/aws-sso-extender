@@ -109,6 +109,7 @@
       :search="search"
       :app-profiles="favorites ? faveProfiles : userProfiles"
       :user="user"
+      :users="users"
       :permissions="permissions"
       @requestPermissions="requestPermissionsSwitchrole"
       @saveUser="saveUser"
