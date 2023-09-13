@@ -47,6 +47,7 @@ class Extension {
     firefoxContainers: false,
     showReleaseNotes: true,
     showAllProfiles: false,
+    showAllUsers: false,
     tableSettings: {
       showIamRoles: true,
       showIcon: true,

@@ -1,3 +1,6 @@
+## 1.6.6
+- Added a setting to show profiles for all users
+
 ## 1.6.5
 - Fixed an issue with duplicate firefox containers
 

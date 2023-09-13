@@ -26,6 +26,7 @@ export interface ExtensionSettings {
   firefoxContainers?: boolean
   showReleaseNotes: boolean
   showAllProfiles: boolean
+  showAllUsers: boolean
   tableSettings: {
     showIamRoles: boolean
     showIcon: boolean

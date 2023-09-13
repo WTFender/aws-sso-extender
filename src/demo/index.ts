@@ -232,6 +232,7 @@ const demoData: ExtensionData = {
     firefoxContainers: true,
     showReleaseNotes: true,
     showAllProfiles: false,
+    showAllUsers: false,
     tableSettings: {
       showIamRoles: true,
       showIcon: true,
