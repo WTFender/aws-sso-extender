@@ -340,6 +340,11 @@
         }"
         @click="fave(profile)"
       />
+      <div
+        v-if="!user.appProfileIds.includes(profile.profile.id)"
+        style="color: lightgrey; float: right; margin-top: 5px; margin-right: 10px;"
+        class="pi pi-share-alt"
+      />
     </div>
   </div>
 </template>
@@ -704,14 +709,35 @@ export default {
       settings.lastProfileId = appProfile.profile.id;
       this.$ext.saveSettings(settings).then(() => {
         this.$ext.queueIamLogin(iamRole, appProfile).then(() => {
-          const profileUrl = this.$ext.createProfileUrl(this.user, appProfile);
+          // eslint-disable-next-line prefer-destructuring
+          let user = this.user;
+          // eslint-disable-next-line vue/max-len
+          if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(appProfile.profile.id)) {
+            user = this.findUserByProfileId(appProfile.profile.id);
+          }
+          const profileUrl = this.$ext.createProfileUrl(user, appProfile);
           window.open(profileUrl, '_blank');
         });
       });
     },
+    findUserByProfileId(profileId) {
+      let user = null;
+      this.users.forEach((u) => {
+        if (u.appProfileIds.includes(profileId)) {
+          user = u;
+        }
+      });
+      return user;
+    },
     async navSelectedProfile(profile) {
       let nav = true;
-      const profileUrl = this.$ext.createProfileUrl(this.user, profile);
+      // eslint-disable-next-line prefer-destructuring
+      let user = this.user;
+      // eslint-disable-next-line vue/max-len
+      if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(profile.profile.id)) {
+        user = this.findUserByProfileId(profile.profile.id);
+      }
+      const profileUrl = this.$ext.createProfileUrl(user, profile);
       if (this.$ext.platform === 'firefox' && this.settings.firefoxContainers) {
         const containers = await this.$ext.config.browser.contextualIdentities.query({
           name: this.sessionLabelSso(profile),

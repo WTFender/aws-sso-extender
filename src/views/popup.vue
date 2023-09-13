@@ -154,7 +154,16 @@
             :value="u.userId"
             :selected="u.userId === settings.defaultUser"
           />
-        </select>
+        </select><br />
+        <PCheckbox
+          v-model="settings.showAllUsers"
+          input-id="labelShowAllUsers"
+          name="labelShowAllUsers"
+          :binary="true"
+          style="margin-bottom: 10px; margin-left: 20px;"
+          class="setting-checkbox"
+        />
+        <label for="labelShowAllUsers" class="setting-label">Show All User Profiles</label><br />
         <h3>User Config</h3>
         <PrimeButton
           icon="pi pi-download"
@@ -463,6 +472,7 @@ export default {
         firefoxContainers: false,
         showReleaseNotes: true,
         showAllProfiles: false,
+        showAllUsers: false,
         tableSettings: {
           showIamRoles: true,
           showIcon: true,
@@ -541,6 +551,10 @@ export default {
       this.$ext.log(this.user);
       if (this.user === null) {
         return [];
+      }
+      // if show all user profiles is enabled, return all profiles
+      if (this.settings.showAllUsers) {
+        return this.appProfiles;
       }
       // eslint-disable-next-line vue/max-len
       return this.appProfiles.filter((ap: AppData) => this.user.appProfileIds.includes(ap.profile.id));
