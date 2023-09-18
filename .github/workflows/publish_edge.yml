@@ -1,0 +1,46 @@
+name: Publish Edge Extension
+
+on:
+  workflow_run:
+    workflows: ["Create Release"]
+    types: [completed]
+    branches: [release]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish Edge Extension
+    # only run if the release workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - id: setup
+        run: |
+          npm ci
+          sudo apt-get install jq zip
+          mkdir -p release/chrome release/firefox
+          echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+
+      - id: lint
+        run: npm run lint
+
+      - name: Build Chrome Extension
+        run: |
+          npm run build:chrome
+          cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
+      
+      - name: Publish to Edge store
+        uses: hocgin/action-edge-addone-upload@main
+        with:
+          product_id: ${{ secrets.EDGE_PRODUCT_ID }}
+          client_id: ${{ secrets.EDGE_CLIENT_ID }}
+          client_secret: ${{ secrets.EDGE_CLIENT_SECRET }}
+          access_token_url: ${{ secrets.EDGE_ACCESS_TOKEN_URL }}
+          addone_file: release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
