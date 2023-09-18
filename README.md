@@ -1,8 +1,9 @@
 # aws-sso-extender
 
-- [Install Chrome Extension](https://chrome.google.com/webstore/detail/aws-sso-extender/pojoaiboolahdaedebpjgnllehpofkep)
-- [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/)
-- [Install Safari Extension](https://apps.apple.com/us/app/aws-sso-extender/id6450935274)
+- [Chrome Extension](https://chrome.google.com/webstore/detail/aws-sso-extender/pojoaiboolahdaedebpjgnllehpofkep)
+- [Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/)
+- [Safari Extension](https://apps.apple.com/us/app/aws-sso-extender/id6450935274)
+- [Edge Add-on](https://microsoftedge.microsoft.com/addons/detail/aws-sso-extender/dbdbfcdnfbghdommmcichaiakhaoapkg)
 
 ⭐ Quickly access your Favorite AWS SSO apps  
 🎨 Customize your profiles, roles & AWS console  
@@ -45,5 +46,6 @@ npm run build:firefox # prod
 [![](https://github.com/WTFender/aws-sso-extender/actions/workflows/codeql.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/codeql.yml)  
 [![](https://github.com/WTFender/aws-sso-extender/actions/workflows/build.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/build.yml)  
 [![](https://github.com/WTFender/aws-sso-extender/actions/workflows/release.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/release.yml)  
+[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_edge.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_edge.yml)  
 [![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_firefox.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_firefox.yml)  
 [![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_chrome.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_chrome.yml)  
