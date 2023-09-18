@@ -1,4 +1,4 @@
-name: Publish Edge Extension
+name: Publish Edge Add-on
 
 on:
   workflow_run:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish Edge Extension
+    name: Publish Edge Add-on
     # only run if the release workflow was successful
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
