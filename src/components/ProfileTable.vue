@@ -254,7 +254,7 @@
       <img
         v-if="newTableSettings.showIcon"
         :alt="profile.name"
-        :src="profile.icon"
+        :src="profile.applicationName === 'AWS Account' ? awsIconUrl : profile.icon"
         class="profile-field nav"
         width="100"
         height="35"
@@ -445,6 +445,9 @@ export default {
     };
   },
   computed: {
+    awsIconUrl() {
+      return new URL('../assets/img/aws.png', import.meta.url).href;
+    },
     columnWidth() {
       if (!this.newTableSettings.showIcon && !this.newTableSettings.showIamRoles) {
         return '45%';
