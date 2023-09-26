@@ -1,4 +1,4 @@
-import { Sema } from 'async-sema';
+import { RateLimit, Sema } from 'async-sema';
 import fetchRetry from 'fetch-retry';
 import extension from '../extension';
 import { ApiData } from '../types';
@@ -19,6 +19,7 @@ function getToken(): string {
 }
 
 const RATE_LIMIT_RPS = 3;
+export const RateLimiter = RateLimit(RATE_LIMIT_RPS);
 export const Semaphore = new Sema(RATE_LIMIT_RPS);
 
 // Controls how many times a request should be retried before it's deemed as failed.
