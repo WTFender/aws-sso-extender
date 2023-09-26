@@ -1,3 +1,6 @@
+## 1.6.7
+- Rate limit requests to AWS
+
 ## 1.6.6
 - Added a setting to show profiles for all users
 
