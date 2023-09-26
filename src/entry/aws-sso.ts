@@ -1,6 +1,6 @@
 import extension from '../extension';
 import { AppData, ProfileData, UserData } from '../types';
-import api, { Semaphore } from '../utils/api';
+import api, { RateLimiter, Semaphore } from '../utils/api';
 
 /* collect user, app, and profiles from the AWS SSO directory page */
 
@@ -13,16 +13,21 @@ function getRegion(): string {
 }
 
 async function getUserData(): Promise<UserData> {
-  return (api('/user') as unknown as Promise<UserData>);
+  await RateLimiter();
+  await Semaphore.acquire();
+  return (api('/user') as unknown as Promise<UserData>).finally(() => { Semaphore.release(); });
 }
 
 async function getApps(): Promise<AppData[]> {
+  await RateLimiter();
+  await Semaphore.acquire();
   return (api('/instance/appinstances').then(
     (data) => data.result,
-  ) as Promise<AppData[]>);
+  ) as Promise<AppData[]>).finally(() => { Semaphore.release(); });
 }
 
 async function getAppProfiles(app: AppData): Promise<ProfileData[]> {
+  await RateLimiter();
   await Semaphore.acquire();
   return (api(`/instance/appinstance/${app.id}/profiles`).then(
     (data) => data.result,
