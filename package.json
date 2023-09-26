@@ -9,8 +9,8 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "lint": "eslint src/* --ext .ts,.vue --config .eslintrc.cjs",
-    "lint:fix": "eslint src/* --ext .ts,.vue --config .eslintrc.cjs --fix",
+    "lint": "eslint src/* --ext .ts,.vue --config .eslintrc.cjs --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint src/* --ext .ts,.vue --config .eslintrc.cjs --no-error-on-unmatched-pattern --fix",
     "watch:chrome": "rm -rf ./dist/chrome/ && VITE_EXT_DEBUG=true vite --mode watch:chrome --watch build",
     "watch:firefox": "rm -rf ./dist/firefox/ && VITE_EXT_DEBUG=true vite --mode watch:firefox --watch build",
     "build:chrome": "rm -rf ./dist/chrome/ && vue-tsc && vite --mode build:chrome build",
