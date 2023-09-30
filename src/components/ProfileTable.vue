@@ -587,6 +587,9 @@ export default {
     },
     */
     sessionLabelSso(profile) {
+      if (profile.applicationName !== 'AWS Account') {
+        return profile.profile.custom!.label || profile.profile.name;
+      }
       return this.$ext.buildLabel(
         this.user.custom.sessionLabelSso,
         this.user.subject,
