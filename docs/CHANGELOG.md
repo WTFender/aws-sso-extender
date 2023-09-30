@@ -1,3 +1,6 @@
+## 1.6.8
+- Fix SAML apps not opening with firefox containers enabled
+
 ## 1.6.7
 - Rate limit requests to AWS
 
