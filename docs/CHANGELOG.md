@@ -1,3 +1,6 @@
+## 1.6.9
+- Improve firefox status icon to show active & inactive profile containers
+
 ## 1.6.8
 - Fix SAML apps not opening with firefox containers enabled
 

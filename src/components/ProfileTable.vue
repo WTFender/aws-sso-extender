@@ -290,7 +290,8 @@
       </div>
       <span
         v-if="settings.firefoxContainers && profile.applicationName === 'AWS Account'"
-        :style="{ color: isContainerOpen(profile) ? 'green' : 'transparent' }"
+        :title="isContainerOpen(profile) ? 'Active' : isContainer(profile) ? 'Inactive' : ''"
+        :style="{ color: isContainerOpen(profile) ? 'green' : isContainer(profile) ? 'gray' : 'transparent' }"
       >●</span>
       <div
         class="profile-field nav"
@@ -418,8 +419,9 @@ export default {
   emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser'],
   data() {
     return {
-      activeFirefoxContainer: null,
-      firefoxContainerNames: [] as ContextualIdentity[],
+      activeContainer: null,
+      containers: [] as ContextualIdentity[],
+      openContainers: [] as ContextualIdentity[],
       newTableSettings: {
         showIamRoles: true,
         showIcon: true,
@@ -552,40 +554,37 @@ export default {
   },
   methods: {
     async getFirefoxContainers() {
-      const containers = await this.$ext.config.browser.contextualIdentities.query({});
-      this.$ext.log(containers);
-      containers.forEach((container) => {
-        this.firefoxContainerNames.push(container.name);
-      });
-      // eslint-disable-next-line vue/max-len
-      const activeContainers = await this.$ext.browser.tabs.query({
+      this.containers = await this.$ext.config.browser.contextualIdentities.query({});
+      this.$ext.log(this.containers);
+      this.openContainers = await this.$ext.config.browser.tabs.query({
+        cookieStoreId: this.containers.forEach((c) => c.cookieStoreId),
         currentWindow: true,
-        active: true,
       });
-      if (activeContainers.length > 0) {
-        this.activeFirefoxContainer = activeContainers[0].name;
-      }
+      this.$ext.log(this.openContainers);
     },
     isContainerOpen(profile) {
-      this.$ext.log('isContainerOpen');
-      this.$ext.log(profile);
-      this.$ext.log(this.firefoxContainerNames);
-      if (this.firefoxContainerNames.includes(this.sessionLabelSso(profile))) {
-        return true;
+      let isOpen = false;
+      const container = this.containers.find(
+        (c) => c.name === this.sessionLabelSso(profile),
+      );
+      if (container) {
+        this.openContainers.forEach((c) => {
+          if (c.cookieStoreId === container.cookieStoreId) {
+            isOpen = true;
+          }
+        });
       }
-      return false;
+      return isOpen;
     },
-    /*
-    isActiveContainer(profile) {
-      this.$ext.log('isActiveContainer');
-      this.$ext.log(profile);
-      this.$ext.log(this.activeFirefoxContainer);
-      if (this.activeFirefoxContainer === this.sessionLabelSso(profile)) {
-        return true;
-      }
-      return false;
+    isContainer(profile) {
+      let isContainer = false;
+      this.containers.forEach((c) => {
+        if (c.name === this.sessionLabelSso(profile)) {
+          isContainer = true;
+        }
+      });
+      return isContainer;
     },
-    */
     sessionLabelSso(profile) {
       if (profile.applicationName !== 'AWS Account') {
         return profile.profile.custom!.label || profile.profile.name;
