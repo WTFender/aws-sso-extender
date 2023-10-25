@@ -1,3 +1,6 @@
+## 1.6.10
+- Fix searchbox autofocus
+
 ## 1.6.9
 - Improve firefox status icon to show active & inactive profile containers
 
