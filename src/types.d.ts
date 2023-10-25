@@ -53,7 +53,7 @@ export interface ExtensionData {
 }
 
 export interface ExtensionMessage {
-  action: 'enableFirefoxContainers' | 'disableFirefoxContainers'
+  action: 'enableFirefoxContainers' | 'disableFirefoxContainers' | 'openProfile1' | 'openProfile2' | 'openProfile3'
 }
 
 export interface ApiData {

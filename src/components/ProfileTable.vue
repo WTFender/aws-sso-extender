@@ -551,6 +551,16 @@ export default {
     if (this.settings.tableSettings !== undefined) {
       this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings));
     }
+    this.$ext.config.browser.runtime.onMessage.addListener(
+      (msg: ExtensionMessage) => {
+        if (msg.action.startsWith('openProfile')) {
+          let idx = 0; // 'openProfile1'
+          if (msg.action === 'openProfile2') { idx = 1; }
+          if (msg.action === 'openProfile3') { idx = 2; }
+          this.navSelectedProfile(this.sortedProfiles[idx]);
+        }
+      },
+    );
   },
   methods: {
     async getFirefoxContainers() {

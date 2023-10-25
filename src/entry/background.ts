@@ -22,6 +22,17 @@ function listenConsole() {
   } else { extension.log('background:listenConsole:listenerExists'); }
 }
 
+// listen for hotkey commands
+extension.config.browser.commands.onCommand.addListener((command) => {
+  extension.log(`background:command:${command}`);
+  // message popup to open profile
+  if (command.startsWith('openProfile')) {
+    extension.config.browser.runtime.sendMessage({
+      action: command,
+    });
+  }
+});
+
 // show release notes on install & update
 extension.config.browser.runtime.onInstalled.addListener((details) => {
   const manifest = extension.config.browser.runtime.getManifest();
