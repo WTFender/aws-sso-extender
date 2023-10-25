@@ -41,6 +41,7 @@
           id="searchBox"
           ref="searchBox"
           v-model="search"
+          autofocus
           class="toolbar-field"
           :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
@@ -562,10 +563,20 @@ export default {
     },
   },
   watch: {
+    favorites: {
+      handler(v) {
+        this.$ext.log(`popup:favorites:${v}`);
+        this.focusSearchBox();
+      },
+    },
     tableEditor: {
       handler(v) {
         this.$ext.log(`popup:tableEditor:${v}`);
-        if (v === true) { this.favorites = false; }
+        if (v === true) {
+          this.favorites = false;
+        } else {
+          this.focusSearchBox();
+        }
       },
     },
     settingsPage: {
@@ -586,9 +597,7 @@ export default {
           this.tableEditor = false;
         }
         if (v === 'profiles' || v === 'favorites') {
-          waitForElement('#searchBox').then((searchBox) => {
-            searchBox.focus();
-          });
+          this.focusSearchBox();
         }
       },
     },
@@ -645,6 +654,11 @@ export default {
     this.reload();
   },
   methods: {
+    focusSearchBox() {
+      waitForElement('#searchBox').then((searchBox) => {
+        searchBox.focus();
+      });
+    },
     updateTableSettings(tableSettings) {
       this.profileEditor = tableSettings.profileEditor;
       delete tableSettings.profileEditor;
