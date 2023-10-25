@@ -112,6 +112,7 @@
       :user="user"
       :users="users"
       :permissions="permissions"
+      @focusSearchBox="focusSearchBox"
       @requestPermissions="requestPermissionsSwitchrole"
       @saveUser="saveUser"
       @updateProfile="updateProfile"

@@ -246,9 +246,10 @@
     @end="sortByCustom"
   >
     <div
-      v-for="profile in sortedProfiles"
+      v-for="(profile, idx) in sortedProfiles"
       :key="`${profile.id}-${profile.profile.id}`"
       class="profile"
+      :class="{ 'profile-selected': focusedProfileIdx === idx }"
       style="vertical-align: middle; text-align: left"
     >
       <img
@@ -416,9 +417,10 @@ export default {
       default: false,
     },
   },
-  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser'],
+  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser', 'focusSearchBox'],
   data() {
     return {
+      focusedProfileIdx: null,
       activeContainer: null,
       containers: [] as ContextualIdentity[],
       openContainers: [] as ContextualIdentity[],
@@ -527,6 +529,15 @@ export default {
     },
   },
   watch: {
+    focusedProfileIdx: {
+      handler(v) {
+        if (v === null) {
+          this.$emit('focusSearchBox');
+        } else {
+          document.activeElement.blur();
+        }
+      },
+    },
     loaded: {
       handler(v) {
         if (v) {
@@ -547,6 +558,9 @@ export default {
       },
     },
   },
+  mounted() {
+    document.addEventListener('keydown', this.onKeydown);
+  },
   created() {
     if (this.settings.tableSettings !== undefined) {
       this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings));
@@ -563,6 +577,30 @@ export default {
     );
   },
   methods: {
+    onKeydown(event) {
+      this.$ext.log(`onKeydown:${event.key}`);
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (this.focusedProfileIdx === null) {
+          this.focusedProfileIdx = 0;
+        } else if (this.focusedProfileIdx < this.sortedProfiles.length - 1) {
+          this.focusedProfileIdx += 1;
+        }
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (this.focusedProfileIdx > 0) {
+          this.focusedProfileIdx -= 1;
+        } else {
+          this.focusedProfileIdx = null;
+        }
+      } else if (event.key === 'Enter') {
+        if (this.focusedProfileIdx !== null) {
+          event.preventDefault();
+          this.navSelectedProfile(this.sortedProfiles[this.focusedProfileIdx]);
+        }
+      }
+      this.$ext.log(`focusedProfileIdx:${this.focusedProfileIdx}`);
+    },
     async getFirefoxContainers() {
       this.containers = await this.$ext.config.browser.contextualIdentities.query({});
       this.$ext.log(this.containers);
@@ -832,7 +870,7 @@ export default {
   padding-right: 10px;
   border-bottom: 1px solid #dee2e6;
 }
-.profile:hover {
+.profile:hover, .profile-selected {
   background-color: #f3f5fb;
   box-shadow: rgba(149, 157, 165, 0.2) 0px 5px 5px;
 }
