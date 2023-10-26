@@ -90,6 +90,10 @@ export default {
       required: true,
       type: Array<AppData>,
     },
+    awsAppProfiles: {
+      required: true,
+      type: Array<AppData>,
+    },
   },
   emits: ['addIamRole', 'saveUser', 'updateProfile', 'setPage'],
   data() {
@@ -104,15 +108,6 @@ export default {
         roleName: '',
       },
     };
-  },
-  computed: {
-    awsAppProfiles(): AppData[] {
-      const appProfiles = this.appProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
-      // eslint-disable-next-line no-param-reassign
-      appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name} (${ap.profile.custom?.iamRoles.length})`; });
-      this.$ext.log(appProfiles);
-      return appProfiles;
-    },
   },
   created() {
     //

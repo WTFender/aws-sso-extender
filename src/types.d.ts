@@ -53,7 +53,7 @@ export interface ExtensionData {
 }
 
 export interface ExtensionMessage {
-  action: 'enableFirefoxContainers' | 'disableFirefoxContainers'
+  action: 'enableFirefoxContainers' | 'disableFirefoxContainers' | 'openProfile1' | 'openProfile2' | 'openProfile3'
 }
 
 export interface ApiData {
@@ -71,6 +71,11 @@ export interface UserData {
     labelFooter: boolean,
     labelHeader: boolean,
     profiles: Record<string, CustomData>
+    hotkeys: {
+      openProfile1: string,
+      openProfile2: string,
+      openProfile3: string,
+    }
   }
   appProfileIds: string[]
   accountId: string

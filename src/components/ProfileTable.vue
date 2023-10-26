@@ -246,9 +246,10 @@
     @end="sortByCustom"
   >
     <div
-      v-for="profile in sortedProfiles"
+      v-for="(profile, idx) in sortedProfiles"
       :key="`${profile.id}-${profile.profile.id}`"
       class="profile"
+      :class="{ 'profile-selected': focusedProfileIdx === idx }"
       style="vertical-align: middle; text-align: left"
     >
       <img
@@ -259,12 +260,12 @@
         width="100"
         height="35"
         style="width: 35px; object-fit: cover; padding-left: 0px"
-        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       />
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
-        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <div v-if="profile.applicationName === 'AWS Account'">
           <p
@@ -296,7 +297,7 @@
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
-        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <PBadge
           v-if="profile.profile.name !== 'Default'"
@@ -319,8 +320,8 @@
         :style="{ width: '25%' }"
       >
         <PBadge
-          v-for="(role, idx) in profile.profile.custom?.iamRoles"
-          :key="idx"
+          v-for="(role, roleIdx) in profile.profile.custom?.iamRoles"
+          :key="roleIdx"
           :value="role.label || role.roleName"
           class="role-link truncate"
           :style="{
@@ -416,9 +417,10 @@ export default {
       default: false,
     },
   },
-  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser'],
+  emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser', 'focusSearchBox'],
   data() {
     return {
+      focusedProfileIdx: null as null | number,
       activeContainer: null,
       containers: [] as ContextualIdentity[],
       openContainers: [] as ContextualIdentity[],
@@ -527,6 +529,15 @@ export default {
     },
   },
   watch: {
+    focusedProfileIdx: {
+      handler(v) {
+        if (v === null) {
+          this.$emit('focusSearchBox');
+        } else {
+          (document.activeElement as HTMLElement).blur();
+        }
+      },
+    },
     loaded: {
       handler(v) {
         if (v) {
@@ -547,12 +558,40 @@ export default {
       },
     },
   },
+  mounted() {
+    document.addEventListener('keydown', this.onKeydown);
+  },
   created() {
     if (this.settings.tableSettings !== undefined) {
       this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings));
     }
   },
   methods: {
+    onKeydown(event) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (this.focusedProfileIdx === null) {
+          this.focusedProfileIdx = 0;
+        } else if (this.focusedProfileIdx < this.sortedProfiles.length - 1) {
+          this.focusedProfileIdx += 1;
+        }
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (this.focusedProfileIdx === null) {
+          // pass
+        } else if (this.focusedProfileIdx > 0) {
+          this.focusedProfileIdx -= 1;
+        } else {
+          this.focusedProfileIdx = null;
+        }
+      } else if (event.key === 'Enter') {
+        if (this.focusedProfileIdx !== null) {
+          event.preventDefault();
+          // eslint-disable-next-line vue/max-len
+          this.$ext.navSelectedProfile(this.sortedProfiles[this.focusedProfileIdx], this.user, this.users, this.settings);
+        }
+      }
+    },
     async getFirefoxContainers() {
       this.containers = await this.$ext.config.browser.contextualIdentities.query({});
       this.$ext.log(this.containers);
@@ -565,7 +604,7 @@ export default {
     isContainerOpen(profile) {
       let isOpen = false;
       const container = this.containers.find(
-        (c) => c.name === this.sessionLabelSso(profile),
+        (c) => c.name === this.$ext.sessionLabelSso(profile, this.user),
       );
       if (container) {
         this.openContainers.forEach((c) => {
@@ -579,24 +618,11 @@ export default {
     isContainer(profile) {
       let isContainer = false;
       this.containers.forEach((c) => {
-        if (c.name === this.sessionLabelSso(profile)) {
+        if (c.name === this.$ext.sessionLabelSso(profile, this.user)) {
           isContainer = true;
         }
       });
       return isContainer;
-    },
-    sessionLabelSso(profile) {
-      if (profile.applicationName !== 'AWS Account') {
-        return profile.profile.custom!.label || profile.profile.name;
-      }
-      return this.$ext.buildLabel(
-        this.user.custom.sessionLabelSso,
-        this.user.subject,
-        profile.profile.custom!.label || profile.profile.name,
-        null,
-        profile.searchMetadata!.AccountId,
-        profile.searchMetadata!.AccountName,
-      );
     },
     sortIcon(sort) {
       if (sort === 'desc') {
@@ -723,51 +749,12 @@ export default {
           let user = this.user;
           // eslint-disable-next-line vue/max-len
           if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(appProfile.profile.id)) {
-            user = this.findUserByProfileId(appProfile.profile.id);
+            user = this.$ext.findUserByProfileId(appProfile.profile.id, this.users);
           }
           const profileUrl = this.$ext.createProfileUrl(user, appProfile);
           window.open(profileUrl, '_blank');
         });
       });
-    },
-    findUserByProfileId(profileId) {
-      // eslint-disable-next-line prefer-destructuring
-      let user = this.user;
-      this.users.forEach((u) => {
-        if ((u as UserData).appProfileIds.includes(profileId)) {
-          user = (u as UserData);
-        }
-      });
-      return user;
-    },
-    async navSelectedProfile(profile) {
-      let nav = true;
-      // eslint-disable-next-line prefer-destructuring
-      let user = this.user;
-      // eslint-disable-next-line vue/max-len
-      if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(profile.profile.id)) {
-        user = this.findUserByProfileId(profile.profile.id);
-      }
-      const profileUrl = this.$ext.createProfileUrl(user, profile);
-      if (this.$ext.platform === 'firefox' && this.settings.firefoxContainers) {
-        const containers = await this.$ext.config.browser.contextualIdentities.query({
-          name: this.sessionLabelSso(profile),
-        });
-        if (containers.length >= 1) {
-          // eslint-disable-next-line vue/max-len
-          const tabs = this.$ext.config.browser.tabs.query({
-            cookieStoreId: containers[0].cookieStoreId,
-          });
-          // highlight existing tabs
-          (await tabs).forEach((tab) => {
-            this.$ext.config.browser.tabs.highlight({ tabs: tab.index! });
-            nav = false;
-          });
-        }
-      }
-      if (nav === true) {
-        window.open(profileUrl, '_blank');
-      }
     },
     encodeUriPlusParens(str) {
       return encodeURIComponent(str).replace(
@@ -822,7 +809,7 @@ export default {
   padding-right: 10px;
   border-bottom: 1px solid #dee2e6;
 }
-.profile:hover {
+.profile:hover, .profile-selected {
   background-color: #f3f5fb;
   box-shadow: rgba(149, 157, 165, 0.2) 0px 5px 5px;
 }

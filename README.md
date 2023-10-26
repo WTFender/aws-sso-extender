@@ -1,9 +1,6 @@
 # aws-sso-extender
 
-- [Chrome Extension](https://chrome.google.com/webstore/detail/aws-sso-extender/pojoaiboolahdaedebpjgnllehpofkep)
-- [Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/)
-- [Safari Extension](https://apps.apple.com/us/app/aws-sso-extender/id6450935274)
-- [Edge Add-on](https://microsoftedge.microsoft.com/addons/detail/aws-sso-extender/dbdbfcdnfbghdommmcichaiakhaoapkg)
+[Chrome](https://chrome.google.com/webstore/detail/aws-sso-extender/pojoaiboolahdaedebpjgnllehpofkep) - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/aws-sso-extender/) - [Safari](https://apps.apple.com/us/app/aws-sso-extender/id6450935274) - [Edge](https://microsoftedge.microsoft.com/addons/detail/aws-sso-extender/dbdbfcdnfbghdommmcichaiakhaoapkg)
 
 ⭐ Quickly access your Favorite AWS SSO apps  
 🎨 Customize your profiles, roles & AWS console  

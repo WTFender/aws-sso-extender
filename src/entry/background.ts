@@ -22,6 +22,23 @@ function listenConsole() {
   } else { extension.log('background:listenConsole:listenerExists'); }
 }
 
+// listen for hotkey commands
+extension.config.browser.commands.onCommand.addListener((command) => {
+  extension.log(`background:command:${command}`);
+  // message popup to open profile
+  if (command.startsWith('openProfile')) {
+    extension.loadData().then((data: ExtensionData) => {
+      extension.log(data);
+      const appProfileId = data.users[0].custom.hotkeys[command];
+      extension.log(`background:command:appProfileId:${appProfileId}`);
+      const appProfiles = extension.customizeProfiles(data.users[0], data.appProfiles);
+      const appProfile = extension.findAppProfileById(appProfileId, appProfiles);
+      extension.log(appProfile);
+      extension.navSelectedProfile(appProfile, data.users[0], data.users, data.settings);
+    });
+  }
+});
+
 // show release notes on install & update
 extension.config.browser.runtime.onInstalled.addListener((details) => {
   const manifest = extension.config.browser.runtime.getManifest();

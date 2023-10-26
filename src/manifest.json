@@ -14,6 +14,27 @@
         "default": "Ctrl+Shift+F",
         "mac": "MacCtrl+Shift+F"
       }
+    },
+    "openProfile1": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1",
+        "mac": "MacCtrl+Shift+1"
+      },
+      "description": "Open Profile #1"
+    },
+    "openProfile2": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+2",
+        "mac": "MacCtrl+Shift+2"
+      },
+      "description": "Open Profile #2"
+    },
+    "openProfile3": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+3",
+        "mac": "MacCtrl+Shift+3"
+      },
+      "description": "Open Profile #3"
     }
   },
   "{{safari}}.background": {

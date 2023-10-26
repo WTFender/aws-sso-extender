@@ -38,6 +38,11 @@ class Extension {
     labelFooter: true,
     labelHeader: true,
     profiles: {},
+    hotkeys: {
+      openProfile1: '',
+      openProfile2: '',
+      openProfile3: '',
+    },
   };
 
   defaultSettings = {
@@ -356,11 +361,29 @@ class Extension {
     return this.customizeProfiles(user, appProfiles)[0];
   }
 
+  findAppProfileById(profileId: string, appProfiles: AppData[]): AppData {
+    this.log('findAppProfileById');
+    this.log(profileId);
+    this.log(appProfiles);
+    return appProfiles.filter((ap) => ap.profile.id === profileId)[0];
+  }
+
   findUser(data: ExtensionData): UserData {
     this.log('findUser');
     // eslint-disable-next-line vue/max-len
     const activeUserId = data!.users.length === 1 ? data!.users[0].userId : data!.settings.lastUserId;
     return data!.users.filter((u) => u.userId === activeUserId)[0];
+  }
+
+  findUserByProfileId(profileId, users) {
+    this.log('findUserByProfileId');
+    let user = users[0];
+    users.forEach((u) => {
+      if ((u as UserData).appProfileIds.includes(profileId)) {
+        user = (u as UserData);
+      }
+    });
+    return user;
   }
 
   async update(user: UserData): Promise<void> {
@@ -390,6 +413,54 @@ class Extension {
       `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
     ].join('&');
     window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
+  }
+
+  // eslint-disable-next-line vue/max-len
+  async navSelectedProfile(profile: AppData, user: UserData, users: UserData[], settings: ExtensionSettings) {
+    let nav = true;
+    // eslint-disable-next-line vue/max-len
+    if (settings.showAllProfiles && !user.appProfileIds.includes(profile.profile.id)) {
+      // eslint-disable-next-line no-param-reassign
+      user = this.findUserByProfileId(profile.profile.id, users);
+    }
+    this.log(profile);
+    const profileUrl = this.createProfileUrl(user, profile);
+    if (this.platform === 'firefox' && settings.firefoxContainers) {
+      const containers = await this.config.browser.contextualIdentities.query({
+        name: this.sessionLabelSso(profile, user),
+      });
+      if (containers.length >= 1) {
+        // eslint-disable-next-line vue/max-len
+        const tabs = this.config.browser.tabs.query({
+          cookieStoreId: containers[0].cookieStoreId,
+        });
+        // highlight existing tabs
+        (await tabs).forEach((tab) => {
+          this.config.browser.tabs.highlight({ tabs: tab.index! });
+          nav = false;
+        });
+      }
+    }
+    if (nav === true) {
+      this.config.browser.tabs.create({
+        url: profileUrl,
+      });
+      // window.open(profileUrl, '_blank');
+    }
+  }
+
+  sessionLabelSso(profile, user) {
+    if (profile.applicationName !== 'AWS Account') {
+      return profile.profile.custom!.label || profile.profile.name;
+    }
+    return this.buildLabel(
+      user.custom.sessionLabelSso,
+      user.subject,
+      profile.profile.custom!.label || profile.profile.name,
+      null,
+      profile.searchMetadata!.AccountId,
+      profile.searchMetadata!.AccountName,
+    );
   }
 
   importUserConfig(jsonConfig: string): Boolean {
