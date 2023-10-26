@@ -391,17 +391,17 @@
           </p>
 
           <form style="margin-left: 20px;">
-            <div v-for="hotkey in profileHotkeys" :key="hotkey.name">
-              <code>{{ hotkey.shortcut }}</code><select
+            <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
+              <code>{{ hotkey['shortcut'] }}</code><select
                 style="margin-bottom: 10px; margin-left: 20px;"
-                @change="setHotkeyProfileId($event, hotkey.name)"
+                @change="setHotkeyProfileId($event, hotkey['name'])"
               >
                 <option
                   v-for="p in awsAppProfiles"
                   :key="p.profile.id"
                   :label="p.label"
                   :value="p.profile.id"
-                  :selected="p.profile.id === user.custom.hotkeys[hotkey.name]"
+                  :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
                 />
               </select>
               <br />

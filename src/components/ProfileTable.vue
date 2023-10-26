@@ -420,7 +420,7 @@ export default {
   emits: ['updateProfile', 'requestPermissions', 'updateTableSettings', 'saveUser', 'focusSearchBox'],
   data() {
     return {
-      focusedProfileIdx: null,
+      focusedProfileIdx: null as null | number,
       activeContainer: null,
       containers: [] as ContextualIdentity[],
       openContainers: [] as ContextualIdentity[],
@@ -534,7 +534,7 @@ export default {
         if (v === null) {
           this.$emit('focusSearchBox');
         } else {
-          document.activeElement.blur();
+          (document.activeElement as HTMLElement).blur();
         }
       },
     },
@@ -577,7 +577,9 @@ export default {
         }
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        if (this.focusedProfileIdx > 0) {
+        if (this.focusedProfileIdx === null) {
+          // pass
+        } else if (this.focusedProfileIdx > 0) {
           this.focusedProfileIdx -= 1;
         } else {
           this.focusedProfileIdx = null;
@@ -747,7 +749,7 @@ export default {
           let user = this.user;
           // eslint-disable-next-line vue/max-len
           if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(appProfile.profile.id)) {
-            user = this.$ext.findUserByProfileId(appProfile.profile.id, users);
+            user = this.$ext.findUserByProfileId(appProfile.profile.id, this.users);
           }
           const profileUrl = this.$ext.createProfileUrl(user, appProfile);
           window.open(profileUrl, '_blank');
