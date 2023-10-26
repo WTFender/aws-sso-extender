@@ -602,7 +602,7 @@ export default {
     isContainerOpen(profile) {
       let isOpen = false;
       const container = this.containers.find(
-        (c) => c.name === this.$ext.sessionLabelSso(profile, user),
+        (c) => c.name === this.$ext.sessionLabelSso(profile, this.user),
       );
       if (container) {
         this.openContainers.forEach((c) => {
@@ -616,7 +616,7 @@ export default {
     isContainer(profile) {
       let isContainer = false;
       this.containers.forEach((c) => {
-        if (c.name === this.$ext.sessionLabelSso(profile, user)) {
+        if (c.name === this.$ext.sessionLabelSso(profile, this.user)) {
           isContainer = true;
         }
       });
