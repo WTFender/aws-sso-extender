@@ -356,6 +356,7 @@
         <IamRoles
           v-else
           :app-profiles="userProfiles"
+          :aws-app-profiles="awsAppProfiles"
           @addIamRole="addIamRole"
           @updateProfile="updateProfile"
           @setPage="setPage"
@@ -379,6 +380,35 @@
           </form>
         </div>
         <div>
+          <h3>Profile Hotkeys</h3>
+          <p v-if="$ext.platform === 'firefox'">
+            Customize keybinds @ about:addons
+          </p>
+          <p v-if="$ext.platform === 'firefox'">
+            <a href="https://bug1303384.bmoattachments.org/attachment.cgi?id=9051647">Example</a>
+          </p><p v-else>
+            Customize keybinds @ chrome://extensions/shortcuts
+          </p>
+
+          <form style="margin-left: 20px;">
+            <div v-for="hotkey in profileHotkeys" :key="hotkey.name">
+              <code>{{ hotkey.shortcut }}</code><select
+                style="margin-bottom: 10px; margin-left: 20px;"
+                @change="setHotkeyProfileId($event, hotkey.name)"
+              >
+                <option
+                  v-for="p in awsAppProfiles"
+                  :key="p.profile.id"
+                  :label="p.label"
+                  :value="p.profile.id"
+                  :selected="p.profile.id === user.custom.hotkeys[hotkey.name]"
+                />
+              </select>
+              <br />
+            </div>
+          </form>
+        </div>
+        <div>
           <h3>Resources</h3>
           <div v-for="res in resources" :key="res.label">
             <PrimeButton
@@ -387,7 +417,7 @@
               :label="res.label"
               :severity="res.severity"
               @click="openResource(res.url)"
-            /><br>
+            />
           </div>
         </div>
       </div>
@@ -418,6 +448,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      profileHotkeys: [],
       profileEditor: false,
       settingsPage: false,
       favorites: false,
@@ -434,9 +465,6 @@ export default {
         },
         {
           icon: 'pi-info-circle', severity: 'secondary', label: 'Release Notes', url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}`,
-        },
-        {
-          icon: 'pi-book', severity: 'secondary', label: 'Read more about this extension', url: 'https://blog.wtfender.com/posts/aws-sso-extender/',
         },
       ],
       importUser: false,
@@ -550,6 +578,13 @@ export default {
         (ap: AppData) => ap.profile.custom?.favorite === true,
       );
     },
+    awsAppProfiles(): AppData[] {
+      const appProfiles = this.appProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
+      // eslint-disable-next-line no-param-reassign
+      appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name} (${ap.profile.custom?.iamRoles.length})`; });
+      this.$ext.log(appProfiles);
+      return appProfiles;
+    },
     userProfiles() {
       this.$ext.log(this.user);
       if (this.user === null) {
@@ -652,9 +687,18 @@ export default {
     this.$ext.checkPermissions().then((perms) => {
       this.permissions = perms;
     });
+    this.getProfileHotkeys();
     this.reload();
   },
   methods: {
+    async getProfileHotkeys() {
+      this.profileHotkeys = await this.$ext.config.browser.commands.getAll().then((commands) => {
+        this.$ext.log(commands);
+        return commands.filter((command) => command.name.startsWith('openProfile'));
+      });
+      this.$ext.log('popup:getProfileHotkeys');
+      this.$ext.log(this.profileHotkeys);
+    },
     focusSearchBox() {
       waitForElement('#searchBox').then((searchBox) => {
         searchBox.focus();
@@ -741,6 +785,11 @@ export default {
       this.load(demoData);
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setHotkeyProfileId(event: any, hotkeyId: string) {
+      this.$ext.log(`popup:setHotkeyProfileId:${hotkeyId}:${event.target.value}`);
+      this.user.custom.hotkeys[hotkeyId] = event.target.value;
+      this.saveUser();
+    },
     setDefaultUser(userId: any) {
       if (userId.target instanceof Element) {
         this.settings.defaultUser = userId.target.value;

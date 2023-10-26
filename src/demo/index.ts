@@ -74,6 +74,11 @@ const users: UserData[] = [
           iamRoles: [],
         },
       },
+      hotkeys: {
+        openProfile1: 'Ctrl+Shift+1',
+        openProfile2: 'Ctrl+Shift+2',
+        openProfile3: 'Ctrl+Shift+3',
+      },
     },
   },
 ];

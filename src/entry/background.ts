@@ -27,8 +27,13 @@ extension.config.browser.commands.onCommand.addListener((command) => {
   extension.log(`background:command:${command}`);
   // message popup to open profile
   if (command.startsWith('openProfile')) {
-    extension.config.browser.runtime.sendMessage({
-      action: command,
+    extension.loadData().then((data: ExtensionData) => {
+      const user = extension.getDefaultUser(data);
+      const appProfileId = user.custom.hotkeys[command];
+      const appProfile = extension.findAppProfileById(appProfileId, data);
+      extension.log(`background:command:openProfile:${appProfileId}`);
+      extension.log(appProfile);
+      extension.navSelectedProfile(appProfile, user, data.users, data.settings);
     });
   }
 });

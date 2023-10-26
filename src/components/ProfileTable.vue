@@ -260,12 +260,12 @@
         width="100"
         height="35"
         style="width: 35px; object-fit: cover; padding-left: 0px"
-        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       />
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
-        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <div v-if="profile.applicationName === 'AWS Account'">
           <p
@@ -297,7 +297,7 @@
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
-        @click="!tableEditor ? navSelectedProfile(profile) : editProfile(profile)"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <PBadge
           v-if="profile.profile.name !== 'Default'"
@@ -320,8 +320,8 @@
         :style="{ width: '25%' }"
       >
         <PBadge
-          v-for="(role, idx) in profile.profile.custom?.iamRoles"
-          :key="idx"
+          v-for="(role, roleIdx) in profile.profile.custom?.iamRoles"
+          :key="roleIdx"
           :value="role.label || role.roleName"
           class="role-link truncate"
           :style="{
@@ -565,20 +565,9 @@ export default {
     if (this.settings.tableSettings !== undefined) {
       this.newTableSettings = JSON.parse(JSON.stringify(this.settings.tableSettings));
     }
-    this.$ext.config.browser.runtime.onMessage.addListener(
-      (msg: ExtensionMessage) => {
-        if (msg.action.startsWith('openProfile')) {
-          let idx = 0; // 'openProfile1'
-          if (msg.action === 'openProfile2') { idx = 1; }
-          if (msg.action === 'openProfile3') { idx = 2; }
-          this.navSelectedProfile(this.sortedProfiles[idx]);
-        }
-      },
-    );
   },
   methods: {
     onKeydown(event) {
-      this.$ext.log(`onKeydown:${event.key}`);
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         if (this.focusedProfileIdx === null) {
@@ -596,10 +585,10 @@ export default {
       } else if (event.key === 'Enter') {
         if (this.focusedProfileIdx !== null) {
           event.preventDefault();
-          this.navSelectedProfile(this.sortedProfiles[this.focusedProfileIdx]);
+          // eslint-disable-next-line vue/max-len
+          this.$ext.navSelectedProfile(this.sortedProfiles[this.focusedProfileIdx], this.user, this.users, this.settings);
         }
       }
-      this.$ext.log(`focusedProfileIdx:${this.focusedProfileIdx}`);
     },
     async getFirefoxContainers() {
       this.containers = await this.$ext.config.browser.contextualIdentities.query({});
@@ -613,7 +602,7 @@ export default {
     isContainerOpen(profile) {
       let isOpen = false;
       const container = this.containers.find(
-        (c) => c.name === this.sessionLabelSso(profile),
+        (c) => c.name === this.$ext.sessionLabelSso(profile, user),
       );
       if (container) {
         this.openContainers.forEach((c) => {
@@ -627,24 +616,11 @@ export default {
     isContainer(profile) {
       let isContainer = false;
       this.containers.forEach((c) => {
-        if (c.name === this.sessionLabelSso(profile)) {
+        if (c.name === this.$ext.sessionLabelSso(profile, user)) {
           isContainer = true;
         }
       });
       return isContainer;
-    },
-    sessionLabelSso(profile) {
-      if (profile.applicationName !== 'AWS Account') {
-        return profile.profile.custom!.label || profile.profile.name;
-      }
-      return this.$ext.buildLabel(
-        this.user.custom.sessionLabelSso,
-        this.user.subject,
-        profile.profile.custom!.label || profile.profile.name,
-        null,
-        profile.searchMetadata!.AccountId,
-        profile.searchMetadata!.AccountName,
-      );
     },
     sortIcon(sort) {
       if (sort === 'desc') {
@@ -771,51 +747,12 @@ export default {
           let user = this.user;
           // eslint-disable-next-line vue/max-len
           if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(appProfile.profile.id)) {
-            user = this.findUserByProfileId(appProfile.profile.id);
+            user = this.$ext.findUserByProfileId(appProfile.profile.id, users);
           }
           const profileUrl = this.$ext.createProfileUrl(user, appProfile);
           window.open(profileUrl, '_blank');
         });
       });
-    },
-    findUserByProfileId(profileId) {
-      // eslint-disable-next-line prefer-destructuring
-      let user = this.user;
-      this.users.forEach((u) => {
-        if ((u as UserData).appProfileIds.includes(profileId)) {
-          user = (u as UserData);
-        }
-      });
-      return user;
-    },
-    async navSelectedProfile(profile) {
-      let nav = true;
-      // eslint-disable-next-line prefer-destructuring
-      let user = this.user;
-      // eslint-disable-next-line vue/max-len
-      if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(profile.profile.id)) {
-        user = this.findUserByProfileId(profile.profile.id);
-      }
-      const profileUrl = this.$ext.createProfileUrl(user, profile);
-      if (this.$ext.platform === 'firefox' && this.settings.firefoxContainers) {
-        const containers = await this.$ext.config.browser.contextualIdentities.query({
-          name: this.sessionLabelSso(profile),
-        });
-        if (containers.length >= 1) {
-          // eslint-disable-next-line vue/max-len
-          const tabs = this.$ext.config.browser.tabs.query({
-            cookieStoreId: containers[0].cookieStoreId,
-          });
-          // highlight existing tabs
-          (await tabs).forEach((tab) => {
-            this.$ext.config.browser.tabs.highlight({ tabs: tab.index! });
-            nav = false;
-          });
-        }
-      }
-      if (nav === true) {
-        window.open(profileUrl, '_blank');
-      }
     },
     encodeUriPlusParens(str) {
       return encodeURIComponent(str).replace(

@@ -71,6 +71,11 @@ export interface UserData {
     labelFooter: boolean,
     labelHeader: boolean,
     profiles: Record<string, CustomData>
+    hotkeys: {
+      openProfile1: string,
+      openProfile2: string,
+      openProfile3: string,
+    }
   }
   appProfileIds: string[]
   accountId: string
