@@ -1,35 +1,20 @@
+## 1.7.0
+- Keyboard support
+  - Set up to 3 hotkeys to open your favorites profile
+  - Use arrow keys to browse the profile list, Enter to navigate
+
 ## 1.6.10
 - Fix searchbox autofocus
-
-## 1.6.9
 - Improve firefox status icon to show active & inactive profile containers
-
-## 1.6.8
 - Fix SAML apps not opening with firefox containers enabled
-
-## 1.6.7
 - Rate limit requests to AWS
-
-## 1.6.6
 - Added a setting to show profiles for all users
-
-## 1.6.5
 - Fixed an issue with duplicate firefox containers
-
-## 1.6.4
 - Firefox: Opening a profile will switch to existing container/tab
 - Firefox: Add profile indicator if container/tab is open
-
-## 1.6.3
 - Improve spacing, font and image sizes
-
-## 1.6.2
 - Support all AWS console languages
-
-## 1.6.1
 - Fix profile fonts
-
-## 1.6.0
 - Update profile table style & sizing
 - Add table filters🎚️
   - Show/hide icon
