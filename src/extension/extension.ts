@@ -361,11 +361,11 @@ class Extension {
     return this.customizeProfiles(user, appProfiles)[0];
   }
 
-  findAppProfileById(profileId: string, data: ExtensionData): AppData {
+  findAppProfileById(profileId: string, appProfiles: AppData[]): AppData {
     this.log('findAppProfileById');
-    const appProfiles = data.appProfiles.filter((ap) => ap.profile.id === profileId);
+    this.log(profileId);
     this.log(appProfiles);
-    return appProfiles[0];
+    return appProfiles.filter((ap) => ap.profile.id === profileId)[0];
   }
 
   findUser(data: ExtensionData): UserData {
@@ -423,6 +423,7 @@ class Extension {
       // eslint-disable-next-line no-param-reassign
       user = this.findUserByProfileId(profile.profile.id, users);
     }
+    this.log(profile);
     const profileUrl = this.createProfileUrl(user, profile);
     if (this.platform === 'firefox' && settings.firefoxContainers) {
       const containers = await this.config.browser.contextualIdentities.query({

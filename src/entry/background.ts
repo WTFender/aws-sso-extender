@@ -28,12 +28,13 @@ extension.config.browser.commands.onCommand.addListener((command) => {
   // message popup to open profile
   if (command.startsWith('openProfile')) {
     extension.loadData().then((data: ExtensionData) => {
-      const user = extension.getDefaultUser(data);
-      const appProfileId = user.custom.hotkeys[command];
-      const appProfile = extension.findAppProfileById(appProfileId, data);
-      extension.log(`background:command:openProfile:${appProfileId}`);
+      extension.log(data);
+      const appProfileId = data.users[0].custom.hotkeys[command];
+      extension.log(`background:command:appProfileId:${appProfileId}`);
+      const appProfiles = extension.customizeProfiles(data.users[0], data.appProfiles);
+      const appProfile = extension.findAppProfileById(appProfileId, appProfiles);
       extension.log(appProfile);
-      extension.navSelectedProfile(appProfile, user, data.users, data.settings);
+      extension.navSelectedProfile(appProfile, data.users[0], data.users, data.settings);
     });
   }
 });
