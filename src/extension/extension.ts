@@ -50,6 +50,7 @@ class Extension {
     lastUserId: null,
     lastProfileId: null,
     firefoxContainers: false,
+    iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,
     showAllUsers: false,

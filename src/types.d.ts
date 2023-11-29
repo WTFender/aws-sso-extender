@@ -24,6 +24,7 @@ export interface ExtensionSettings {
   lastUserId: string
   lastProfileId: string
   firefoxContainers?: boolean
+  iconColor: string
   showReleaseNotes: boolean
   showAllProfiles: boolean
   showAllUsers: boolean
