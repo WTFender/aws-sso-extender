@@ -235,6 +235,7 @@ const demoData: ExtensionData = {
     lastUserId: users[0].userId,
     lastProfileId: 'p-124',
     firefoxContainers: true,
+    iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,
     showAllUsers: false,

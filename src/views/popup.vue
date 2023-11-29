@@ -367,6 +367,25 @@
         <div style="margin-bottom: 25px">
           <h3>Extension Settings</h3>
           <form style="margin-left: 20px;">
+            <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
+              <div class="p-hidden-accessible">
+                <input type="checkbox" disabled>
+              </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': hexColors[settings.iconColor] }">
+                <span class="p-checkbox-icon" />
+              </div>
+            </div>
+            <label v-tooltip.bottom="'Extension icon color'" for="iconColor" style="margin-right: 10px;">Icon Color</label>
+            <select
+              v-model="settings.iconColor"
+              style="margin-bottom: 5px;"
+            >
+              <option
+                v-for="c in ['red', 'blue', 'green', 'purple']"
+                :key="c + 'icon'"
+                :label="c"
+                :value="c"
+              />
+            </select>
             <div v-for="setting in settingOptions" :key="setting.id">
               <PCheckbox
                 v-model="settings[setting.id]"
@@ -448,6 +467,12 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      hexColors: {
+        red: '#de2d35',
+        blue: '#24b0ff',
+        green: '#22C55E',
+        purple: '#6466f1',
+      },
       profileHotkeys: [],
       profileEditor: false,
       settingsPage: false,
@@ -635,6 +660,13 @@ export default {
         if (v === 'profiles' || v === 'favorites') {
           this.focusSearchBox();
         }
+      },
+    },
+    'settings.iconColor': {
+      handler(color) {
+        this.$ext.log(`popup:settings.iconColor:${color}`);
+        this.$ext.config.browser.action.setIcon({ path: `/icons/${color}/128.png` });
+        this.$ext.saveSettings(this.settings);
       },
     },
     'settings.firefoxContainers': {

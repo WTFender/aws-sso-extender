@@ -1,3 +1,6 @@
+## 1.7.1
+- Change extension icon color
+
 ## 1.7.0
 - Keyboard support
   - Set up to 3 hotkeys to open your favorites profile
