@@ -39,6 +39,7 @@ const users: UserData[] = [
       sessionLabelIam: 'demo {{role}} @ {{account}}',
       labelHeader: true,
       labelFooter: true,
+      labelIcon: true,
       colorHeader: true,
       colorFooter: true,
       colorDefault: '222f3e',
