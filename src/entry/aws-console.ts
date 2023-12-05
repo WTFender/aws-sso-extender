@@ -152,13 +152,13 @@ function customizeConsole(aws: AwsConsole): void {
   if (aws.user!.custom.labelFooter) {
     footerLblPromise ??= getFooterLabel();
     footerLblPromise.then((footerLbl) => {
-      footerLbl.textContent = label || defaultFooter;
+      footerLbl.textContent = `${aws.user?.custom.labelIcon && aws.appProfile?.profile.custom?.icon ? aws.appProfile?.profile.custom?.icon : ''} ${label || defaultFooter}`;
     });
   }
   // iam user has header already applied
   if (aws.user!.custom.labelHeader) {
     getHeaderLabel(aws.userType).then((headerLbl) => {
-      headerLbl.textContent = label || defaultHeader;
+      headerLbl.textContent = `${aws.user?.custom.labelIcon && aws.appProfile?.profile.custom?.icon ? aws.appProfile?.profile.custom?.icon : ''} ${label || defaultHeader}`;
     });
   }
 }

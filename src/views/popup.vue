@@ -306,8 +306,16 @@
               />
               <label for="colorFooter" class="setting-label">Colorize footer</label>
             </div>
+            <PCheckbox
+              v-model="user.custom.labelIcon"
+              input-id="labelIcon"
+              name="labelIcon"
+              :binary="true"
+              class="setting-checkbox"
+            />
+            <label for="labelIcon" class="setting-label">Show icon in label</label>
             <br />
-            <div style="margin-bottom: 10px">
+            <div style="margin-bottom: 10px; margin-top: 5px;">
               <ColorPicker
                 id="colorDefault"
                 v-model="user.custom.colorDefault"

@@ -71,6 +71,7 @@ export interface UserData {
     colorHeader: boolean,
     labelFooter: boolean,
     labelHeader: boolean,
+    labelIcon: boolean,
     profiles: Record<string, CustomData>
     hotkeys: {
       openProfile1: string,

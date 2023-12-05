@@ -37,6 +37,7 @@ class Extension {
     colorHeader: true, // after granting permissions
     labelFooter: true,
     labelHeader: true,
+    labelIcon: false,
     profiles: {},
     hotkeys: {
       openProfile1: '',

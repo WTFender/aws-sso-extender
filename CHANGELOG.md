@@ -1,3 +1,6 @@
+## 1.7.4
+- Add setting to show profile icon in the aws console label
+
 ## 1.7.3
 - Custom profile icons
 
