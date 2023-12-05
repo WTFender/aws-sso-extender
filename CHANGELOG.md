@@ -1,3 +1,6 @@
+## 1.7.3
+- Custom profile icons
+
 ## 1.7.2
 - Fix icon color on window open
 - Fix finding login links on install

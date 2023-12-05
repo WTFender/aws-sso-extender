@@ -8,6 +8,22 @@
     :style="{ width: '500px' }"
   >
     <PScrollPanel class="scroll" style="max-height: 300px">
+      <PDialog
+        v-model:visible="iconPickerVisible"
+        header="Choose Icon"
+        :style="{ width: '300px', height: '300px' }"
+      >
+        <div style="word-wrap: anywhere">
+          <span
+            v-for="i in selectIcons"
+            :key="i"
+            :style="{ color: `#${activeProfile.profile.custom?.color}` }"
+            @click="activeProfile.profile.custom!.icon = i; iconPickerVisible = false;"
+          >
+            {{ i }}
+          </span>
+        </div>
+      </PDialog>
       <form style="margin-left: 10px">
         <div style="margin-bottom: 10px">
           <small id="profile-label-help">Profile Name</small>
@@ -22,11 +38,23 @@
         <small id="label-help">
           {{
             activeProfile.applicationName === "AWS Account"
-              ? "Profile Label & Color"
-              : "Profile Label"
+              ? "Profile Icon, Label & Color"
+              : "Profile Icon & Label"
           }}
         </small>
         <div style="margin-bottom: 10px">
+          <span v-if="activeProfile.profile.custom?.icon" style="display: inline-block; margin-right: 5px;" :style="{ color: `#${activeProfile.profile.custom?.color}` }" class="profile-icon nav" @click="iconPickerVisible = true">
+            {{ activeProfile.profile.custom?.icon }}
+          </span>
+          <img
+            v-else
+            :alt="activeProfile.name"
+            :src="activeProfile.applicationName === 'AWS Account' ? awsIconUrl : activeProfile.icon"
+            class="nav"
+            height="35"
+            style="vertical-align: middle; width: 35px; object-fit: cover; padding-left: 0px; margin-right: 5px;"
+            @click="iconPickerVisible = true;"
+          />
           <InputText
             id="profileLabel"
             v-model="activeProfile.profile.custom!.label"
@@ -44,7 +72,7 @@
             v-if="activeProfile.applicationName === 'AWS Account'"
             v-model="activeProfile.profile.custom!.color"
             class="p-inputtext-sm"
-            style="width: 100px; margin-left: 10px"
+            style="width: 60px; margin-left: 10px"
           />
           <!--- Colorpicker popup doesn't work, create our own --->
           <PDialog
@@ -136,6 +164,7 @@
       </form>
     </PScrollPanel>
     <template #footer>
+      <PrimeButton label="Reset" icon="pi pi-trash" class="p-button-danger" @click="resetActiveProfile()" />
       <PrimeButton label="Save" icon="pi pi-save" @click="saveActiveProfile()" />
       <p style="color: red; display: none">
         Unable to save Profile.
@@ -252,8 +281,18 @@
       :class="{ 'profile-selected': focusedProfileIdx === idx }"
       style="vertical-align: middle; text-align: left"
     >
+      <!-- set custom unicode icon -->
+      <div
+        v-if="newTableSettings.showIcon && profile.profile.custom?.icon"
+        class="profile-field nav profile-icon"
+        :style="{ 'font-size': '1.5rem', color: `#${profile.profile.custom?.color}` }"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
+      >
+        {{ profile.profile.custom?.icon }}
+      </div>
+      <!-- fallback to aws sso icon -->
       <img
-        v-if="newTableSettings.showIcon"
+        v-else-if="newTableSettings.showIcon"
         :alt="profile.name"
         :src="profile.applicationName === 'AWS Account' ? awsIconUrl : profile.icon"
         class="profile-field nav"
@@ -435,6 +474,7 @@ export default {
       activeProfile: {} as AppData,
       colorPickerVisible: false,
       editorVisible: false,
+      iconPickerVisible: false,
       searchableFields: [
         'id',
         'applicationId',
@@ -446,6 +486,7 @@ export default {
       ],
       selectedProfile: null,
       sourceProfile: {} as AppData,
+      selectIcons: '⚠⚡✆♿✈☎☏☂☔✉☄☽☾☕✇❤☯✝✞✟☨☦☭☮☪☫☬☩✠☧✡♈♉♊♋♌♍♎♏♐♑♒♓♀♂☿♁⚢⚣⚤⚥⚦⚧⚨⚩❁❀✿✽✾❃⚘☘♚♔♛♕♜♖♝♗♞♘♟♙♥♡♠♤♦♢♣♧✩★☆✪✫✬✭✮✯✰☼☸☉❂♬♫♩♺♽♼♻♲♳♴♵♶♷♸♹✱✲✳✴✵✶✷✸✹✺✻✼❉❊❋❄❅❆☤⚕⚒⚓⚙⚜☢☣⚝⚛☐☑☒✓✔✕✖✗✘✚✌✍☟☝☜☚☞☛➘➙➚➝➜➟➡➢➤➩⟲⟳⟷⟵⟶⟿✂✄✏✎✐©®¢£¤¥¶§¨¬¯´µ·¸±¹²³°ªº¼½¾¿¡¦«»■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿⬒⬓⬔⬕⬖⬗⬘⬙⬚⬟⬠⬡⬢⬣⬤⭓⭔☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕☖☗☘☙☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♰♱♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚆⚇⚈⚉⚊⚋⚌⚍⚎⚏⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚚⚛⚜⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸✁✂✃✄✆✇✈✉✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❍❏❐❑❒❖❘❙❚❛❜❝❞❡❢❣❤❥❦❧❨❩❪❫❬❭❮❯❰❱❲❳❴❵❶❷❸❹❺❻❼❽❾❿➀➁➂➃➄➅➆➇➈➉➊➋➌➍➎➏➐➑➒➓',
     };
   },
   computed: {
@@ -704,6 +745,18 @@ export default {
         profileLabel.focus();
       });
     },
+    resetActiveProfile() {
+      const profile = this.activeProfile;
+      profile.profile.custom = {
+        favorite: profile.profile.custom!.favorite,
+        icon: null,
+        label: null,
+        color: '',
+        iamRoles: [],
+      };
+      this.$emit('updateProfile', profile);
+      this.editorVisible = false;
+    },
     saveActiveProfile() {
       this.activeProfile.profile.custom!.color = this.activeProfile.profile.custom!.color.replace(
         '#',
@@ -820,6 +873,14 @@ export default {
   display: inline-block;
   vertical-align: middle;
   padding-left: 10px;
+}
+
+.profile-icon {
+  line-height: 35px;
+  text-align: center;
+  margin: 0px;
+  padding: 0px;
+  width: 35px;
 }
 
 .role-link {

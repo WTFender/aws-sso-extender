@@ -136,6 +136,7 @@ export interface ProfileData {
 
 export interface CustomData {
   favorite?: boolean
+  icon?: string | null
   label?: string | null
   color: string;
   iamRoles: IamRole[]
