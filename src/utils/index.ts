@@ -1,5 +1,5 @@
 import extension from '../extension';
-import { createFirefoxContainer } from './container';
+import { createFirefoxContainer, listenConsole } from './container';
 
 function waitForElement<TElement extends Element = HTMLElement>(
   selector: string,
@@ -53,5 +53,5 @@ function getFontColor(hexcolor): 'black' | 'white' {
 }
 
 export {
-  waitForElement, createFirefoxContainer, getFontColor,
+  waitForElement, createFirefoxContainer, getFontColor, listenConsole,
 };

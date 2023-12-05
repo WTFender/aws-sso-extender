@@ -156,5 +156,29 @@ async function createFirefoxContainer(details) {
   return {};
 }
 
+// setup listeners to create firefox containers
+function listenConsole() {
+  if (
+    !extension.config.browser.webRequest.onBeforeRequest.hasListener(
+      createFirefoxContainer,
+    )
+  ) {
+    extension.log('background:listenConsole');
+    extension.config.browser.webRequest.onBeforeRequest.addListener(
+      createFirefoxContainer,
+      {
+        urls: [
+          ...extension.config.permissions.containers,
+          ...extension.config.permissions.signin,
+        ],
+        types: ['xmlhttprequest'],
+      },
+      ['blocking'],
+    );
+  } else {
+    extension.log('background:listenConsole:listenerExists');
+  }
+}
+
 // eslint-disable-next-line import/prefer-default-export
-export { createFirefoxContainer };
+export { createFirefoxContainer, listenConsole };
