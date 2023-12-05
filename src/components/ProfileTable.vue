@@ -286,6 +286,7 @@
         v-if="newTableSettings.showIcon && profile.profile.custom?.icon"
         class="profile-field nav profile-icon"
         :style="{ 'font-size': '1.5rem', color: `#${profile.profile.custom?.color}` }"
+        @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         {{ profile.profile.custom?.icon }}
       </div>
@@ -747,7 +748,7 @@ export default {
     resetActiveProfile() {
       const profile = this.activeProfile;
       profile.profile.custom = {
-        favorite: false,
+        favorite: profile.profile.custom!.favorite,
         icon: null,
         label: null,
         color: '',
