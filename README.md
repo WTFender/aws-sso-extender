@@ -35,7 +35,7 @@ npm run build:firefox # prod
 ```
 
 #### Releases
-1. Update `docs/CHANGELOG.md`
+1. Update `CHANGELOG.md`
 2. Update version in `package.json`
 3. Open PR to `release` branch to build packages
 4. Upload packages to publishers
