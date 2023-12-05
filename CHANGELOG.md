@@ -1,3 +1,7 @@
+## 1.7.2
+- Fix icon color on window open
+- Fix finding login links on install
+
 ## 1.7.1
 - Change extension icon color
 
