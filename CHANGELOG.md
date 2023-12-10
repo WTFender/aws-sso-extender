@@ -1,3 +1,6 @@
+## 1.7.5
+- Set display name for users
+
 ## 1.7.4
 - Add setting to show profile icon in the aws console label
 
