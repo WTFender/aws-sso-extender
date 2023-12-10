@@ -73,7 +73,7 @@ async function createFirefoxContainer(details) {
     if (role.profileId === ap!.profile.id) {
       const iamContainerName = extension.buildLabel(
         user.custom.sessionLabelIam,
-        user.subject,
+        user.custom.displayName || user.subject,
         ap?.profile.custom?.label || ap?.profile.name,
         role.label || role.roleName,
         role.accountId,
@@ -87,7 +87,7 @@ async function createFirefoxContainer(details) {
     // use sso label
     label = extension.buildLabel(
       user.custom.sessionLabelSso,
-      user!.subject,
+      user!.custom.displayName || user!.subject,
       ap?.profile.custom?.label || ap?.profile.name,
       null,
       accountNumber,

@@ -27,8 +27,8 @@ export interface ExtensionSettings {
   iconColor: string
   showReleaseNotes: boolean
   showAllProfiles: boolean
-  showAllUsers: boolean
   tableSettings: {
+    showAllUsers: boolean
     showIamRoles: boolean
     showIcon: boolean
     sortCustom: boolean
@@ -64,6 +64,7 @@ export interface ApiData {
 export interface UserData {
   updatedAt: number
   custom: {
+    displayName: string,
     sessionLabelSso: string,
     sessionLabelIam: string,
     colorDefault: string,

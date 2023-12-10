@@ -129,15 +129,16 @@
           name="userSelect"
           :options="users"
           class="w-full md:w-14rem"
-          style="margin-bottom: 25px; margin-left: 20px;"
+          style="margin-bottom: 25px; margin-left: 20px; margin-right: 20px; margin-top: 10px;"
         >
           <template #option="slotProps">
             <div class="flex align-items-center">
               <div>
                 {{
-                  slotProps.option.subject
+                  (slotProps.option.custom.displayName || slotProps.option.subject)
                     + " @ "
                     + slotProps.option.managedActiveDirectoryId
+                    + (slotProps.option.custom.displayName ? " (" + slotProps.option.subject + ")" : "")
                 }}
               </div>
             </div>
@@ -157,17 +158,18 @@
             :value="u.userId"
             :selected="u.userId === settings.defaultUser"
           />
-        </select><br />
-        <PCheckbox
-          v-model="settings.showAllUsers"
-          input-id="labelShowAllUsers"
-          name="labelShowAllUsers"
-          :binary="true"
-          style="margin-bottom: 10px; margin-left: 20px;"
-          class="setting-checkbox"
-        />
-        <label for="labelShowAllUsers" class="setting-label">Show All User Profiles</label><br />
+        </select>
         <h3>User Config</h3>
+        <small style="margin-left: 20px;">Display Name</small><br>
+        <InputText
+          id="displayName"
+          v-model="user.custom.displayName"
+          name="displayName"
+          class="p-inputtext-sm"
+          style="width: 350px;  margin-left: 20px;"
+          :placeholder="user.subject"
+        />
+        <br><br>
         <PrimeButton
           icon="pi pi-download"
           class="p-button-primary"
@@ -536,8 +538,8 @@ export default {
         firefoxContainers: false,
         showReleaseNotes: true,
         showAllProfiles: false,
-        showAllUsers: false,
         tableSettings: {
+          showAllUsers: false,
           showIamRoles: true,
           showIcon: true,
           sortCustom: false,
@@ -554,7 +556,7 @@ export default {
   },
   computed: {
     settingsLabel() {
-      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.subject : '';
+      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.custom.displayName || this.user.subject : '';
     },
     settingsWidth() {
       return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '130px' : '40px';
@@ -602,7 +604,7 @@ export default {
     userOptions() {
       const options = this.users.map((user: UserData) => ({
         ...user,
-        label: `${user.subject} @ ${user.managedActiveDirectoryId}`,
+        label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
       }));
       return options;
     },
@@ -624,7 +626,7 @@ export default {
         return [];
       }
       // if show all user profiles is enabled, return all profiles
-      if (this.settings.showAllUsers) {
+      if (this.settings.tableSettings.showAllUsers) {
         return this.appProfiles;
       }
       // eslint-disable-next-line vue/max-len
@@ -668,6 +670,12 @@ export default {
         if (v === 'profiles' || v === 'favorites') {
           this.focusSearchBox();
         }
+      },
+    },
+    'user.custom.displayName': {
+      handler(v) {
+        this.$ext.log(`popup:user.custom.displayName:${v}`);
+        this.saveUser();
       },
     },
     'settings.iconColor': {
@@ -765,7 +773,7 @@ export default {
       const fileToSave = new Blob([this.dataJson], {
         type: 'application/json',
       });
-      saveAs(fileToSave, `${this.user.subject}-${this.$ext.config.name}.json`);
+      saveAs(fileToSave, `${this.user.custom.displayName || this.user.subject}-${this.$ext.config.name}.json`);
     },
     toggleContainers() {
       this.settings.firefoxContainers = !this.settings.firefoxContainers;

@@ -30,6 +30,7 @@ class Extension {
   loaded: boolean;
 
   defaultCustom = {
+    displayName: '',
     sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
     sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
     colorDefault: '222f3e',
@@ -54,8 +55,8 @@ class Extension {
     iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,
-    showAllUsers: false,
     tableSettings: {
+      showAllUsers: false,
       showIamRoles: true,
       showIcon: true,
       sortCustom: false,
@@ -457,7 +458,7 @@ class Extension {
     }
     return this.buildLabel(
       user.custom.sessionLabelSso,
-      user.subject,
+      user.custom.displayName || user.subject,
       profile.profile.custom!.label || profile.profile.name,
       null,
       profile.searchMetadata!.AccountId,

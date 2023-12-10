@@ -210,7 +210,22 @@
         $emit('updateTableSettings', newTableSettings);
       "
     />
-    <br v-if="!newTableSettings.showIamRoles || !newTableSettings.showIcon" />
+    <PrimeButton
+      size="small"
+      :icon="newTableSettings.showAllUsers ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="
+        newTableSettings.showAllUsers !== false
+          ? 'p-button-primary'
+          : 'p-button-secondary'
+      "
+      label="All Users"
+      @click="
+        newTableSettings.showAllUsers = !newTableSettings.showAllUsers;
+        $emit('updateTableSettings', newTableSettings);
+      "
+    />
+    <br>
     <PrimeButton
       size="small"
       :icon="sortAppIcon"
@@ -407,6 +422,7 @@ export default {
       type: Object,
       required: false,
       default: () => ({
+        showAllUsers: false,
         showIamRoles: true,
         showIcon: true,
         sortCustom: false,
@@ -464,6 +480,7 @@ export default {
       containers: [] as ContextualIdentity[],
       openContainers: [] as ContextualIdentity[],
       newTableSettings: {
+        showAllUsers: false,
         showIamRoles: true,
         showIcon: true,
         sortCustom: false,
@@ -561,7 +578,7 @@ export default {
     consolePreview() {
       return this.$ext.buildLabel(
         this.user.custom.sessionLabelSso,
-        this.user.subject,
+        this.user.custom.displayName || this.user.subject,
         this.activeProfile.profile.custom!.label || this.activeProfile.profile.name,
         null,
         this.activeProfile.searchMetadata!.AccountId,
