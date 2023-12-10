@@ -35,6 +35,7 @@ const users: UserData[] = [
     subject: 'demouser',
     userId: 'demoUserId1',
     custom: {
+      displayName: '',
       sessionLabelSso: 'demo {{profile}} @ {{account}}',
       sessionLabelIam: 'demo {{role}} @ {{account}}',
       labelHeader: true,
@@ -239,8 +240,8 @@ const demoData: ExtensionData = {
     iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,
-    showAllUsers: false,
     tableSettings: {
+      showAllUsers: false,
       showIamRoles: true,
       showIcon: true,
       sortCustom: false,

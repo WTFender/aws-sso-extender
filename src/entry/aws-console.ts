@@ -49,7 +49,7 @@ function sessionLabel(aws: AwsConsole): string {
   }
   return extension.buildLabel(
     label,
-    aws.user!.subject,
+    aws.user!.custom.displayName || aws.user!.subject,
     aws.appProfile?.profile.custom?.label || aws.appProfile?.profile.name,
     role,
     account,
