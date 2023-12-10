@@ -422,6 +422,7 @@ export default {
       type: Object,
       required: false,
       default: () => ({
+        showAllUsers: false,
         showIamRoles: true,
         showIcon: true,
         sortCustom: false,
@@ -479,6 +480,7 @@ export default {
       containers: [] as ContextualIdentity[],
       openContainers: [] as ContextualIdentity[],
       newTableSettings: {
+        showAllUsers: false,
         showIamRoles: true,
         showIcon: true,
         sortCustom: false,
