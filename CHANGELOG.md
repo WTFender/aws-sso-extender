@@ -1,3 +1,6 @@
+## 1.7.6
+- Fix profiles not loading
+
 ## 1.7.5
 - Set display name for users
 
