@@ -242,7 +242,9 @@ class Extension {
     });
     const data = await Promise.all(appProfiles).then((aps) => ({
       updatedAt: users.length > 0 ? users[0].updatedAt : 0,
-      appProfiles: aps.map((ap) => JSON.parse(ap[Object.keys(ap)[0]])),
+      appProfiles: aps
+        .filter((ap) => ap[Object.keys(ap)[0]] !== undefined)
+        .map((ap) => JSON.parse(ap[Object.keys(ap)[0]])),
       settings,
       users,
       iamLogins,
