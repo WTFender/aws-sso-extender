@@ -441,7 +441,11 @@ class Extension {
         });
         // highlight existing tabs
         (await tabs).forEach((tab) => {
-          this.config.browser.tabs.highlight({ tabs: tab.index! });
+          this.config.browser.tabs.highlight({
+            windowId: tab.windowId!,
+            tabs: tab.index!,
+          });
+          this.config.browser.windows.update(tab.windowId!, { focused: true });
           nav = false;
         });
       }
