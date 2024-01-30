@@ -1,3 +1,6 @@
+## 1.7.7
+- Fix Firefox tabs not focusing in correct browser window when opening profile
+
 ## 1.7.6
 - Fix profiles not loading
 
