@@ -490,6 +490,7 @@ export default {
       settingOptions: [
         { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
         { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
+        { label: 'Sync User Settings', id: 'enableSync', tooltip: 'Sync user settings across browsers. (default: true)' },
       ],
       resources: [
         {
@@ -676,6 +677,14 @@ export default {
       handler(v) {
         this.$ext.log(`popup:user.custom.displayName:${v}`);
         this.saveUser();
+      },
+    },
+    'settings.enableSync': {
+      handler(enableSync) {
+        this.$ext.log(`popup:settings.enableSync:${enableSync}`);
+        this.users.forEach((u) => {
+          this.$ext.saveUser(u, enableSync);
+        });
       },
     },
     'settings.iconColor': {
@@ -894,7 +903,7 @@ export default {
     },
     resetCustom() {
       this.user.custom = this.$ext.defaultCustom;
-      this.$ext.saveUser(this.user).then(() => {
+      this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
         window.close();
       });
     },
@@ -918,7 +927,7 @@ export default {
     },
     saveUser() {
       if (!this.demoMode && this.user.userId !== 'demoUserId1') {
-        this.$ext.saveUser(this.user).then(() => {
+        this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
           this.reload();
         });
       }

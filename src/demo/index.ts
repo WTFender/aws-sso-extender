@@ -234,6 +234,7 @@ const demoData: ExtensionData = {
   iamLogins: [],
   settings: {
     defaultUser: 'lastUserId',
+    enableSync: false,
     lastUserId: users[0].userId,
     lastProfileId: 'p-124',
     firefoxContainers: true,
