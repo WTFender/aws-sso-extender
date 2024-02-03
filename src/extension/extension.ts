@@ -49,6 +49,7 @@ class Extension {
 
   defaultSettings = {
     defaultUser: 'lastUserId',
+    enableSync: true,
     lastUserId: null,
     lastProfileId: null,
     firefoxContainers: false,
@@ -90,28 +91,46 @@ class Extension {
 
   checkPlatform() {
     this.log(`checkPlatform:${navigator.userAgent}`);
-    if (navigator.userAgent.indexOf('Firefox') !== -1) { return 'firefox'; }
-    if (navigator.userAgent.indexOf('Chrome') !== -1) { return 'chrome'; }
-    if (navigator.userAgent.indexOf('Safari') !== -1) { return 'safari'; }
+    if (navigator.userAgent.indexOf('Firefox') !== -1) {
+      return 'firefox';
+    }
+    if (navigator.userAgent.indexOf('Chrome') !== -1) {
+      return 'chrome';
+    }
+    if (navigator.userAgent.indexOf('Safari') !== -1) {
+      return 'safari';
+    }
     return 'chrome';
   }
 
   buildLabel(s, user, profile, role, account, accountName): string {
     let label = s;
-    if (user) { label = label.replaceAll('{{user}}', user); }
-    if (role) { label = label.replaceAll('{{role}}', role); }
-    if (profile) { label = label.replaceAll('{{profile}}', profile); }
-    if (account) { label = label.replaceAll('{{account}}', account); }
-    if (accountName) { label = label.replaceAll('{{accountName}}', accountName); }
+    if (user) {
+      label = label.replaceAll('{{user}}', user);
+    }
+    if (role) {
+      label = label.replaceAll('{{role}}', role);
+    }
+    if (profile) {
+      label = label.replaceAll('{{profile}}', profile);
+    }
+    if (account) {
+      label = label.replaceAll('{{account}}', account);
+    }
+    if (accountName) {
+      label = label.replaceAll('{{accountName}}', accountName);
+    }
     this.log(`buildLabel:${label}`);
     return label;
   }
 
   async checkPermissions(): Promise<ExtensionPermissions> {
     this.log('checkPermissions');
-    const history = this.platform === 'safari' ? Promise.resolve(false) : this.config.browser.permissions.contains({
-      permissions: ['history'],
-    });
+    const history = this.platform === 'safari'
+      ? Promise.resolve(false)
+      : this.config.browser.permissions.contains({
+        permissions: ['history'],
+      });
     const console = this.config.browser.permissions.contains({
       origins: [...this.config.permissions.console],
     });
@@ -121,18 +140,26 @@ class Extension {
     const sso = this.config.browser.permissions.contains({
       origins: [...this.config.permissions.sso],
     });
-    const containers = this.platform === 'firefox' ? this.config.browser.permissions.contains({
-      origins: [...this.config.permissions.containers],
-      permissions: [
-        'activeTab',
-        'tabs',
-        'webRequest',
-        'webRequestBlocking',
-        'webRequestFilterResponse',
-      ],
-    }) : Promise.resolve(false);
+    const containers = this.platform === 'firefox'
+      ? this.config.browser.permissions.contains({
+        origins: [...this.config.permissions.containers],
+        permissions: [
+          'activeTab',
+          'tabs',
+          'webRequest',
+          'webRequestBlocking',
+          'webRequestFilterResponse',
+        ],
+      })
+      : Promise.resolve(false);
     // eslint-disable-next-line vue/max-len
-    const data = await Promise.all([history, console, signin, sso, containers]).then((res) => ({
+    const data = await Promise.all([
+      history,
+      console,
+      signin,
+      sso,
+      containers,
+    ]).then((res) => ({
       history: res[0],
       console: res[1],
       signin: res[2],
@@ -146,7 +173,9 @@ class Extension {
   async loadIamLogins(): Promise<IamRole[]> {
     const loginsKey = `${this.config.name}-iam-logins`;
     const loginsData = await this.config.browser.storage.local.get(loginsKey);
-    const logins = loginsData[loginsKey] === undefined ? {} : JSON.parse(loginsData[loginsKey]);
+    const logins = loginsData[loginsKey] === undefined
+      ? {}
+      : JSON.parse(loginsData[loginsKey]);
     return logins;
   }
 
@@ -155,7 +184,11 @@ class Extension {
     const logins = await this.loadIamLogins();
     delete logins[profileId];
     this.log(logins);
-    return this.saveData(`${this.config.name}-iam-logins`, logins, this.config.browser.storage.local);
+    return this.saveData(
+      `${this.config.name}-iam-logins`,
+      logins,
+      this.config.browser.storage.local,
+    );
   }
 
   queueIamLogin(role: IamRole): Promise<void> {
@@ -163,18 +196,30 @@ class Extension {
     return this.loadIamLogins().then((logins) => {
       const iamLogins = logins;
       iamLogins[role.profileId] = role;
-      this.saveData(`${this.config.name}-iam-logins`, iamLogins, this.config.browser.storage.local);
+      this.saveData(
+        `${this.config.name}-iam-logins`,
+        iamLogins,
+        this.config.browser.storage.local,
+      );
     });
   }
 
-  async loadUser(userId: string): Promise<UserData> {
+  async loadUser(
+    userId: string,
+    enableSync: ExtensionSettings['enableSync'],
+  ): Promise<UserData> {
+    const storage = enableSync
+      ? this.config.browser.storage.sync
+      : this.config.browser.storage.local;
     const userKey = `${this.config.name}-user-${userId}`;
-    const userData = await this.config.browser.storage.sync.get(userKey);
+    const userData = await storage.get(userKey);
     const user = userData[userKey] === undefined ? {} : JSON.parse(userData[userKey]);
     const customKey = `${this.config.name}-custom-${userId}`;
-    const customData = await this.config.browser.storage.sync.get(customKey);
+    const customData = await storage.get(customKey);
     // eslint-disable-next-line vue/max-len
-    const custom = customData[customKey] === undefined ? this.defaultCustom : JSON.parse(customData[customKey]);
+    const custom = customData[customKey] === undefined
+      ? this.defaultCustom
+      : JSON.parse(customData[customKey]);
     Object.keys(this.defaultCustom).forEach((key) => {
       if (!Object.prototype.hasOwnProperty.call(custom, key)) {
         custom[key] = this.defaultCustom[key];
@@ -184,21 +229,31 @@ class Extension {
     return user as UserData;
   }
 
-  async loadUsers(): Promise<UserData[]> {
+  async loadUsers(
+    enableSync: ExtensionSettings['enableSync'],
+  ): Promise<UserData[]> {
     const users: Array<Promise<UserData>> = [];
     const usersKey = `${this.config.name}-users`;
+    // keep users list in sync
     const usersData = await this.config.browser.storage.sync.get(usersKey);
-    const userIds = usersData[usersKey] === undefined ? [] : JSON.parse(usersData[usersKey]).users;
+    const userIds = usersData[usersKey] === undefined
+      ? []
+      : JSON.parse(usersData[usersKey]).users;
+    // enableSync determines where user data (customizations) are stored
     userIds.forEach((userId: string) => {
-      users.push(this.loadUser(userId));
+      users.push(this.loadUser(userId, enableSync));
     });
     await Promise.all(users);
-    const data = await Promise.all(users).then((x) => (x));
+    const data = await Promise.all(users).then((x) => x);
     return data;
   }
 
   async saveSettings(settings: ExtensionSettings): Promise<void> {
-    await this.saveData(`${this.config.name}-settings`, settings, this.config.browser.storage.sync);
+    await this.saveData(
+      `${this.config.name}-settings`,
+      settings,
+      this.config.browser.storage.sync,
+    );
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
@@ -206,7 +261,9 @@ class Extension {
     const setKey = `${this.config.name}-settings`;
     const setData = await this.config.browser.storage.sync.get(setKey);
     // eslint-disable-next-line vue/max-len
-    const settings = setData[setKey] === undefined ? this.defaultSettings : JSON.parse(setData[setKey]);
+    const settings = setData[setKey] === undefined
+      ? this.defaultSettings
+      : JSON.parse(setData[setKey]);
     // replace missing settings with default settings
     // useful when adding new settings between versions
     Object.keys(this.defaultSettings).forEach((key) => {
@@ -230,8 +287,8 @@ class Extension {
     this.log('loadData');
     const iamLogins = await this.loadIamLogins();
     const settings = await this.loadSettings();
-    let users = await this.loadUsers();
-    users = users.sort((a, b) => ((a.updatedAt > b.updatedAt) ? -1 : 1));
+    let users = await this.loadUsers(settings.enableSync);
+    users = users.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1));
     const appProfileIds = users.map((u) => u.appProfileIds);
     const uniqProfileIds = [...new Set(appProfileIds.flat(1))];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,7 +317,9 @@ class Extension {
     if (appProfile.profile.name === 'Default') {
       return `${ssoDirUrl}/default/${appProfileName}/${appProfile.id}`;
     }
-    const appProfilePath = encodeUriPlusParens(btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`));
+    const appProfilePath = encodeUriPlusParens(
+      btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`),
+    );
     return `${ssoDirUrl}/custom/${appProfileName}/${appProfilePath}`;
   }
 
@@ -299,22 +358,40 @@ class Extension {
     await db.set(dataObj);
   }
 
-  saveUser(user: UserData): Promise<void> {
+  saveUser(
+    user: UserData,
+    enableSync: ExtensionSettings['enableSync'],
+  ): Promise<void> {
+    const storage = enableSync
+      ? this.config.browser.storage.sync
+      : this.config.browser.storage.local;
     if ('custom' in user) {
-      this.saveData(`${this.config.name}-custom-${user.userId}`, user.custom, this.config.browser.storage.sync);
+      this.saveData(
+        `${this.config.name}-custom-${user.userId}`,
+        user.custom,
+        storage,
+      );
     }
-    return this.saveData(`${this.config.name}-user-${user.userId}`, { ...user, custom: {} }, this.config.browser.storage.sync);
+    return this.saveData(
+      `${this.config.name}-user-${user.userId}`,
+      { ...user, custom: {} },
+      storage,
+    );
   }
 
-  saveAppProfiles(user: UserData): void {
+  saveAppProfiles(user: UserData, enableSync: ExtensionSettings['enableSync']): void {
     this.log('saveAppProfiles');
     const appProfiles = this.parseAppProfiles();
     appProfiles.forEach((appProfile) => {
-      this.saveData(appProfile.profile?.id, appProfile, this.config.browser.storage.local);
+      this.saveData(
+        appProfile.profile?.id,
+        appProfile,
+        this.config.browser.storage.local,
+      );
     });
     const appProfileIds = appProfiles.map((ap) => ap.profile?.id);
     const data = { ...user, appProfileIds };
-    this.saveUser(data);
+    this.saveUser(data, enableSync);
   }
 
   customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
@@ -329,7 +406,9 @@ class Extension {
     appProfiles.forEach((ap) => {
       const profile = ap;
       // eslint-disable-next-line max-len, vue/max-len
-      profile.profile.custom = ap.profile.id in user.custom.profiles ? user.custom.profiles[ap.profile.id] : defaults;
+      profile.profile.custom = ap.profile.id in user.custom.profiles
+        ? user.custom.profiles[ap.profile.id]
+        : defaults;
       customProfiles.push(profile);
     });
     this.log(user);
@@ -337,7 +416,11 @@ class Extension {
     return customProfiles;
   }
 
-  findAppProfile(ssoRoleName: string, accountId: string, data: ExtensionData): AppData | null {
+  findAppProfile(
+    ssoRoleName: string,
+    accountId: string,
+    data: ExtensionData,
+  ): AppData | null {
     this.log('findAppProfile');
     const appProfiles: AppData[] = [];
     const activeUserId = data.users.length === 1 ? data.users[0].userId : data.settings.lastUserId;
@@ -346,8 +429,10 @@ class Extension {
         data.appProfiles.forEach((ap) => {
           if (ap.applicationName === 'AWS Account') {
             // sso user, check for matching app profile
-            if (ap.profile.name === ssoRoleName
-              && ap.searchMetadata?.AccountId === accountId) {
+            if (
+              ap.profile.name === ssoRoleName
+              && ap.searchMetadata?.AccountId === accountId
+            ) {
               appProfiles.push(this.customizeProfiles(user, [ap])[0]);
             }
           }
@@ -358,9 +443,15 @@ class Extension {
     return appProfiles[0];
   }
 
-  findAppProfileByRole(iamRole: IamRole, user: UserData, data: ExtensionData): AppData {
+  findAppProfileByRole(
+    iamRole: IamRole,
+    user: UserData,
+    data: ExtensionData,
+  ): AppData {
     // eslint-disable-next-line vue/max-len
-    const appProfiles = data!.appProfiles.filter((ap) => ap.profile.id === iamRole?.profileId);
+    const appProfiles = data!.appProfiles.filter(
+      (ap) => ap.profile.id === iamRole?.profileId,
+    );
     this.log('findAppProfileByRole');
     this.log(appProfiles);
     return this.customizeProfiles(user, appProfiles)[0];
@@ -376,7 +467,9 @@ class Extension {
   findUser(data: ExtensionData): UserData {
     this.log('findUser');
     // eslint-disable-next-line vue/max-len
-    const activeUserId = data!.users.length === 1 ? data!.users[0].userId : data!.settings.lastUserId;
+    const activeUserId = data!.users.length === 1
+      ? data!.users[0].userId
+      : data!.settings.lastUserId;
     return data!.users.filter((u) => u.userId === activeUserId)[0];
   }
 
@@ -385,7 +478,7 @@ class Extension {
     let user = users[0];
     users.forEach((u) => {
       if ((u as UserData).appProfileIds.includes(profileId)) {
-        user = (u as UserData);
+        user = u as UserData;
       }
     });
     return user;
@@ -401,7 +494,7 @@ class Extension {
         { users: [...new Set(userIds)] },
         this.config.browser.storage.sync,
       );
-      this.saveAppProfiles(user);
+      this.saveAppProfiles(user, data.settings.enableSync);
     });
   }
 
@@ -415,16 +508,26 @@ class Extension {
       'action=switchFromBasis',
       'mfaNeeded=0',
       'src=nav',
-      `redirect_uri=${encodeURIComponent('https://console.aws.amazon.com/console/home')}`,
+      `redirect_uri=${encodeURIComponent(
+        'https://console.aws.amazon.com/console/home',
+      )}`,
     ].join('&');
     window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
   }
 
   // eslint-disable-next-line vue/max-len
-  async navSelectedProfile(profile: AppData, user: UserData, users: UserData[], settings: ExtensionSettings) {
+  async navSelectedProfile(
+    profile: AppData,
+    user: UserData,
+    users: UserData[],
+    settings: ExtensionSettings,
+  ) {
     let nav = true;
     // eslint-disable-next-line vue/max-len
-    if (settings.showAllProfiles && !user.appProfileIds.includes(profile.profile.id)) {
+    if (
+      settings.showAllProfiles
+      && !user.appProfileIds.includes(profile.profile.id)
+    ) {
       // eslint-disable-next-line no-param-reassign
       user = this.findUserByProfileId(profile.profile.id, users);
     }
@@ -480,14 +583,30 @@ class Extension {
       const requiredKeys = ['users', 'appProfiles'];
       const config = JSON.parse(jsonConfig);
       requiredKeys.forEach((key) => {
-        if (!(key in config)) { throw new Error(`Missing required key: ${key} of ${requiredKeys}`); }
+        if (!(key in config)) {
+          throw new Error(`Missing required key: ${key} of ${requiredKeys}`);
+        }
       });
-      config.users.forEach((user) => { this.saveUser(user); });
+      config.users.forEach((user) => {
+        this.saveUser(user, false);
+      });
       config.appProfiles.forEach((appProfile) => {
-        this.saveData(appProfile.profile.id, appProfile, this.config.browser.storage.local);
+        this.saveData(
+          appProfile.profile.id,
+          appProfile,
+          this.config.browser.storage.local,
+        );
       });
-      if ('settings' in config) { this.saveSettings(config.settings); }
-      if ('iamLogins' in config) { this.saveData(`${this.config.name}-iam-logins`, config.iamLogins, this.config.browser.storage.local); }
+      if ('settings' in config) {
+        this.saveSettings(config.settings);
+      }
+      if ('iamLogins' in config) {
+        this.saveData(
+          `${this.config.name}-iam-logins`,
+          config.iamLogins,
+          this.config.browser.storage.local,
+        );
+      }
       return true;
     } catch {
       return false;

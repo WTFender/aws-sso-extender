@@ -20,21 +20,22 @@ export interface ExtensionConfig {
 }
 
 export interface ExtensionSettings {
-  defaultUser: string
-  lastUserId: string
-  lastProfileId: string
-  firefoxContainers?: boolean
-  iconColor: string
-  showReleaseNotes: boolean
-  showAllProfiles: boolean
+  defaultUser: string;
+  enableSync: boolean;
+  lastUserId: string;
+  lastProfileId: string;
+  firefoxContainers?: boolean;
+  iconColor: string;
+  showReleaseNotes: boolean;
+  showAllProfiles: boolean;
   tableSettings: {
-    showAllUsers: boolean
-    showIamRoles: boolean
-    showIcon: boolean
-    sortCustom: boolean
-    sortApp: boolean | string
-    sortProfile: boolean | string
-  }
+    showAllUsers: boolean;
+    showIamRoles: boolean;
+    showIcon: boolean;
+    sortCustom: boolean;
+    sortApp: boolean | string;
+    sortProfile: boolean | string;
+  };
 }
 
 export interface ExtensionPermissions {

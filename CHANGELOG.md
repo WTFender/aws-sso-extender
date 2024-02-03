@@ -1,3 +1,6 @@
+## 1.7.8
+- Add setting for syncing user settings across browsers; disabling sync increases the number of customizations that can be saved
+
 ## 1.7.7
 - Fix Firefox tabs not focusing in correct browser window when opening profile
 
