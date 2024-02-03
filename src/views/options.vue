@@ -5,209 +5,145 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
-    <template v-if="permissions.sso && loaded" #start>
-      <ToggleButton
-        v-model="settingsPage"
+    <template #center>
+      <PSplitButton
+        v-if="users.length > 1"
+        class="user-button menu-button"
+        :label="userLabel"
+        icon="pi pi-users"
         size="small"
-        :style="{
-          fontSize: '12px',
-          border: '1px solid #ced4da',
-          width: settingsWidth,
-        }"
-        class="toolbar-field"
-        :on-label="'Back'"
-        :off-label="settingsLabel"
-        on-icon="pi pi-arrow-left"
-        off-icon="pi pi-cog"
+        :model="userOptions"
+        @click="$ext.browser.runtime.openOptionsPage()"
       />
-    </template>
-    <template v-if="permissions.sso && loaded" #center>
-      <div v-if="page === 'settings'">
-        <div class="py-2">
-          <PrimeButton
-            v-for="tab in tabs"
-            :key="tab.index"
-            style="padding: 5px; margin: 0px"
-            :text="activeTab !== tab.index"
-            size="small"
-            :label="tab.label"
-            @click="activeTab = tab.index"
-          />
-        </div>
-      </div>
-      <span v-else class="p-input-icon-left" style="margin: 0px">
-        <i class="pi pi-search" />
-        <InputText
-          id="searchBox"
-          ref="searchBox"
-          v-model="search"
-          autofocus
-          class="toolbar-field"
-          :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
-          size="small"
-          :style="{ width: searchBoxWidth, fontSize: '12px' }"
-        />
-      </span>
-    </template>
-    <template v-else #center>
-      <h3>AWS SSO Extender - Setup</h3>
+      <PrimeButton
+        v-else
+        class="user-button menu-button"
+        :label="userLabel"
+        icon="pi pi-user"
+        size="small"
+        @click="$ext.browser.runtime.openOptionsPage()"
+      />
+      <PrimeButton
+        icon="pi pi-download"
+        class="p-button-primary menu-button"
+        label="Export"
+        style="margin-right: 5px; margin-left: 20px;"
+        size="small"
+        @click="exportUser()"
+      />
+      <PrimeButton
+        icon="pi pi-trash"
+        class="p-button-danger menu-button reset-button"
+        label="Reset"
+        style="margin-right: 5px"
+        size="small"
+        @click="resetCustom()"
+      /><br>
     </template>
     <template #end>
-      <PrimeButton
-        v-if="!permissions.sso || !loaded"
-        size="small"
-        icon="pi pi-play"
-        class="p-button-success toolbar-field"
-        label="Demo"
-        @click="demo()"
-      />
-      <div v-else>
-        <ToggleButton
-          v-model="tableEditor"
-          :disabled="settingsPage"
-          style="width: 40px; border: 1px solid #ced4da;"
-          class="toolbar-field"
-          on-label=""
-          off-label=""
-          on-icon="pi pi-pencil"
-          off-icon="pi pi-pencil"
-          size="small"
-        />
-        <ToggleButton
-          v-model="favorites"
-          :disabled="settingsPage || tableEditor"
-          style="width: 40px; border: 1px solid #ced4da;"
-          class="toolbar-field"
-          on-label=""
-          off-label=""
-          on-icon="pi pi-star"
-          off-icon="pi pi-star"
-          size="small"
-        />
-      </div>
+      <PrimeButton outlined class="menu-button reset-button" severity="secondary" icon="pi pi-code" @click="viewJson = !viewJson" />
     </template>
   </PToolbar>
 
-  <div
-    class="card"
-    :style="{ height: tableEditor ? '500px' : '', width: windowSize }"
-  >
-    <!--- Setup -->
-    <SetupSteps
-      v-show="!permissions.sso || !loaded"
-      style="margin-top: 10px"
-      :permissions="permissions"
-      :loaded="loaded"
-    />
-
-    <!--- Profiles -->
-    <ProfileTable
-      v-if="!settingsPage"
-      :loaded="loaded"
-      :table-editor="tableEditor"
-      :demo-mode="demoMode"
-      :settings="settings"
-      :search="search"
-      :app-profiles="favorites ? faveProfiles : userProfiles"
-      :user="user"
-      :users="users"
-      :permissions="permissions"
-      @focusSearchBox="focusSearchBox"
-      @requestPermissions="requestPermissionsSwitchrole"
-      @saveUser="saveUser"
-      @updateProfile="updateProfile"
-      @updateProfileLabel="updateProfileLabel"
-      @updateTableSettings="updateTableSettings"
-    />
-
-    <!--- User (settings) page -->
-    <PScrollPanel v-show="settingsPage" class="scroll" style="max-width: 100%; height: 500px">
-      <div v-if="activeTab === 0" class="settings">
-        <h3>Switch User</h3>
-        <PListbox
-          v-model="user"
-          name="userSelect"
-          :options="users"
-          class="w-full md:w-14rem"
-          style="margin-bottom: 25px; margin-left: 20px; margin-right: 20px; margin-top: 10px;"
-        >
-          <template #option="slotProps">
-            <div class="flex align-items-center">
-              <div>
-                {{
-                  (slotProps.option.custom.displayName || slotProps.option.subject)
-                    + " @ "
-                    + slotProps.option.managedActiveDirectoryId
-                    + (slotProps.option.custom.displayName ? " (" + slotProps.option.subject + ")" : "")
-                }}
-              </div>
-            </div>
-          </template>
-        </PListbox>
-        <h3>Default User</h3>
+  <div v-if="viewJson">
+    {{ dataJson }}
+  </div>
+  <div class="options-parent">
+    <div class="options-group">
+      <h2>Extension Settings</h2>
+      <small class="option-label">Default User</small>
+      <select
+        id="defaultUserSelect"
+        name="defaultUserSelect"
+        style="margin-bottom: 10px; margin-left: 20px;"
+        @change="setDefaultUser($event)"
+      >
+        <option
+          v-for="u in defaultUserOptions"
+          :key="u.userId"
+          :label="u.label"
+          :value="u.userId"
+          :selected="u.userId === settings.defaultUser"
+        />
+      </select>
+      <form class="option-label" style="margin-bottom: 20px;">
+        <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
+          <div class="p-hidden-accessible">
+            <input type="checkbox" disabled>
+          </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': hexColors[settings.iconColor] }">
+            <span class="p-checkbox-icon" />
+          </div>
+        </div>
+        <label v-tooltip.bottom="'Extension icon color'" for="iconColor" style="margin-right: 10px;">Icon Color</label>
         <select
-          id="defaultUserSelect"
-          name="defaultUserSelect"
-          style="margin-bottom: 10px; margin-left: 20px;"
-          @change="setDefaultUser($event)"
+          v-model="settings.iconColor"
+          style="margin-bottom: 5px;"
         >
           <option
-            v-for="u in defaultUserOptions"
-            :key="u.userId"
-            :label="u.label"
-            :value="u.userId"
-            :selected="u.userId === settings.defaultUser"
+            v-for="c in ['red', 'blue', 'green', 'purple']"
+            :key="c + 'icon'"
+            :label="c"
+            :value="c"
           />
         </select>
-        <small style="margin-left: 20px;">Display Name</small><br>
+        <div v-for="setting in settingOptions" :key="setting.id">
+          <PCheckbox
+            v-model="settings[setting.id]"
+            :input-id="setting.id"
+            :name="setting.id"
+            :binary="true"
+            style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+          />
+          <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
+        </div>
+      </form><br>
+      <div v-for="res in resources" :key="res.label" class="option-label">
+        <PrimeButton
+          raised
+          size="small"
+          :icon="'pi ' + res.icon"
+          :label="res.label"
+          :severity="res.severity"
+          @click="openResource(res.url)"
+        />
+      </div>
+    </div>
+    <div class="options-group">
+      <div>
+        <h2>User Settings</h2>
+        <small class="option-label">Display Name</small><br>
         <InputText
           id="displayName"
           v-model="user.custom.displayName"
           name="displayName"
-          class="p-inputtext-sm"
-          style="width: 350px;  margin-left: 20px;"
+          class="p-inputtext-sm option-value"
+          style="width: 350px;"
           :placeholder="user.subject"
-        />
-        <br><br>
-        <PrimeButton
-          icon="pi pi-download"
-          class="p-button-primary"
-          label="Export"
-          style="margin-right: 5px; margin-left: 20px;"
-          @click="exportUser()"
-        />
-        <PrimeButton
-          icon="pi pi-pencil"
-          class="p-button-secondary"
-          label="Edit"
-          style="margin-right: 5px;"
-          @click="importUser = true"
-        />
-        <PDialog v-model:visible="importUser" header="Edit User Config" :style="{ width: '500px' }">
-          <PScrollPanel class="scroll" style="max-width: 100%; max-height: 300px">
-            <p>
-              Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during SSO login.
-            </p>
-            <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
-              dataJson
-            }}</pre>
-          </PScrollPanel>
-          <template #footer>
-            <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" />
-            <p ref="configError" style="color: red; display: none;">
-              Unable to save config JSON.
-            </p>
-          </template>
-        </PDialog>
-        <PrimeButton
-          icon="pi pi-trash"
-          class="p-button-danger reset-button"
-          label="Reset"
-          style="margin-right: 5px"
-          @click="resetCustom()"
-        />
+        /><br>
+        <small v-tooltip.bottom="$ext.platform === 'firefox' ? 'Customize key binds @ about:addons' : 'Customize key binds @ chrome://extensions/shortcuts'" class="option-label">Profile Hotkeys</small><br>
+        <div class="option-label">
+          <form style="margin-left: 20px;">
+            <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
+              <code>{{ hotkey['shortcut'] }}</code><select
+                style="margin-bottom: 10px; margin-left: 20px;"
+                @change="setHotkeyProfileId($event, hotkey['name'])"
+              >
+                <option
+                  v-for="p in awsAppProfiles"
+                  :key="p.profile.id"
+                  :label="p.label"
+                  :value="p.profile.id"
+                  :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
+                />
+              </select>
+              <br />
+            </div>
+          </form>
+        </div>
       </div>
-      <div v-if="activeTab === 1" class="settings">
+    </div>
+    <div class="options-group">
+      <div>
         <div v-if="!consolePermissions">
           <p>This extension requires permissions to customize the AWS console:</p>
           <code>https://*.console.aws.amazon.com/*</code><br />
@@ -221,8 +157,10 @@
           />
         </div>
         <div v-else>
-          <h3>Customize the AWS Console</h3>
-          <form style="margin-left: 20px;">
+          <h2>
+            AWS Console Settings
+          </h2>
+          <form class="option-label">
             <div>
               <div v-if="$ext.platform === 'firefox'">
                 <PCheckbox
@@ -345,113 +283,34 @@
           </form>
         </div>
       </div>
-      <div v-if="activeTab === 2" class="settings">
-        <div v-if="!permissions.console || !permissions.signin">
-          <p>
-            In order to switch IAM roles, this extension requires permissions to the AWS
-            console.
-          </p>
-          <code>https://*.console.aws.amazon.com/*</code><br />
-          <code>https://signin.aws.amazon.com/switchrole</code>
-          <PrimeButton
-            size="small"
-            icon="pi pi-lock"
-            class="p-button-success"
-            label="Request Permissions"
-            style="margin-top: 10px"
-            @click="requestPermissionsSwitchrole()"
-          />
-        </div>
-        <IamRoles
-          v-else
-          :app-profiles="userProfiles"
-          :aws-app-profiles="awsAppProfiles"
-          @addIamRole="addIamRole"
-          @updateProfile="updateProfile"
-          @setPage="setPage"
-          @saveUser="saveUser"
+    </div>
+    <div class="options-group">
+      <div v-if="!permissions.console || !permissions.signin">
+        <p>
+          In order to switch IAM roles, this extension requires permissions to the AWS
+          console.
+        </p>
+        <code>https://*.console.aws.amazon.com/*</code><br />
+        <code>https://signin.aws.amazon.com/switchrole</code>
+        <PrimeButton
+          size="small"
+          icon="pi pi-lock"
+          class="p-button-success"
+          label="Request Permissions"
+          style="margin-top: 10px"
+          @click="requestPermissionsSwitchrole()"
         />
       </div>
-      <div v-if="activeTab === 3" class="settings">
-        <div style="margin-bottom: 25px">
-          <h3>Extension Settings</h3>
-          <form style="margin-left: 20px;">
-            <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
-              <div class="p-hidden-accessible">
-                <input type="checkbox" disabled>
-              </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': hexColors[settings.iconColor] }">
-                <span class="p-checkbox-icon" />
-              </div>
-            </div>
-            <label v-tooltip.bottom="'Extension icon color'" for="iconColor" style="margin-right: 10px;">Icon Color</label>
-            <select
-              v-model="settings.iconColor"
-              style="margin-bottom: 5px;"
-            >
-              <option
-                v-for="c in ['red', 'blue', 'green', 'purple']"
-                :key="c + 'icon'"
-                :label="c"
-                :value="c"
-              />
-            </select>
-            <div v-for="setting in settingOptions" :key="setting.id">
-              <PCheckbox
-                v-model="settings[setting.id]"
-                :input-id="setting.id"
-                :name="setting.id"
-                :binary="true"
-                style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
-              />
-              <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
-            </div>
-          </form>
-        </div>
-        <div>
-          <h3>Profile Hotkeys</h3>
-          <p v-if="$ext.platform === 'firefox'">
-            Customize keybinds @ about:addons
-          </p>
-          <p v-if="$ext.platform === 'firefox'">
-            <a href="https://bug1303384.bmoattachments.org/attachment.cgi?id=9051647">Example</a>
-          </p><p v-else>
-            Customize keybinds @ chrome://extensions/shortcuts
-          </p>
-
-          <form style="margin-left: 20px;">
-            <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
-              <code>{{ hotkey['shortcut'] }}</code><select
-                style="margin-bottom: 10px; margin-left: 20px;"
-                @change="setHotkeyProfileId($event, hotkey['name'])"
-              >
-                <option
-                  v-for="p in awsAppProfiles"
-                  :key="p.profile.id"
-                  :label="p.label"
-                  :value="p.profile.id"
-                  :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
-                />
-              </select>
-              <br />
-            </div>
-          </form>
-        </div>
-        <div>
-          <h3>Resources</h3>
-          <div v-for="res in resources" :key="res.label">
-            <PrimeButton
-              text
-              :icon="'pi ' + res.icon"
-              :label="res.label"
-              :severity="res.severity"
-              @click="openResource(res.url)"
-            />
-          </div>
-        </div>
-      </div>
-    </PScrollPanel>
+      <IamRoles
+        v-else
+        :app-profiles="userProfiles"
+        :aws-app-profiles="awsAppProfiles"
+        @addIamRole="addIamRole"
+        @updateProfile="updateProfile"
+        @saveUser="saveUser"
+      />
+    </div>
   </div>
-
   <!--- Footer -->
   <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
     <p v-if="$ext.config.debug" style="margin: 0px">
@@ -461,7 +320,6 @@
 </template>
 <script lang="ts">
 import { saveAs } from 'file-saver';
-import { waitForElement } from '../utils';
 import demoData from '../demo';
 import {
   AppData,
@@ -473,9 +331,14 @@ import {
 } from '../types';
 
 export default {
-  name: 'PopupView',
+  name: 'OptionsView',
   data() {
     return {
+      viewJson: false,
+      items: [
+        { label: 'New', icon: 'pi pi-plus' },
+        { label: 'Search', icon: 'pi pi-search' },
+      ],
       hexColors: {
         red: '#de2d35',
         blue: '#24b0ff',
@@ -483,9 +346,6 @@ export default {
         purple: '#6466f1',
       },
       profileHotkeys: [],
-      profileEditor: false,
-      settingsPage: false,
-      favorites: false,
       settingOptions: [
         { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
         { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
@@ -493,7 +353,7 @@ export default {
       ],
       resources: [
         {
-          icon: 'pi-star', severity: 'primary', label: 'Request a Feature', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml',
+          icon: 'pi-plus-circle', severity: 'primary', label: 'Request a Feature', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml',
         },
         {
           icon: 'pi-exclamation-triangle', severity: 'warning', label: 'Report a Bug', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml',
@@ -503,15 +363,6 @@ export default {
         },
       ],
       importUser: false,
-      tabs: [
-        { index: 0, label: 'Users' },
-        { index: 1, label: 'Console' },
-        { index: 2, label: 'Roles' },
-        { index: 3, label: 'Settings' },
-      ],
-      activeTab: 0,
-      search: '',
-      tableEditor: false,
       raw: {} as ExtensionData,
       colorPickerVisible: false,
       demoMode: false,
@@ -522,11 +373,6 @@ export default {
         sso: false,
         containers: false,
       },
-      setupSteps: [
-        { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
-        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
-      ],
-      loaded: false,
       user: {
         custom: {},
       } as UserData,
@@ -549,46 +395,13 @@ export default {
       } as ExtensionSettings,
       appProfiles: [] as AppData[],
       dataJson: '',
-      lastPage: 'profiles',
-      page: '', // profiles, favorites, users
       updatedAt: 0,
+      loaded: false,
     };
   },
   computed: {
-    settingsLabel() {
-      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.custom.displayName || this.user.subject : '';
-    },
-    settingsWidth() {
-      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '130px' : '40px';
-    },
-    searchBoxWidth() {
-      if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
-        return '135px';
-      }
-      return '235px';
-    },
-    windowSize() {
-      if (!this.loaded || this.page === 'settings' || this.profileEditor) {
-        return '580px';
-      }
-      if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
-        return '380px';
-      }
-      if (!this.settings.tableSettings.showIcon || !this.settings.tableSettings.showIamRoles) {
-        return '480px';
-      }
-      return '580px';
-    },
-    isPageProfiles() {
-      return this.page === 'profiles';
-    },
-    userConfigUpdate() {
-      let update = false;
-      if (this.dataJson !== (this.$refs.userConfigJson as any).innerText) {
-        update = true;
-      }
-      this.$ext.log(`popup:userConfigUpdate:${update}`);
-      return update;
+    userLabel() {
+      return this.user.custom.displayName || this.user.subject;
     },
     consolePermissions() {
       if (this.$ext.platform === 'firefox') {
@@ -605,13 +418,11 @@ export default {
       const options = this.users.map((user: UserData) => ({
         ...user,
         label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
+        command: () => {
+          this.user = user;
+        },
       }));
       return options;
-    },
-    faveProfiles(): AppData[] {
-      return this.userProfiles.filter(
-        (ap: AppData) => ap.profile.custom?.favorite === true,
-      );
     },
     awsAppProfiles(): AppData[] {
       const appProfiles = this.appProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
@@ -634,81 +445,6 @@ export default {
     },
   },
   watch: {
-    favorites: {
-      handler(v) {
-        this.$ext.log(`popup:favorites:${v}`);
-        this.focusSearchBox();
-      },
-    },
-    tableEditor: {
-      handler(v) {
-        this.$ext.log(`popup:tableEditor:${v}`);
-        if (v === true) {
-          this.favorites = false;
-        } else {
-          this.focusSearchBox();
-        }
-      },
-    },
-    settingsPage: {
-      handler(v) {
-        this.$ext.log(`popup:settingsPage:${v}`);
-        if (v === true) {
-          this.setPage('settings');
-        } else {
-          this.setPage('profiles');
-        }
-      },
-    },
-    page: {
-      handler(v) {
-        this.lastPage = v;
-        if (v === 'settings') {
-          // clear profile table selection
-          this.tableEditor = false;
-        }
-        if (v === 'profiles' || v === 'favorites') {
-          this.focusSearchBox();
-        }
-      },
-    },
-    'user.custom.displayName': {
-      handler(v) {
-        this.$ext.log(`popup:user.custom.displayName:${v}`);
-        this.saveUser();
-      },
-    },
-    'settings.enableSync': {
-      handler(enableSync) {
-        this.$ext.log(`popup:settings.enableSync:${enableSync}`);
-        this.users.forEach((u) => {
-          this.$ext.saveUser(u, enableSync);
-        });
-      },
-    },
-    'settings.iconColor': {
-      handler(color) {
-        this.$ext.log(`popup:settings.iconColor:${color}`);
-        this.$ext.config.browser.action.setIcon({ path: `/icons/${color}/128.png` });
-        this.$ext.saveSettings(this.settings);
-      },
-    },
-    'settings.firefoxContainers': {
-      handler(v) {
-        if (this.$ext.platform === 'firefox') {
-          this.$ext.log(`popup:settings.firefoxContainers:${v}`);
-          if (v === true) {
-            this.$ext.config.browser.runtime.sendMessage({
-              action: 'enableFirefoxContainers',
-            });
-          } else if (v === false) {
-            this.$ext.config.browser.runtime.sendMessage({
-              action: 'disableFirefoxContainers',
-            });
-          }
-        }
-      },
-    },
     settings: {
       handler() {
         if (!this.demoMode) {
@@ -722,19 +458,6 @@ export default {
         this.user = this.$ext.getDefaultUser(this.raw);
       }
       this.settings.lastUserId = this.user.userId;
-      this.refreshProfiles();
-      // this.reload();
-    },
-    loaded(v) {
-      this.$ext.log(`popup:loaded:${v}`);
-      this.$ext.log(this.settings.showAllProfiles);
-      if (v === true) {
-        if (this.settings.showAllProfiles || this.faveProfiles.length === 0) {
-          this.favorites = false;
-        } else if (this.faveProfiles.length >= 1) {
-          this.favorites = true;
-        }
-      }
     },
   },
   created() {
@@ -754,16 +477,6 @@ export default {
       });
       this.$ext.log('popup:getProfileHotkeys');
       this.$ext.log(this.profileHotkeys);
-    },
-    focusSearchBox() {
-      waitForElement('#searchBox').then((searchBox) => {
-        searchBox.focus();
-      });
-    },
-    updateTableSettings(tableSettings) {
-      this.profileEditor = tableSettings.profileEditor;
-      delete tableSettings.profileEditor;
-      this.settings.tableSettings = tableSettings;
     },
     openResource(url) {
       window.open(url, '_blank');
@@ -895,11 +608,6 @@ export default {
         this.$ext.log(this.permissions);
       });
     },
-    setPage(page) {
-      this.$ext.log(page);
-      this.$ext.log(`popup:page:${page}`);
-      this.page = page;
-    },
     resetCustom() {
       this.user.custom = this.$ext.defaultCustom;
       this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
@@ -911,9 +619,6 @@ export default {
       this.user.custom.profiles[appProfile.profile.id] = appProfile.profile
         .custom as CustomData;
       this.$ext.log(this.user);
-      if (this.faveProfiles.length === 0) {
-        this.setPage('profiles');
-      }
       this.saveUser();
     },
     saveConsoleSettings() {
@@ -960,6 +665,38 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.options-parent {
+  margin: 1rem;
+  padding: 2rem 2rem;
+  padding-top: 0rem;
+  margin-top: 0rem;
+  text-align: center;
+}
+.options-group {
+  text-align: left;
+  display: inline-block;
+  padding: 1rem 1rem;
+  vertical-align: top;
+  width: 400px;
+}
+.option-label, .option-value {
+  margin-left: 20px;
+  font-size: 1rem;
+}
+.option-label {
+  margin-bottom: 10px;
+}
+.option-value {
+  margin-bottom: 25px;
+}
+.menu-button,
+.user-button {
+  font-size: '12px';
+  height: 30px;
+}
+.user-button {
+  width: 175px;
+}
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);
   border-bottom: 10px solid var(--surface-50);
@@ -997,12 +734,14 @@ export default {
 
 .card {
   background-color: white;
-  max-height: 500px;
   display: inline-block;
   margin: 0px;
+  margin-top: 20px;
+  margin-left: 40px;
   padding: 0px;
   padding-bottom: 3px;
   border: none;
+  min-width: 500px;
 }
 .toolbar-field {
   height: 30px;
@@ -1054,8 +793,7 @@ export default {
   height: 20px;
 }
 
-.json,
-.settings {
+.json {
   margin: 15px;
 }
 .setting-label,

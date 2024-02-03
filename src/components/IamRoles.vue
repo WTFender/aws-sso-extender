@@ -1,6 +1,6 @@
 <!-- eslint-disable max-len -->
 <template>
-  <h3>Assume IAM Roles via SSO Profiles</h3>
+  <h2>Assume IAM Roles via SSO Profiles</h2>
   <div style="margin-left: 20px;">
     <div style="margin-bottom: 10px">
       <small id="arn-help">IAM Role ARN</small><br />
@@ -95,7 +95,7 @@ export default {
       type: Array<AppData>,
     },
   },
-  emits: ['addIamRole', 'saveUser', 'updateProfile', 'setPage'],
+  emits: ['addIamRole', 'saveUser', 'updateProfile'],
   data() {
     return {
       colorPickerVisible: false,
