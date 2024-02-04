@@ -17,45 +17,84 @@
       />
       <PrimeButton
         v-else
+        raised
         class="user-button menu-button"
         :label="userLabel"
         icon="pi pi-user"
         size="small"
         @click="$ext.browser.runtime.openOptionsPage()"
       />
-      <PrimeButton
-        icon="pi pi-download"
-        class="p-button-primary menu-button"
-        label="Export"
-        style="margin-right: 5px; margin-left: 20px;"
-        size="small"
-        @click="exportUser()"
-      />
-      <PrimeButton
-        icon="pi pi-trash"
-        class="p-button-danger menu-button reset-button"
-        label="Reset"
-        style="margin-right: 5px"
-        size="small"
-        @click="resetCustom()"
-      /><br>
-    </template>
-    <template #end>
-      <PrimeButton outlined class="menu-button reset-button" severity="secondary" icon="pi pi-code" @click="viewJson = !viewJson" />
     </template>
   </PToolbar>
-
-  <div v-if="viewJson">
-    {{ dataJson }}
-  </div>
   <div class="options-parent">
+    <h3>User Config</h3>
+    <PrimeButton
+      raised
+      :disabled="true"
+      icon="pi pi-save"
+      class="menu-button"
+      label="Save"
+      style="margin-right: 1rem;"
+      size="small"
+      severity="success"
+      @click="exportUser()"
+    />
+    <PrimeButton
+      raised
+      icon="pi pi-download"
+      class="p-button-primary menu-button"
+      label="Export"
+      style="margin-right: 1rem;"
+      size="small"
+      @click="exportUser()"
+    />
+    <PrimeButton
+      raised
+      icon="pi pi-trash"
+      class="p-button-danger menu-button reset-button"
+      label="Reset"
+      style="margin-right: 1rem"
+      size="small"
+      @click="resetCustom()"
+    />
+    <PrimeButton
+      raised
+      :outlined="!viewJson"
+      icon="pi pi-code"
+      class="menu-button"
+      label="JSON"
+      style="margin-right: 1rem"
+      severity="secondary"
+      size="small"
+      @click="viewJson = !viewJson"
+    />
+  </div>
+
+  <div v-if="viewJson" class="options-parent">
+    <div class="options-group" style="width: 768px;">
+      <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
+      dataJson
+      }}</pre>
+    </div>
+  </div>
+  <div v-else class="options-parent">
     <div class="options-group">
       <h2>Extension Settings</h2>
-      <small class="option-label">Default User</small>
+      <small class="option-label">Display Name</small><br>
+      <InputText
+        id="displayName"
+        v-model="user.custom.displayName"
+        name="displayName"
+        class="p-inputtext-sm option-value"
+        style="width: 330px;"
+        :placeholder="user.subject"
+      />
+      <small class="option-label">Default User</small><br>
       <select
         id="defaultUserSelect"
         name="defaultUserSelect"
-        style="margin-bottom: 10px; margin-left: 20px;"
+        class="option-value"
+        style="width: 330px;"
         @change="setDefaultUser($event)"
       >
         <option
@@ -64,9 +103,44 @@
           :label="u.label"
           :value="u.userId"
           :selected="u.userId === settings.defaultUser"
+          style="padding: .5rem; border-radius: 5px;"
         />
-      </select>
+      </select><br>
+      <small
+        v-tooltip.bottom="$ext.platform === 'firefox' ? 'Customize key binds @ about:addons' : 'Customize key binds @ chrome://extensions/shortcuts'"
+        class="option-label"
+        style="margin-top: 1.5rem;"
+      >Profile Hotkeys</small><br>
+      <div class="option-label" style="margin-top: .5rem; margin-left: 1rem;">
+        <form>
+          <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
+            <code>{{ hotkey['shortcut'] }}</code><select
+              style="margin-bottom: 10px; width: 330px;"
+              @change="setHotkeyProfileId($event, hotkey['name'])"
+            >
+              <option
+                v-for="p in awsAppProfiles"
+                :key="p.profile.id"
+                :label="p.label"
+                :value="p.profile.id"
+                :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
+              />
+            </select>
+            <br />
+          </div>
+        </form>
+      </div>
       <form class="option-label" style="margin-bottom: 20px;">
+        <div v-for="setting in settingOptions" :key="setting.id">
+          <PCheckbox
+            v-model="settings[setting.id]"
+            :input-id="setting.id"
+            :name="setting.id"
+            :binary="true"
+            style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+          />
+          <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
+        </div>
         <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
           <div class="p-hidden-accessible">
             <input type="checkbox" disabled>
@@ -86,61 +160,7 @@
             :value="c"
           />
         </select>
-        <div v-for="setting in settingOptions" :key="setting.id">
-          <PCheckbox
-            v-model="settings[setting.id]"
-            :input-id="setting.id"
-            :name="setting.id"
-            :binary="true"
-            style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
-          />
-          <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
-        </div>
-      </form><br>
-      <div v-for="res in resources" :key="res.label" class="option-label">
-        <PrimeButton
-          raised
-          size="small"
-          :icon="'pi ' + res.icon"
-          :label="res.label"
-          :severity="res.severity"
-          @click="openResource(res.url)"
-        />
-      </div>
-    </div>
-    <div class="options-group">
-      <div>
-        <h2>User Settings</h2>
-        <small class="option-label">Display Name</small><br>
-        <InputText
-          id="displayName"
-          v-model="user.custom.displayName"
-          name="displayName"
-          class="p-inputtext-sm option-value"
-          style="width: 350px;"
-          :placeholder="user.subject"
-        /><br>
-        <small v-tooltip.bottom="$ext.platform === 'firefox' ? 'Customize key binds @ about:addons' : 'Customize key binds @ chrome://extensions/shortcuts'" class="option-label">Profile Hotkeys</small><br>
-        <div class="option-label">
-          <form style="margin-left: 20px;">
-            <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
-              <code>{{ hotkey['shortcut'] }}</code><select
-                style="margin-bottom: 10px; margin-left: 20px;"
-                @change="setHotkeyProfileId($event, hotkey['name'])"
-              >
-                <option
-                  v-for="p in awsAppProfiles"
-                  :key="p.profile.id"
-                  :label="p.label"
-                  :value="p.profile.id"
-                  :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
-                />
-              </select>
-              <br />
-            </div>
-          </form>
-        </div>
-      </div>
+      </form>
     </div>
     <div class="options-group">
       <div>
@@ -148,6 +168,7 @@
           <p>This extension requires permissions to customize the AWS console:</p>
           <code>https://*.console.aws.amazon.com/*</code><br />
           <PrimeButton
+            raised
             size="small"
             icon="pi pi-lock"
             class="p-button-success"
@@ -160,7 +181,7 @@
           <h2>
             AWS Console Settings
           </h2>
-          <form class="option-label">
+          <form>
             <div>
               <div v-if="$ext.platform === 'firefox'">
                 <PCheckbox
@@ -173,43 +194,49 @@
                 />
                 <label for="container">Open in Firefox Containers</label><br /><br />
               </div>
-              <small id="sso-label">SSO Console Label</small>
+              <small id="sso-label" class="option-label">SSO Console Label</small>
               <br />
               <InputText
                 id="sessionLabelSso"
                 v-model="user.custom.sessionLabelSso"
                 aria-describedby="sso-label"
                 name="sessionLabelSso"
-                class="p-inputtext-sm"
-                style="width: 350px; margin-right: 10px"
+                class="p-inputtext-sm option-value"
+                style="width: 330px;"
                 :placeholder="user.custom.sessionLabelSso"
               />
             </div>
-            <br />
             <div>
-              <small id="iam-label">IAM Console Label</small>
+              <small id="iam-label" class="option-label">IAM Console Label</small>
               <br />
               <InputText
                 id="sessionLabelIam"
                 v-model="user.custom.sessionLabelIam"
                 aria-describedby="iam-label"
                 name="sessionLabelIam"
-                class="p-inputtext-sm"
-                style="width: 350px; margin-right: 10px; margin-bottom: 5px;"
+                class="p-inputtext-sm option-value"
+                style="width: 330px; margin-right: 10px; margin-bottom: 5px;"
                 :placeholder="user.custom.sessionLabelIam"
               />
             </div>
-            <details>
-              <summary>Use variables in your labels</summary>
-              <br />
-              <code>{{ "\{\{user\}\}        Current AWS SSO user" }} </code><br />
-              <code>{{ "\{\{role\}\}        Current IAM role" }} </code><br />
-              <code>{{ "\{\{profile\}\}     Current AWS SSO profile" }} </code><br />
-              <code>{{ "\{\{account\}\}     Current AWS account ID" }} </code><br />
-              <code>{{ "\{\{accountName\}\} Current AWS account alias" }} </code><br />
+            <details class="option-label" style="margin-left: 1rem;">
+              <summary>Label variables</summary>
+              <code>{{ "\{\{user\}\}        SSO user" }} </code><br />
+              <code>{{ "\{\{role\}\}        IAM role" }} </code><br />
+              <code>{{ "\{\{profile\}\}     SSO profile" }} </code><br />
+              <code>{{ "\{\{account\}\}     AWS account ID" }} </code><br />
+              <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br />
             </details>
             <br />
-            <div style="width: 40%; float: left">
+            <div class="option-value" style="width: 40%; float: left;">
+              <ColorPicker
+                id="colorDefault"
+                v-model="user.custom.colorDefault"
+                input-id="colorDefault"
+                name="colorDefault"
+                @click.prevent="colorPickerVisible = !colorPickerVisible"
+              />
+              <label for="colorDefault"> Default color</label>
               <PCheckbox
                 v-model="user.custom.labelHeader"
                 input-id="labelHeader"
@@ -227,7 +254,15 @@
               />
               <label for="labelFooter" class="setting-label">Label footer</label>
             </div>
-            <div>
+            <div class="option-value">
+              <PCheckbox
+                v-model="user.custom.labelIcon"
+                input-id="labelIcon"
+                name="labelIcon"
+                :binary="true"
+                class="setting-checkbox"
+              />
+              <label for="labelIcon" class="setting-label">Show icon in label</label>
               <PCheckbox
                 v-model="user.custom.colorHeader"
                 input-id="colorHeader"
@@ -245,25 +280,8 @@
               />
               <label for="colorFooter" class="setting-label">Colorize footer</label>
             </div>
-            <PCheckbox
-              v-model="user.custom.labelIcon"
-              input-id="labelIcon"
-              name="labelIcon"
-              :binary="true"
-              class="setting-checkbox"
-            />
-            <label for="labelIcon" class="setting-label">Show icon in label</label>
-            <br />
-            <div style="margin-bottom: 10px; margin-top: 5px;">
-              <ColorPicker
-                id="colorDefault"
-                v-model="user.custom.colorDefault"
-                input-id="colorDefault"
-                name="colorDefault"
-                @click.prevent="colorPickerVisible = !colorPickerVisible"
-              />
-              <label for="colorDefault"> Default AWS Console color</label>
-            </div>
+            <div class="option-value" />
+
             <!---
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
@@ -273,6 +291,7 @@
             </PDialog><br />
             <PrimeButton
               ref="saveConsoleBtn"
+              raised
               size="small"
               icon="pi pi-save"
               class="p-button-primary"
@@ -310,6 +329,21 @@
         @saveUser="saveUser"
       />
     </div>
+    <br>
+    <div class="options-parent">
+      <h3>Resources</h3>
+      <div v-for="res in resources" :key="res.label" class="option-label">
+        <PrimeButton
+          raised
+          size="small"
+          style="width: 180px; text-align: left;"
+          :icon="'pi ' + res.icon"
+          :label="res.label"
+          :severity="res.severity"
+          @click="openResource(res.url)"
+        />
+      </div>
+    </div>
   </div>
   <!--- Footer -->
   <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
@@ -320,6 +354,7 @@
 </template>
 <script lang="ts">
 import { saveAs } from 'file-saver';
+import { toast } from 'vue3-toastify';
 import demoData from '../demo';
 import {
   AppData,
@@ -329,11 +364,23 @@ import {
   IamRole,
   UserData,
 } from '../types';
+import 'vue3-toastify/dist/index.css';
 
 export default {
   name: 'OptionsView',
+  setup() {
+    const notify = () => {
+      toast('Saved User Config', {
+        autoClose: 2000,
+        type: 'success',
+        transition: 'zoom',
+      }); // ToastOptions
+    };
+    return { notify };
+  },
   data() {
     return {
+      saveUserTimeoutId: setTimeout(() => {}, 0),
       viewJson: false,
       items: [
         { label: 'New', icon: 'pi pi-plus' },
@@ -458,6 +505,21 @@ export default {
         this.user = this.$ext.getDefaultUser(this.raw);
       }
       this.settings.lastUserId = this.user.userId;
+      this.refreshProfiles();
+      // this.reload();
+    },
+    'user.custom': {
+      handler(newVal, oldVal) {
+        delete newVal.updatedAt;
+        delete oldVal.updatedAt;
+        this.$ext.log('newVal');
+        this.$ext.log(newVal);
+        this.$ext.log(oldVal);
+        if (newVal !== oldVal) {
+          this.saveUser();
+        }
+      },
+      deep: true,
     },
   },
   created() {
@@ -630,10 +692,14 @@ export default {
       this.saveUser();
     },
     saveUser() {
-      if (!this.demoMode && this.user.userId !== 'demoUserId1') {
-        this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
-          this.reload();
-        });
+      if (this.loaded && !this.demoMode && this.user.userId !== 'demoUserId1') {
+        clearTimeout(this.saveUserTimeoutId);
+        this.saveUserTimeoutId = setTimeout(() => {
+          this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
+            this.notify();
+            this.reload();
+          });
+        }, 1000);
       }
     },
     updateProfileLabel(event) {
@@ -667,27 +733,30 @@ export default {
 <style lang="scss" scoped>
 .options-parent {
   margin: 1rem;
-  padding: 2rem 2rem;
-  padding-top: 0rem;
-  margin-top: 0rem;
+  margin-top: 1rem;
   text-align: center;
 }
 .options-group {
+  margin: 1rem;
   text-align: left;
   display: inline-block;
   padding: 1rem 1rem;
   vertical-align: top;
   width: 400px;
+  border-radius: 25px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+}
+.options-group h2{
+  margin-top: 0px;
 }
 .option-label, .option-value {
-  margin-left: 20px;
+  margin-top: .5rem;
+  margin-right: 1rem;
   font-size: 1rem;
 }
-.option-label {
-  margin-bottom: 10px;
-}
 .option-value {
-  margin-bottom: 25px;
+  margin-left: 1rem;
+  margin-bottom: 1.5rem;
 }
 .menu-button,
 .user-button {
@@ -736,7 +805,6 @@ export default {
   background-color: white;
   display: inline-block;
   margin: 0px;
-  margin-top: 20px;
   margin-left: 40px;
   padding: 0px;
   padding-bottom: 3px;
@@ -802,6 +870,7 @@ export default {
   margin-bottom: 5px;
   margin-top: 5px;
   vertical-align: middle;
+  font-size: 1rem;
 }
 .p-inputtext {
   padding: 5px !important;

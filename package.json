@@ -30,6 +30,7 @@
     "primevue": "^3.26.1",
     "vue": "^3.2.47",
     "vue3-sortablejs": "^1.0.7",
+    "vue3-toastify": "^0.2.1",
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {

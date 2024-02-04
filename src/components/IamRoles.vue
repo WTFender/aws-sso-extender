@@ -1,6 +1,6 @@
 <!-- eslint-disable max-len -->
 <template>
-  <h2>Assume IAM Roles via SSO Profiles</h2>
+  <h2 style="margin-top: 0px;">Add IAM Assume Roles</h2>
   <div style="margin-left: 20px;">
     <div style="margin-bottom: 10px">
       <small id="arn-help">IAM Role ARN</small><br />
@@ -10,7 +10,7 @@
         name="arn"
         class="p-inputtext-sm"
         aria-describedby="arn-help"
-        style="width: 400px"
+        style="width: 100%;"
         placeholder="arn:aws:iam::123412341234:role/roleName"
       />
     </div>
@@ -21,7 +21,7 @@
         v-model="newIamRole.label"
         name="label"
         class="p-inputtext-sm"
-        style="width: 350px; margin-right: 10px"
+        style="width: 60%; margin-right: 10px"
         placeholder="roleName"
         aria-describedby="label-help"
       />
@@ -33,7 +33,7 @@
         id="newIamRoleColor"
         v-model="newIamRole.color"
         class="p-inputtext-sm"
-        style="width: 100px; margin-left: 10px"
+        style="width: 20%; margin-left: 10px"
       />
     </div>
     <PDialog
