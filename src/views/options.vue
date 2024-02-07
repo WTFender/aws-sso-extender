@@ -5,9 +5,10 @@
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
   <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
-    <template #center>
+    <template #start>
       <PSplitButton
         v-if="users.length > 1"
+        text
         class="user-button menu-button"
         :label="userLabel"
         icon="pi pi-users"
@@ -17,7 +18,7 @@
       />
       <PrimeButton
         v-else
-        raised
+        text
         class="user-button menu-button"
         :label="userLabel"
         icon="pi pi-user"
@@ -25,50 +26,38 @@
         @click="$ext.browser.runtime.openOptionsPage()"
       />
     </template>
+    <template #end>
+      <PrimeButton
+        raised
+        icon="pi pi-download"
+        class="p-button-primary menu-button"
+        label="Export"
+        style="margin-right: 1rem;"
+        size="small"
+        @click="exportUser()"
+      />
+      <PrimeButton
+        raised
+        icon="pi pi-trash"
+        class="p-button-danger menu-button reset-button"
+        label="Reset"
+        style="margin-right: 1rem"
+        size="small"
+        @click="resetCustom()"
+      />
+      <PrimeButton
+        raised
+        :outlined="!viewJson"
+        icon="pi pi-code"
+        class="menu-button"
+        label="JSON"
+        style="margin-right: 1rem"
+        severity="secondary"
+        size="small"
+        @click="viewJson = !viewJson"
+      />
+    </template>
   </PToolbar>
-  <div class="options-parent">
-    <h3>User Config</h3>
-    <PrimeButton
-      raised
-      :disabled="true"
-      icon="pi pi-save"
-      class="menu-button"
-      label="Save"
-      style="margin-right: 1rem;"
-      size="small"
-      severity="success"
-      @click="exportUser()"
-    />
-    <PrimeButton
-      raised
-      icon="pi pi-download"
-      class="p-button-primary menu-button"
-      label="Export"
-      style="margin-right: 1rem;"
-      size="small"
-      @click="exportUser()"
-    />
-    <PrimeButton
-      raised
-      icon="pi pi-trash"
-      class="p-button-danger menu-button reset-button"
-      label="Reset"
-      style="margin-right: 1rem"
-      size="small"
-      @click="resetCustom()"
-    />
-    <PrimeButton
-      raised
-      :outlined="!viewJson"
-      icon="pi pi-code"
-      class="menu-button"
-      label="JSON"
-      style="margin-right: 1rem"
-      severity="secondary"
-      size="small"
-      @click="viewJson = !viewJson"
-    />
-  </div>
 
   <div v-if="viewJson" class="options-parent">
     <div class="options-group" style="width: 768px;">
@@ -299,6 +288,34 @@
               style="margin-right: 10px"
               @click="saveConsoleSettings()"
             />
+            <h3>
+              AWS Console Preview
+            </h3>
+            <select
+              v-model="previewProfile"
+              :style="consoleStyle"
+              style="margin-bottom: .25rem"
+            >
+              <option
+                v-for="p in awsAppProfiles"
+                :key="p.profile.id"
+                :label="consolePreview(p)"
+                :value="p"
+              />
+            </select>
+            <select
+              v-model="previewRole"
+              :disabled="awsIamRoles.length === 0"
+              style="margin-bottom: 10px; width: 330px;"
+              :style="consoleStyle"
+            >
+              <option
+                v-for="p in awsIamRoles"
+                :key="p.profile.id"
+                :label="consolePreviewIam(p)"
+                :value="p"
+              />
+            </select>
           </form>
         </div>
       </div>
@@ -355,6 +372,7 @@
 <script lang="ts">
 import { saveAs } from 'file-saver';
 import { toast } from 'vue3-toastify';
+import { getFontColor } from '../utils';
 import demoData from '../demo';
 import {
   AppData,
@@ -380,6 +398,8 @@ export default {
   },
   data() {
     return {
+      previewRole: {} as AppData,
+      previewProfile: {} as AppData,
       saveUserTimeoutId: setTimeout(() => {}, 0),
       viewJson: false,
       items: [
@@ -447,6 +467,19 @@ export default {
     };
   },
   computed: {
+
+    consoleStyle() {
+      return {
+        width: '330px',
+        padding: '.5rem',
+        'border-radius': '5px',
+        'background-color': `#${this.previewProfile.profile.custom!.color || this.user.custom.colorDefault}`,
+        color: getFontColor(
+          this.previewProfile.profile.custom!.color
+          || this.user.custom.colorDefault,
+        ),
+      };
+    },
     userLabel() {
       return this.user.custom.displayName || this.user.subject;
     },
@@ -471,8 +504,25 @@ export default {
       }));
       return options;
     },
+    awsIamRoles(): AppData[] {
+      // eslint-disable-next-line vue/max-len
+      const iamRoles = [] as AppData[];
+      this.awsAppProfiles.filter((ap) => ap.profile.custom?.iamRoles.length! > 0).forEach((ap) => {
+        ap.profile.custom!.iamRoles.forEach((role) => {
+          const appProfile = {
+            ...ap,
+            label: `${role.roleName} - ${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name}`,
+          };
+          appProfile.profile.custom!.iamRoles = [role];
+          iamRoles.push(appProfile);
+        });
+      });
+      this.$ext.log('iamRoles');
+      this.$ext.log(iamRoles);
+      return iamRoles;
+    },
     awsAppProfiles(): AppData[] {
-      const appProfiles = this.appProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
+      const appProfiles = this.userProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
       // eslint-disable-next-line no-param-reassign
       appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name} (${ap.profile.custom?.iamRoles.length})`; });
       this.$ext.log(appProfiles);
@@ -532,6 +582,26 @@ export default {
     this.reload();
   },
   methods: {
+    consolePreview(ap) {
+      return this.$ext.buildLabel(
+        this.user.custom.sessionLabelSso,
+        this.user.custom.displayName || this.user.subject,
+        ap.profile.custom!.label || ap.profile.name,
+        null,
+        ap.searchMetadata!.AccountId,
+        ap.searchMetadata!.AccountName,
+      );
+    },
+    consolePreviewIam(ap) {
+      return this.$ext.buildLabel(
+        this.user.custom.sessionLabelIam,
+        this.user.custom.displayName || this.user.subject,
+        ap.profile.custom!.label || ap.profile.name,
+        ap.profile.custom.iamRoles[0].label || ap.profile.custom.iamRoles[0].roleName,
+        ap.searchMetadata!.AccountId,
+        ap.searchMetadata!.AccountName,
+      );
+    },
     async getProfileHotkeys() {
       this.profileHotkeys = await this.$ext.config.browser.commands.getAll().then((commands) => {
         this.$ext.log(commands);
@@ -601,6 +671,8 @@ export default {
     refreshProfiles() {
       this.appProfiles = [];
       this.appProfiles = this.$ext.customizeProfiles(this.user, this.raw.appProfiles);
+      [this.previewProfile] = this.awsAppProfiles;
+      [this.previewRole] = this.awsIamRoles;
       this.loaded = true;
     },
     demo() {
@@ -641,6 +713,7 @@ export default {
           // eslint-disable-next-line prefer-destructuring
           this.user = data.users.filter((u) => u.userId === this.user.userId)[0];
         }
+
         // profiles are refreshed/customized on user change
       }
     },
@@ -760,11 +833,12 @@ export default {
 }
 .menu-button,
 .user-button {
-  font-size: '12px';
+  font-size: 12px;
   height: 30px;
 }
 .user-button {
   width: 175px;
+  border: 1px solid #ced4da;
 }
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);

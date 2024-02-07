@@ -394,21 +394,27 @@ class Extension {
     this.saveUser(data, enableSync);
   }
 
-  customizeProfiles(user: UserData, appProfiles: AppData[]): AppData[] {
+  customizeProfiles(
+    user: UserData,
+    appProfiles: AppData[],
+    setDefaultColor: Boolean = true,
+  ): AppData[] {
     this.log('customizeProfiles');
-    const defaults: CustomData = {
-      color: this.defaultCustom.colorDefault,
+    const defaults: Partial<CustomData> = {
       favorite: false,
       label: null,
       iamRoles: [] as IamRole[],
     };
+    if (setDefaultColor) {
+      defaults.color = user.custom.colorDefault;
+    }
     const customProfiles: AppData[] = [];
     appProfiles.forEach((ap) => {
       const profile = ap;
       // eslint-disable-next-line max-len, vue/max-len
       profile.profile.custom = ap.profile.id in user.custom.profiles
         ? user.custom.profiles[ap.profile.id]
-        : defaults;
+        : defaults as CustomData;
       customProfiles.push(profile);
     });
     this.log(user);
