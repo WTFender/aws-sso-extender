@@ -537,9 +537,9 @@ export default {
           profile.name.toLowerCase().includes(this.search.toLowerCase())
           || profile.profile.name.toLowerCase().includes(this.search.toLowerCase())
           // eslint-disable-next-line vue/max-len
-          || profile.profile.custom?.iamRoles.filter((role) => role.roleName.toLowerCase().includes(this.search.toLowerCase())).length > 0
+          || (profile.profile.custom?.iamRoles.filter((role) => role.roleName.toLowerCase().includes(this.search.toLowerCase())))!.length > 0
           // eslint-disable-next-line vue/max-len
-          || profile.profile.custom?.iamRoles.filter((role) => role.label.toLowerCase().includes(this.search.toLowerCase())).length > 0
+          || (profile.profile.custom?.iamRoles?.filter((role) => role.label.toLowerCase().includes(this.search.toLowerCase())))!.length > 0
         ) {
           profiles.push(profile);
         }
