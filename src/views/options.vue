@@ -14,7 +14,7 @@
         icon="pi pi-users"
         size="small"
         :model="userOptions"
-        @click="$ext.browser.runtime.openOptionsPage()"
+        @click="$ext.config.browser.runtime.openOptionsPage()"
       />
       <PrimeButton
         v-else
@@ -23,7 +23,7 @@
         :label="userLabel"
         icon="pi pi-user"
         size="small"
-        @click="$ext.browser.runtime.openOptionsPage()"
+        @click="$ext.config.browser.runtime.openOptionsPage()"
       />
     </template>
     <template #end>
@@ -74,7 +74,7 @@
         id="displayName"
         v-model="user.custom.displayName"
         name="displayName"
-        class="p-inputtext-sm option-value"
+        class="option-value"
         style="width: 330px;"
         :placeholder="user.subject"
       />
@@ -83,7 +83,7 @@
         id="defaultUserSelect"
         name="defaultUserSelect"
         class="option-value"
-        style="width: 330px;"
+        style="margin-bottom: 1.5rem; width: 330px; padding: 1rem; border-radius: 5px;"
         @change="setDefaultUser($event)"
       >
         <option
@@ -92,7 +92,6 @@
           :label="u.label"
           :value="u.userId"
           :selected="u.userId === settings.defaultUser"
-          style="padding: .5rem; border-radius: 5px;"
         />
       </select><br>
       <small
@@ -104,7 +103,7 @@
         <form>
           <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
             <code>{{ hotkey['shortcut'] }}</code><select
-              style="margin-bottom: 10px; width: 330px;"
+              style="margin-bottom: 10px; width: 330px; padding: .1rem; border-radius: 5px;"
               @change="setHotkeyProfileId($event, hotkey['name'])"
             >
               <option
@@ -119,21 +118,21 @@
           </div>
         </form>
       </div>
-      <form class="option-label" style="margin-bottom: 20px;">
+      <form class="option-label" style="margin-top: 1rem;">
         <div v-for="setting in settingOptions" :key="setting.id">
           <PCheckbox
             v-model="settings[setting.id]"
             :input-id="setting.id"
             :name="setting.id"
             :binary="true"
-            style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+            style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
           />
           <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
         </div>
-        <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
+        <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
           <div class="p-hidden-accessible">
             <input type="checkbox" disabled>
-          </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': hexColors[settings.iconColor] }">
+          </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': iconColorOptions[settings.iconColor] }">
             <span class="p-checkbox-icon" />
           </div>
         </div>
@@ -190,7 +189,7 @@
                 v-model="user.custom.sessionLabelSso"
                 aria-describedby="sso-label"
                 name="sessionLabelSso"
-                class="p-inputtext-sm option-value"
+                class="option-value"
                 style="width: 330px;"
                 :placeholder="user.custom.sessionLabelSso"
               />
@@ -203,29 +202,21 @@
                 v-model="user.custom.sessionLabelIam"
                 aria-describedby="iam-label"
                 name="sessionLabelIam"
-                class="p-inputtext-sm option-value"
+                class="option-value"
                 style="width: 330px; margin-right: 10px; margin-bottom: 5px;"
                 :placeholder="user.custom.sessionLabelIam"
               />
             </div>
             <details class="option-label" style="margin-left: 1rem;">
               <summary>Label variables</summary>
-              <code>{{ "\{\{user\}\}        SSO user" }} </code><br />
-              <code>{{ "\{\{role\}\}        IAM role" }} </code><br />
-              <code>{{ "\{\{profile\}\}     SSO profile" }} </code><br />
-              <code>{{ "\{\{account\}\}     AWS account ID" }} </code><br />
+              <code>{{ "\{\{user\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO user" }} </code><br />
+              <code>{{ "\{\{role\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IAM role" }} </code><br />
+              <code>{{ "\{\{profile\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO profile" }} </code><br />
+              <code>{{ "\{\{account\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWS account ID" }} </code><br />
               <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br />
             </details>
             <br />
             <div class="option-value" style="width: 40%; float: left;">
-              <ColorPicker
-                id="colorDefault"
-                v-model="user.custom.colorDefault"
-                input-id="colorDefault"
-                name="colorDefault"
-                @click.prevent="colorPickerVisible = !colorPickerVisible"
-              />
-              <label for="colorDefault"> Default color</label>
               <PCheckbox
                 v-model="user.custom.labelHeader"
                 input-id="labelHeader"
@@ -242,8 +233,6 @@
                 class="setting-checkbox"
               />
               <label for="labelFooter" class="setting-label">Label footer</label>
-            </div>
-            <div class="option-value">
               <PCheckbox
                 v-model="user.custom.labelIcon"
                 input-id="labelIcon"
@@ -251,7 +240,9 @@
                 :binary="true"
                 class="setting-checkbox"
               />
-              <label for="labelIcon" class="setting-label">Show icon in label</label>
+              <label for="labelIcon" class="setting-label">Profile icon</label>
+            </div>
+            <div class="option-value">
               <PCheckbox
                 v-model="user.custom.colorHeader"
                 input-id="colorHeader"
@@ -268,16 +259,23 @@
                 class="setting-checkbox"
               />
               <label for="colorFooter" class="setting-label">Colorize footer</label>
+              <ColorPicker
+                id="colorDefault"
+                v-model="user.custom.colorDefault"
+                input-id="colorDefault"
+                name="colorDefault"
+                @click.prevent="colorPickerVisible = !colorPickerVisible"
+              />
+              <label for="colorDefault"> Default color</label>
             </div>
-            <div class="option-value" />
-
             <!---
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
             <PDialog v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
               <ColorPicker v-if="colorPickerVisible" v-model="user.custom.colorDefault" :inline="true" />
-            </PDialog><br />
+            </PDialog>
+            <!---
             <PrimeButton
               ref="saveConsoleBtn"
               raised
@@ -288,6 +286,7 @@
               style="margin-right: 10px"
               @click="saveConsoleSettings()"
             />
+            -->
             <h3>
               AWS Console Preview
             </h3>
@@ -348,12 +347,11 @@
     </div>
     <br>
     <div class="options-parent">
-      <h3>Resources</h3>
       <div v-for="res in resources" :key="res.label" class="option-label">
         <PrimeButton
           raised
           size="small"
-          style="width: 180px; text-align: left;"
+          style="width: 180px; text-align: center;"
           :icon="'pi ' + res.icon"
           :label="res.label"
           :severity="res.severity"
@@ -402,11 +400,7 @@ export default {
       previewProfile: {} as AppData,
       saveUserTimeoutId: setTimeout(() => {}, 0),
       viewJson: false,
-      items: [
-        { label: 'New', icon: 'pi pi-plus' },
-        { label: 'Search', icon: 'pi pi-search' },
-      ],
-      hexColors: {
+      iconColorOptions: {
         red: '#de2d35',
         blue: '#24b0ff',
         green: '#22C55E',
@@ -470,6 +464,7 @@ export default {
 
     consoleStyle() {
       return {
+        'margin-left': '1rem',
         width: '330px',
         padding: '.5rem',
         'border-radius': '5px',
@@ -893,28 +888,6 @@ export default {
   font-size: 1.75rem;
   color: #dee2e6;
 }
-
-.page-icon {
-  font-size: 1.75rem;
-  color: #dee2e6;
-  position: absolute;
-  top: 20px;
-}
-
-.page-active {
-  color: #343a40;
-}
-
-.page-icon:hover {
-  color: #343a40;
-  cursor: pointer;
-}
-
-.page-icon.disabled:hover {
-  color: #dee2e6;
-  cursor: inherit;
-}
-
 .footer, .footer-debug {
   color: #343a40;
   border-top: 1px solid #dee2e6;
@@ -945,13 +918,6 @@ export default {
   margin-top: 5px;
   vertical-align: middle;
   font-size: 1rem;
-}
-.p-inputtext {
-  padding: 5px !important;
-}
-#searchBox {
-  padding: 10px !important;
-  padding-left: 2.5rem !important;
 }
 
 </style>
