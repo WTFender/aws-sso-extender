@@ -38,7 +38,7 @@
     >
       <ColorPicker v-if="colorPickerVisible" v-model="newIamRole.color" :inline="true" />
     </PDialog>
-    <small id="profiles-help" class="option-label">Select the SSO profiles for this IAM role</small>
+    <small id="profiles-help" class="option-label">Select SSO profiles</small>
     <PListbox
       id="awsAppProfiles"
       v-model="selectedProfiles"

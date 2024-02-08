@@ -99,6 +99,9 @@
         class="option-label"
         style="margin-top: 1.5rem;"
       >Profile Hotkeys</small><br>
+      <p style="margin-left: 1rem;">
+        Change keybinds in your browser settings
+      </p>
       <div class="option-label" style="margin-top: .5rem; margin-left: 1rem;">
         <form>
           <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
@@ -219,6 +222,7 @@
             <div class="option-value" style="width: 40%; float: left;">
               <PCheckbox
                 v-model="user.custom.labelHeader"
+                v-tooltip.bottom="'Apply custom settings to the header of the AWS console'"
                 input-id="labelHeader"
                 name="labelHeader"
                 :binary="true"
@@ -227,6 +231,7 @@
               <label for="labelHeader" class="setting-label">Label header</label><br />
               <PCheckbox
                 v-model="user.custom.labelFooter"
+                v-tooltip.bottom="'Apply custom settings to the footer of the AWS console'"
                 input-id="labelFooter"
                 name="labelFooter"
                 :binary="true"
@@ -235,6 +240,7 @@
               <label for="labelFooter" class="setting-label">Label footer</label>
               <PCheckbox
                 v-model="user.custom.labelIcon"
+                v-tooltip.bottom="'Include profile icon in the AWS console label'"
                 input-id="labelIcon"
                 name="labelIcon"
                 :binary="true"
@@ -245,6 +251,7 @@
             <div class="option-value">
               <PCheckbox
                 v-model="user.custom.colorHeader"
+                v-tooltip.bottom="'Colorize the header of the AWS console'"
                 input-id="colorHeader"
                 name="colorHeader"
                 :binary="true"
@@ -253,6 +260,7 @@
               <label for="colorHeader" class="setting-label">Colorize header</label><br />
               <PCheckbox
                 v-model="user.custom.colorFooter"
+                v-tooltip.bottom="'Colorize the footer of the AWS console'"
                 input-id="colorFooter"
                 name="colorFooter"
                 :binary="true"
@@ -262,6 +270,7 @@
               <ColorPicker
                 id="colorDefault"
                 v-model="user.custom.colorDefault"
+                v-tooltip.bottom="'Default color of the AWS console header & footer'"
                 input-id="colorDefault"
                 name="colorDefault"
                 @click.prevent="colorPickerVisible = !colorPickerVisible"
@@ -578,7 +587,7 @@ export default {
   },
   methods: {
     consolePreview(ap) {
-      return this.$ext.buildLabel(
+      const label = this.$ext.buildLabel(
         this.user.custom.sessionLabelSso,
         this.user.custom.displayName || this.user.subject,
         ap.profile.custom!.label || ap.profile.name,
@@ -586,9 +595,10 @@ export default {
         ap.searchMetadata!.AccountId,
         ap.searchMetadata!.AccountName,
       );
+      return `${this.user?.custom.labelIcon && ap?.profile.custom?.icon ? ap?.profile.custom?.icon : ''} ${label}`;
     },
     consolePreviewIam(ap) {
-      return this.$ext.buildLabel(
+      const label = this.$ext.buildLabel(
         this.user.custom.sessionLabelIam,
         this.user.custom.displayName || this.user.subject,
         ap.profile.custom!.label || ap.profile.name,
@@ -596,6 +606,7 @@ export default {
         ap.searchMetadata!.AccountId,
         ap.searchMetadata!.AccountName,
       );
+      return `${this.user?.custom.labelIcon && ap?.profile.custom?.icon ? ap?.profile.custom?.icon : ''} ${label}`;
     },
     async getProfileHotkeys() {
       this.profileHotkeys = await this.$ext.config.browser.commands.getAll().then((commands) => {
