@@ -59,12 +59,16 @@
     </template>
   </PToolbar>
 
-  <div v-if="viewJson" class="options-parent">
-    <div class="options-group" style="width: 768px;">
-      <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
-      dataJson
-      }}</pre>
-    </div>
+  <div v-if="viewJson" class="options-parent" style="height: 768px;">
+    <json-editor-vue
+      ref="configJson"
+      v-model="raw"
+      class="editor options-group"
+      style="border-radius: 25px; width: 100%; max-width: 768px; height: 768px;"
+      :current-mode="'tree'"
+      :mode-list="['tree', 'text', 'view']"
+      @change="importUserConfig()"
+    />
   </div>
   <div v-else class="options-parent">
     <div class="options-group">
@@ -77,6 +81,7 @@
         class="option-value"
         style="width: 330px;"
         :placeholder="user.subject"
+        @change="saveUser()"
       />
       <small class="option-label">Default User</small><br>
       <select
@@ -129,6 +134,7 @@
             :name="setting.id"
             :binary="true"
             style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+            @change="saveUser()"
           />
           <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
         </div>
@@ -143,6 +149,7 @@
         <select
           v-model="settings.iconColor"
           style="margin-bottom: 5px;"
+          @change="saveUser()"
         >
           <option
             v-for="c in ['red', 'blue', 'green', 'purple']"
@@ -195,6 +202,7 @@
                 class="option-value"
                 style="width: 330px;"
                 :placeholder="user.custom.sessionLabelSso"
+                @change="saveUser()"
               />
             </div>
             <div>
@@ -208,6 +216,7 @@
                 class="option-value"
                 style="width: 330px; margin-right: 10px; margin-bottom: 5px;"
                 :placeholder="user.custom.sessionLabelIam"
+                @change="saveUser()"
               />
             </div>
             <details class="option-label" style="margin-left: 1rem;">
@@ -227,6 +236,7 @@
                 name="labelHeader"
                 :binary="true"
                 class="setting-checkbox"
+                @change="saveUser()"
               />
               <label for="labelHeader" class="setting-label">Label header</label><br />
               <PCheckbox
@@ -236,6 +246,7 @@
                 name="labelFooter"
                 :binary="true"
                 class="setting-checkbox"
+                @change="saveUser()"
               />
               <label for="labelFooter" class="setting-label">Label footer</label>
               <PCheckbox
@@ -245,6 +256,7 @@
                 name="labelIcon"
                 :binary="true"
                 class="setting-checkbox"
+                @change="saveUser()"
               />
               <label for="labelIcon" class="setting-label">Profile icon</label>
             </div>
@@ -256,6 +268,7 @@
                 name="colorHeader"
                 :binary="true"
                 class="setting-checkbox"
+                @change="saveUser()"
               />
               <label for="colorHeader" class="setting-label">Colorize header</label><br />
               <PCheckbox
@@ -265,6 +278,7 @@
                 name="colorFooter"
                 :binary="true"
                 class="setting-checkbox"
+                @change="saveUser()"
               />
               <label for="colorFooter" class="setting-label">Colorize footer</label>
               <ColorPicker
@@ -274,6 +288,7 @@
                 input-id="colorDefault"
                 name="colorDefault"
                 @click.prevent="colorPickerVisible = !colorPickerVisible"
+                @change="saveUser()"
               />
               <label for="colorDefault"> Default color</label>
             </div>
@@ -396,9 +411,10 @@ export default {
   setup() {
     const notify = () => {
       toast('Saved User Config', {
-        autoClose: 2000,
+        autoClose: 1000,
         type: 'success',
         transition: 'zoom',
+        position: 'top-center',
       }); // ToastOptions
     };
     return { notify };
@@ -407,6 +423,7 @@ export default {
     return {
       previewRole: {} as AppData,
       previewProfile: {} as AppData,
+      importTimeoutId: setTimeout(() => {}, 0),
       saveUserTimeoutId: setTimeout(() => {}, 0),
       viewJson: false,
       iconColorOptions: {
@@ -620,13 +637,16 @@ export default {
       window.open(url, '_blank');
     },
     importUserConfig() {
-      const configJson = (this.$refs.configJson as any).innerText;
-      if (this.$ext.importUserConfig(configJson)) {
-        this.importUser = false;
-        this.reload();
-      } else {
-        (this.$refs.configError as any).style.display = 'block';
-      }
+      clearTimeout(this.importTimeoutId);
+      this.importTimeoutId = setTimeout(() => {
+        this.$ext.log(this.raw);
+        if (this.$ext.importUserConfig(JSON.stringify(this.raw))) {
+          this.importUser = false;
+          this.reload();
+        } else {
+          (this.$refs.configError as any).style.display = 'block';
+        }
+      }, 1000);
     },
     exportUser() {
       const fileToSave = new Blob([this.dataJson], {
@@ -705,6 +725,7 @@ export default {
       } else {
         this.settings.defaultUser = userId;
       }
+      this.saveUser();
     },
     load(data: ExtensionData) {
       this.raw = data;
@@ -751,9 +772,7 @@ export default {
     },
     resetCustom() {
       this.user.custom = this.$ext.defaultCustom;
-      this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
-        window.close();
-      });
+      this.$ext.saveUser(this.user, this.settings.enableSync);
     },
     updateProfile(appProfile: AppData) {
       this.$ext.log('popup:updateProfile');
@@ -776,7 +795,6 @@ export default {
         this.saveUserTimeoutId = setTimeout(() => {
           this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
             this.notify();
-            this.reload();
           });
         }, 1000);
       }
@@ -810,6 +828,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.full-screen {
+  display: none !important;
+}
 .options-parent {
   margin: 1rem;
   margin-top: 1rem;

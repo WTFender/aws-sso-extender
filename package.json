@@ -24,8 +24,10 @@
   },
   "dependencies": {
     "async-sema": "^3.1.1",
+    "clipboard": "^2.0.11",
     "fetch-retry": "^5.0.6",
     "file-saver": "^2.0.5",
+    "json-editor-vue3": "^1.0.9",
     "primeicons": "^6.0.1",
     "primevue": "^3.26.1",
     "vue": "^3.2.47",
