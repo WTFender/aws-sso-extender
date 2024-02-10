@@ -152,3 +152,8 @@ export interface IamRole {
   label: string
   color: string
 }
+
+export interface UserConfig {
+  user: UserData['custom']
+  extension: ExtensionSettings
+}

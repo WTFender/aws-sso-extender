@@ -5,7 +5,10 @@
     "32": "icons/red/32.png",
     "128": "icons/red/128.png"
   },
-  "options_page": "src/options.html",
+  "options_ui": {
+    "open_in_tab": true,
+    "page": "src/options.html"
+  },
   "action": {
     "default_popup": "src/popup.html"
   },

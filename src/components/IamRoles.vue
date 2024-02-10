@@ -1,8 +1,13 @@
 <!-- eslint-disable max-len -->
 <template>
-  <h2 style="margin-top: 0px;">Add IAM Assume Roles</h2>
+  <h2 style="margin-top: 0px;">
+    Add IAM Assume Roles
+  </h2>
   <div>
-    <small id="sso-label" class="option-label">IAM Role ARN</small><br>
+    <small
+      id="sso-label"
+      class="option-label"
+    >IAM Role ARN</small><br>
     <InputText
       id="iamRoleArn"
       v-model="newIamRole.arn"
@@ -12,7 +17,10 @@
       style="width: 330px;"
       placeholder="arn:aws:iam::123412341234:role/roleName"
     />
-    <small id="label-help" class="option-label">Role Label & Color</small><br>
+    <small
+      id="label-help"
+      class="option-label"
+    >Role Label & Color</small><br>
     <InputText
       id="iamRoleLabel"
       v-model="newIamRole.label"
@@ -36,9 +44,16 @@
       v-model:visible="colorPickerVisible"
       :style="{ width: '50vw' }"
     >
-      <ColorPicker v-if="colorPickerVisible" v-model="newIamRole.color" :inline="true" />
+      <ColorPicker
+        v-if="colorPickerVisible"
+        v-model="newIamRole.color"
+        :inline="true"
+      />
     </PDialog>
-    <small id="profiles-help" class="option-label">Select SSO profiles</small>
+    <small
+      id="profiles-help"
+      class="option-label"
+    >Select SSO profiles</small>
     <PListbox
       id="awsAppProfiles"
       v-model="selectedProfiles"

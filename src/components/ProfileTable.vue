@@ -7,7 +7,10 @@
     header="Edit Profile"
     :style="{ width: '500px' }"
   >
-    <PScrollPanel class="scroll" style="max-height: 300px">
+    <PScrollPanel
+      class="scroll"
+      style="max-height: 300px"
+    >
       <PDialog
         v-model:visible="iconPickerVisible"
         header="Choose Icon"
@@ -43,7 +46,13 @@
           }}
         </small>
         <div style="margin-bottom: 10px">
-          <span v-if="activeProfile.profile.custom?.icon" style="display: inline-block; margin-right: 5px;" :style="{ color: `#${activeProfile.profile.custom?.color}` }" class="profile-icon nav" @click="iconPickerVisible = true">
+          <span
+            v-if="activeProfile.profile.custom?.icon"
+            style="display: inline-block; margin-right: 5px;"
+            :style="{ color: `#${activeProfile.profile.custom?.color}` }"
+            class="profile-icon nav"
+            @click="iconPickerVisible = true"
+          >
             {{ activeProfile.profile.custom?.icon }}
           </span>
           <img
@@ -54,7 +63,7 @@
             height="35"
             style="vertical-align: middle; width: 35px; object-fit: cover; padding-left: 0px; margin-right: 5px;"
             @click="iconPickerVisible = true;"
-          />
+          >
           <InputText
             id="profileLabel"
             v-model="activeProfile.profile.custom!.label"
@@ -164,8 +173,17 @@
       </form>
     </PScrollPanel>
     <template #footer>
-      <PrimeButton label="Reset" icon="pi pi-trash" class="p-button-danger" @click="resetActiveProfile()" />
-      <PrimeButton label="Save" icon="pi pi-save" @click="saveActiveProfile()" />
+      <PrimeButton
+        label="Reset"
+        icon="pi pi-trash"
+        class="p-button-danger"
+        @click="resetActiveProfile()"
+      />
+      <PrimeButton
+        label="Save"
+        icon="pi pi-save"
+        @click="saveActiveProfile()"
+      />
       <p style="color: red; display: none">
         Unable to save Profile.
       </p>
@@ -259,17 +277,29 @@
   </div>
 
   <!-- header -->
-  <div v-if="tableEditor" class="profile">
-    <div class="pi" style="color: transparent; width: 16px" />
+  <div
+    v-if="tableEditor"
+    class="profile"
+  >
+    <div
+      class="pi"
+      style="color: transparent; width: 16px"
+    />
     <div
       v-if="newTableSettings.showIcon"
       class="profile-field nav"
       style="width: 35px; vertical-align: middle; padding-left: 0px !important"
     />
-    <div class="profile-field nav table-header" :style="{ width: columnWidth }">
+    <div
+      class="profile-field nav table-header"
+      :style="{ width: columnWidth }"
+    >
       Account
     </div>
-    <div class="profile-field nav table-header" :style="{ width: columnWidth }">
+    <div
+      class="profile-field nav table-header"
+      :style="{ width: columnWidth }"
+    >
       Profile
     </div>
     <div
@@ -315,7 +345,7 @@
         height="35"
         style="width: 35px; object-fit: cover; padding-left: 0px"
         @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
-      />
+      >
       <div
         class="profile-field nav"
         :style="{ width: columnWidth }"
@@ -338,7 +368,11 @@
           </p>
         </div>
         <div v-else>
-          <p style="margin: 0px" class="truncate app-title" :title="profile.name">
+          <p
+            style="margin: 0px"
+            class="truncate app-title"
+            :title="profile.name"
+          >
             <b>{{ profile.profile.custom?.label || profile.name }}</b>
           </p>
         </div>
@@ -366,7 +400,7 @@
               : `#${user.custom.colorDefault}`,
           }"
         />
-        <br v-else />
+        <br v-else>
       </div>
       <div
         v-if="newTableSettings.showIamRoles && profile.profile.custom?.iamRoles.length! > 0"

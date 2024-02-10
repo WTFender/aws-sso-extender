@@ -14,7 +14,6 @@
         icon="pi pi-users"
         size="small"
         :model="userOptions"
-        @click="$ext.config.browser.runtime.openOptionsPage()"
       />
       <PrimeButton
         v-else
@@ -23,7 +22,6 @@
         :label="userLabel"
         icon="pi pi-user"
         size="small"
-        @click="$ext.config.browser.runtime.openOptionsPage()"
       />
     </template>
     <template #end>
@@ -59,18 +57,25 @@
     </template>
   </PToolbar>
 
-  <div v-if="viewJson" class="options-parent" style="height: 768px;">
+  <div
+    v-if="viewJson"
+    class="options-parent"
+    style="height: 768px; display: flex; justify-content: center;"
+  >
     <json-editor-vue
       ref="configJson"
-      v-model="raw"
-      class="editor options-group"
-      style="border-radius: 25px; width: 100%; max-width: 768px; height: 768px;"
+      v-model="jsonEditor"
+      style="width: 100%; max-width: 768px; height: 768px;"
       :current-mode="'tree'"
       :mode-list="['tree', 'text', 'view']"
       @change="importUserConfig()"
     />
   </div>
-  <div v-else class="options-parent">
+
+  <div
+    v-else
+    class="options-parent"
+  >
     <div class="options-group">
       <h2>Extension Settings</h2>
       <small class="option-label">Display Name</small><br>
@@ -107,9 +112,15 @@
       <p style="margin-left: 1rem;">
         Change keybinds in your browser settings
       </p>
-      <div class="option-label" style="margin-top: .5rem; margin-left: 1rem;">
+      <div
+        class="option-label"
+        style="margin-top: .5rem; margin-left: 1rem;"
+      >
         <form>
-          <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
+          <div
+            v-for="hotkey in profileHotkeys"
+            :key="hotkey['name']"
+          >
             <code>{{ hotkey['shortcut'] }}</code><select
               style="margin-bottom: 10px; width: 330px; padding: .1rem; border-radius: 5px;"
               @change="setHotkeyProfileId($event, hotkey['name'])"
@@ -122,12 +133,18 @@
                 :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
               />
             </select>
-            <br />
+            <br>
           </div>
         </form>
       </div>
-      <form class="option-label" style="margin-top: 1rem;">
-        <div v-for="setting in settingOptions" :key="setting.id">
+      <form
+        class="option-label"
+        style="margin-top: 1rem;"
+      >
+        <div
+          v-for="setting in settingOptions"
+          :key="setting.id"
+        >
           <PCheckbox
             v-model="settings[setting.id]"
             :input-id="setting.id"
@@ -136,16 +153,33 @@
             style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
             @change="saveUser()"
           />
-          <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
+          <label
+            v-tooltip.bottom="setting.tooltip"
+            :for="setting.id"
+          >{{ setting.label }}</label>
         </div>
-        <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
+        <div
+          name="iconColor"
+          class="p-checkbox p-component p-checkbox-disabled"
+          style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+        >
           <div class="p-hidden-accessible">
-            <input type="checkbox" disabled>
-          </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': iconColorOptions[settings.iconColor] }">
+            <input
+              type="checkbox"
+              disabled
+            >
+          </div><div
+            class="p-checkbox-box p-disabled"
+            :style="{ 'background-color': iconColorOptions[settings.iconColor] }"
+          >
             <span class="p-checkbox-icon" />
           </div>
         </div>
-        <label v-tooltip.bottom="'Extension icon color'" for="iconColor" style="margin-right: 10px;">Icon Color</label>
+        <label
+          v-tooltip.bottom="'Extension icon color'"
+          for="iconColor"
+          style="margin-right: 10px;"
+        >Icon Color</label>
         <select
           v-model="settings.iconColor"
           style="margin-bottom: 5px;"
@@ -164,7 +198,7 @@
       <div>
         <div v-if="!consolePermissions">
           <p>This extension requires permissions to customize the AWS console:</p>
-          <code>https://*.console.aws.amazon.com/*</code><br />
+          <code>https://*.console.aws.amazon.com/*</code><br>
           <PrimeButton
             raised
             size="small"
@@ -190,10 +224,13 @@
                   style="margin-right: 10px; text-align: middle"
                   @click="toggleContainers()"
                 />
-                <label for="container">Open in Firefox Containers</label><br /><br />
+                <label for="container">Open in Firefox Containers</label><br><br>
               </div>
-              <small id="sso-label" class="option-label">SSO Console Label</small>
-              <br />
+              <small
+                id="sso-label"
+                class="option-label"
+              >SSO Console Label</small>
+              <br>
               <InputText
                 id="sessionLabelSso"
                 v-model="user.custom.sessionLabelSso"
@@ -206,8 +243,11 @@
               />
             </div>
             <div>
-              <small id="iam-label" class="option-label">IAM Console Label</small>
-              <br />
+              <small
+                id="iam-label"
+                class="option-label"
+              >IAM Console Label</small>
+              <br>
               <InputText
                 id="sessionLabelIam"
                 v-model="user.custom.sessionLabelIam"
@@ -219,16 +259,22 @@
                 @change="saveUser()"
               />
             </div>
-            <details class="option-label" style="margin-left: 1rem;">
+            <details
+              class="option-label"
+              style="margin-left: 1rem;"
+            >
               <summary>Label variables</summary>
-              <code>{{ "\{\{user\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO user" }} </code><br />
-              <code>{{ "\{\{role\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IAM role" }} </code><br />
-              <code>{{ "\{\{profile\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO profile" }} </code><br />
-              <code>{{ "\{\{account\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWS account ID" }} </code><br />
-              <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br />
+              <code>{{ "\{\{user\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO user" }} </code><br>
+              <code>{{ "\{\{role\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IAM role" }} </code><br>
+              <code>{{ "\{\{profile\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO profile" }} </code><br>
+              <code>{{ "\{\{account\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWS account ID" }} </code><br>
+              <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br>
             </details>
-            <br />
-            <div class="option-value" style="width: 40%; float: left;">
+            <br>
+            <div
+              class="option-value"
+              style="width: 40%; float: left;"
+            >
               <PCheckbox
                 v-model="user.custom.labelHeader"
                 v-tooltip.bottom="'Apply custom settings to the header of the AWS console'"
@@ -238,7 +284,10 @@
                 class="setting-checkbox"
                 @change="saveUser()"
               />
-              <label for="labelHeader" class="setting-label">Label header</label><br />
+              <label
+                for="labelHeader"
+                class="setting-label"
+              >Label header</label><br>
               <PCheckbox
                 v-model="user.custom.labelFooter"
                 v-tooltip.bottom="'Apply custom settings to the footer of the AWS console'"
@@ -248,7 +297,10 @@
                 class="setting-checkbox"
                 @change="saveUser()"
               />
-              <label for="labelFooter" class="setting-label">Label footer</label>
+              <label
+                for="labelFooter"
+                class="setting-label"
+              >Label footer</label>
               <PCheckbox
                 v-model="user.custom.labelIcon"
                 v-tooltip.bottom="'Include profile icon in the AWS console label'"
@@ -258,7 +310,10 @@
                 class="setting-checkbox"
                 @change="saveUser()"
               />
-              <label for="labelIcon" class="setting-label">Profile icon</label>
+              <label
+                for="labelIcon"
+                class="setting-label"
+              >Profile icon</label>
             </div>
             <div class="option-value">
               <PCheckbox
@@ -270,7 +325,10 @@
                 class="setting-checkbox"
                 @change="saveUser()"
               />
-              <label for="colorHeader" class="setting-label">Colorize header</label><br />
+              <label
+                for="colorHeader"
+                class="setting-label"
+              >Colorize header</label><br>
               <PCheckbox
                 v-model="user.custom.colorFooter"
                 v-tooltip.bottom="'Colorize the footer of the AWS console'"
@@ -280,7 +338,10 @@
                 class="setting-checkbox"
                 @change="saveUser()"
               />
-              <label for="colorFooter" class="setting-label">Colorize footer</label>
+              <label
+                for="colorFooter"
+                class="setting-label"
+              >Colorize footer</label>
               <ColorPicker
                 id="colorDefault"
                 v-model="user.custom.colorDefault"
@@ -296,8 +357,16 @@
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
-            <PDialog v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
-              <ColorPicker v-if="colorPickerVisible" v-model="user.custom.colorDefault" :inline="true" />
+            <PDialog
+              v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
+              v-model:visible="colorPickerVisible"
+              :style="{ width: '50vw' }"
+            >
+              <ColorPicker
+                v-if="colorPickerVisible"
+                v-model="user.custom.colorDefault"
+                :inline="true"
+              />
             </PDialog>
             <!---
             <PrimeButton
@@ -349,7 +418,7 @@
           In order to switch IAM roles, this extension requires permissions to the AWS
           console.
         </p>
-        <code>https://*.console.aws.amazon.com/*</code><br />
+        <code>https://*.console.aws.amazon.com/*</code><br>
         <code>https://signin.aws.amazon.com/switchrole</code>
         <PrimeButton
           size="small"
@@ -370,15 +439,22 @@
       />
     </div>
     <br>
-    <div class="options-parent">
-      <div v-for="res in resources" :key="res.label" class="option-label">
+    <div
+      class="options-group"
+      style="text-align: center;"
+    >
+      <div
+        v-for="res in resources"
+        :key="res.label"
+        class="option-label"
+      >
         <PrimeButton
-          raised
+          text
+          plain
           size="small"
           style="width: 180px; text-align: center;"
           :icon="'pi ' + res.icon"
           :label="res.label"
-          :severity="res.severity"
           @click="openResource(res.url)"
         />
       </div>
@@ -386,7 +462,10 @@
   </div>
   <!--- Footer -->
   <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
-    <p v-if="$ext.config.debug" style="margin: 0px">
+    <p
+      v-if="$ext.config.debug"
+      style="margin: 0px"
+    >
       {{ `${$ext.config.debug ? 'dev' : 'prod'}-${$ext.config.version}-${$ext.config.build}` }}
     </p>
   </div>
@@ -402,6 +481,7 @@ import {
   ExtensionData,
   ExtensionSettings,
   IamRole,
+  UserConfig,
   UserData,
 } from '../types';
 import 'vue3-toastify/dist/index.css';
@@ -409,10 +489,10 @@ import 'vue3-toastify/dist/index.css';
 export default {
   name: 'OptionsView',
   setup() {
-    const notify = () => {
-      toast('Saved User Config', {
+    const notify = (msg, type) => {
+      toast(msg, {
         autoClose: 1000,
-        type: 'success',
+        type,
         transition: 'zoom',
         position: 'top-center',
       }); // ToastOptions
@@ -421,6 +501,8 @@ export default {
   },
   data() {
     return {
+      jsonEditor: {},
+      switchUser: false,
       previewRole: {} as AppData,
       previewProfile: {} as AppData,
       importTimeoutId: setTimeout(() => {}, 0),
@@ -440,13 +522,13 @@ export default {
       ],
       resources: [
         {
-          icon: 'pi-plus-circle', severity: 'primary', label: 'Request a Feature', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml',
+          icon: 'pi-info-circle', label: 'Release Notes', url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}`,
         },
         {
-          icon: 'pi-exclamation-triangle', severity: 'warning', label: 'Report a Bug', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml',
+          icon: 'pi-plus-circle', label: 'Request Feature', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=enhancement&projects=&template=FEATURE.yml',
         },
         {
-          icon: 'pi-info-circle', severity: 'secondary', label: 'Release Notes', url: `https://github.com/WTFender/aws-sso-extender/releases/tag/v${this.$ext.config.browser.runtime.getManifest().version}`,
+          icon: 'pi-exclamation-triangle', label: 'Report a Bug', url: 'https://github.com/WTFender/aws-sso-extender/issues/new?assignees=&labels=bug&projects=&template=BUG-REPORT.yml',
         },
       ],
       importUser: false,
@@ -487,7 +569,6 @@ export default {
     };
   },
   computed: {
-
     consoleStyle() {
       return {
         'margin-left': '1rem',
@@ -520,6 +601,7 @@ export default {
         ...user,
         label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
         command: () => {
+          this.switchUser = true;
           this.user = user;
         },
       }));
@@ -572,6 +654,10 @@ export default {
       deep: true,
     },
     user() {
+      this.jsonEditor = {
+        user: this.user.custom,
+        extension: this.raw.settings,
+      } as UserConfig;
       if (this.user === null) {
         this.user = this.$ext.getDefaultUser(this.raw);
       }
@@ -639,12 +725,11 @@ export default {
     importUserConfig() {
       clearTimeout(this.importTimeoutId);
       this.importTimeoutId = setTimeout(() => {
-        this.$ext.log(this.raw);
-        if (this.$ext.importUserConfig(JSON.stringify(this.raw))) {
+        if (this.$ext.importUserConfig(this.user.userId, this.jsonEditor)) {
           this.importUser = false;
           this.reload();
         } else {
-          (this.$refs.configError as any).style.display = 'block';
+          this.notify('Invalid Config JSON', 'error');
         }
       }, 1000);
     },
@@ -671,7 +756,6 @@ export default {
           'webRequestFilterResponse',
         ],
       });
-      window.close();
     },
     requestPermissionsSwitchrole() {
       this.$ext.config.browser.permissions.request({
@@ -680,7 +764,6 @@ export default {
           ...this.$ext.config.permissions.signin,
         ],
       });
-      window.close();
     },
     requestPermissionsConsole() {
       if (this.$ext.platform === 'firefox') {
@@ -691,7 +774,6 @@ export default {
         this.$ext.config.browser.permissions.request({
           origins: [...this.$ext.config.permissions.console],
         });
-        window.close();
       }
     },
     refreshProfiles() {
@@ -790,11 +872,16 @@ export default {
       this.saveUser();
     },
     saveUser() {
-      if (this.loaded && !this.demoMode && this.user.userId !== 'demoUserId1') {
+      // do not save if user is switching profiles
+      this.$ext.log('popup:saveUser');
+      this.$ext.log(this.switchUser);
+      if (this.switchUser) {
+        this.switchUser = false;
+      } else if (this.loaded && !this.demoMode && this.user.userId !== 'demoUserId1') {
         clearTimeout(this.saveUserTimeoutId);
         this.saveUserTimeoutId = setTimeout(() => {
           this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
-            this.notify();
+            this.notify('Saved Config', 'success');
           });
         }, 1000);
       }

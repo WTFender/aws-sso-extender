@@ -1,7 +1,10 @@
 <!-- eslint-disable vue/max-len -->
 <!-- eslint-disable max-len -->
 <template>
-  <div class="card" style="padding-left: 20px">
+  <div
+    class="card"
+    style="padding-left: 20px"
+  >
     <PAccordion
       :active-index="!permissions.sso ? 0 : 1"
       style="padding-right: 20px; padding-bottom: 20px"
@@ -49,10 +52,13 @@
             like this:
           </p>
           <code>companyName.awsapps.com/start#/</code>
-          <br />
+          <br>
           <code>directoryId.awsapps.com/start#/</code>
         </div>
-        <PDivider v-if="!permissions.history && $ext.platform !== 'safari'" type="solid">
+        <PDivider
+          v-if="!permissions.history && $ext.platform !== 'safari'"
+          type="solid"
+        >
           <small>Optional - Find login links in browser history</small>
         </PDivider>
         <LoginLinks v-if="$ext.platform !== 'safari'" />

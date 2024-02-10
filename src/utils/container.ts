@@ -180,5 +180,4 @@ function listenConsole() {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export { createFirefoxContainer, listenConsole };

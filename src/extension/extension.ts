@@ -8,6 +8,7 @@ import {
   type IamRole,
   CustomData,
   ExtensionPermissions,
+  UserConfig,
 } from '../types';
 
 function encodeUriPlusParens(str) {
@@ -358,24 +359,25 @@ class Extension {
     await db.set(dataObj);
   }
 
+  saveCustom(custom: UserData['custom'], userId: UserData['userId'], enableSync: ExtensionSettings['enableSync']): void {
+    this.saveData(
+      `${this.config.name}-custom-${userId}`,
+      custom,
+      enableSync ? this.config.browser.storage.sync : this.config.browser.storage.local,
+    );
+  }
+
   saveUser(
     user: UserData,
     enableSync: ExtensionSettings['enableSync'],
   ): Promise<void> {
-    const storage = enableSync
-      ? this.config.browser.storage.sync
-      : this.config.browser.storage.local;
     if ('custom' in user) {
-      this.saveData(
-        `${this.config.name}-custom-${user.userId}`,
-        user.custom,
-        storage,
-      );
+      this.saveCustom(user.custom, user.userId, enableSync);
     }
     return this.saveData(
       `${this.config.name}-user-${user.userId}`,
       { ...user, custom: {} },
-      storage,
+      enableSync ? this.config.browser.storage.sync : this.config.browser.storage.local,
     );
   }
 
@@ -581,38 +583,22 @@ class Extension {
     );
   }
 
-  importUserConfig(jsonConfig: string): Boolean {
+  importUserConfig(userId: UserData['userId'], cfg: UserConfig): boolean {
     this.log('importUserConfig');
-    this.log(jsonConfig);
+    this.log(cfg);
     try {
       // check top level keys
-      const requiredKeys = ['users', 'appProfiles'];
-      const config = JSON.parse(jsonConfig);
+      let missingKeys = false;
+      const requiredKeys = ['user', 'extension'];
       requiredKeys.forEach((key) => {
-        if (!(key in config)) {
-          throw new Error(`Missing required key: ${key} of ${requiredKeys}`);
+        if (!(key in cfg)) {
+          this.log(`Missing required key: ${key} of ${requiredKeys}`);
+          missingKeys = true;
         }
       });
-      config.users.forEach((user) => {
-        this.saveUser(user, false);
-      });
-      config.appProfiles.forEach((appProfile) => {
-        this.saveData(
-          appProfile.profile.id,
-          appProfile,
-          this.config.browser.storage.local,
-        );
-      });
-      if ('settings' in config) {
-        this.saveSettings(config.settings);
-      }
-      if ('iamLogins' in config) {
-        this.saveData(
-          `${this.config.name}-iam-logins`,
-          config.iamLogins,
-          this.config.browser.storage.local,
-        );
-      }
+      if (missingKeys) { return false; }
+      this.saveSettings(cfg.extension);
+      this.saveCustom(cfg.user, userId, cfg.extension.enableSync);
       return true;
     } catch {
       return false;
