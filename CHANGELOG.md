@@ -1,3 +1,8 @@
+## 1.8.0
+- Move settings to options page
+- Add JSON config editor
+- Simplify import/export config for easier customizations
+
 ## 1.7.8
 - Add setting for syncing user settings across browsers; disabling sync increases the number of customizations that can be saved
 
