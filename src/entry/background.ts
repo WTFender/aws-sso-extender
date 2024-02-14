@@ -15,7 +15,8 @@ extension.loadData().then((data: ExtensionData) => {
     // message popup to open profile
     if (command.startsWith('openProfile')) {
       extension.log(data);
-      const appProfileId = data.users[0].custom.hotkeys[command];
+      const user = extension.findUser(data);
+      const appProfileId = user.custom.hotkeys[command];
       extension.log(`background:command:appProfileId:${appProfileId}`);
       const appProfiles = extension.customizeProfiles(
         data.users[0],
