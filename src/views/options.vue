@@ -271,7 +271,10 @@
               style="margin-right: 10px; text-align: middle"
               @click="toggleContainers()"
             />
-            <label for="container">Open in Firefox Containers</label><br><br>
+            <label
+              v-if="$ext.platform === 'firefox'"
+              for="container"
+            >Open in Firefox Containers</label><br><br>
             <div
               class="option-value"
               style="width: 40%; float: left;"
