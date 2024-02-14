@@ -16,6 +16,7 @@
         :label="user.custom.displayName || user.subject"
         icon="pi pi-users"
         size="small"
+        :style="{ width: settingsWidth }"
         :model="userOptions"
         @click="$ext.config.browser.runtime.openOptionsPage()"
       />
@@ -26,6 +27,7 @@
         :label="user.custom.displayName || user.subject"
         icon="pi pi-user"
         size="small"
+        :style="{ width: settingsWidth }"
         @click="$ext.config.browser.runtime.openOptionsPage()"
       />
     </template>
@@ -709,6 +711,9 @@ export default {
       const options = this.users.map((user: UserData) => ({
         ...user,
         label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
+        command: () => {
+          this.user = user;
+        },
       }));
       return options;
     },

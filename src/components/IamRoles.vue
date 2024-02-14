@@ -39,17 +39,6 @@
       v-model="newIamRole.color"
       style="width: 20%; margin-left: 1rem"
     />
-    <PDialog
-      v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
-      v-model:visible="colorPickerVisible"
-      :style="{ width: '50vw' }"
-    >
-      <ColorPicker
-        v-if="colorPickerVisible"
-        v-model="newIamRole.color"
-        :inline="true"
-      />
-    </PDialog>
     <small
       id="profiles-help"
       class="option-label"
@@ -186,7 +175,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
 .option-label, .option-value {
   margin-top: .5rem;
   margin-right: 1rem;

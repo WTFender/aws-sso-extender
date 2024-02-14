@@ -41,14 +41,13 @@
         label="Reset"
         style="margin-right: 1rem"
         size="small"
-        @click="resetCustom()"
+        @click="reset()"
       />
       <PrimeButton
         raised
-        :outlined="!viewJson"
         icon="pi pi-code"
         class="menu-button"
-        label="JSON"
+        :label="viewJson ? 'Settings' : 'JSON'"
         style="margin-right: 1rem"
         severity="secondary"
         size="small"
@@ -109,7 +108,7 @@
         class="option-label"
         style="margin-top: 1.5rem;"
       >Profile Hotkeys</small><br>
-      <p style="margin-left: 1rem;">
+      <p style="margin-left: 1rem; font-size: .75rem;">
         Change keybinds in your browser settings
       </p>
       <div
@@ -196,6 +195,9 @@
     </div>
     <div class="options-group">
       <div>
+        <h2>
+          AWS Console Settings
+        </h2>
         <div v-if="!consolePermissions">
           <p>This extension requires permissions to customize the AWS console:</p>
           <code>https://*.console.aws.amazon.com/*</code><br>
@@ -210,22 +212,8 @@
           />
         </div>
         <div v-else>
-          <h2>
-            AWS Console Settings
-          </h2>
           <form>
             <div>
-              <div v-if="$ext.platform === 'firefox'">
-                <PCheckbox
-                  v-model="settings.firefoxContainers"
-                  input-id="container"
-                  name="container"
-                  :binary="true"
-                  style="margin-right: 10px; text-align: middle"
-                  @click="toggleContainers()"
-                />
-                <label for="container">Open in Firefox Containers</label><br><br>
-              </div>
               <small
                 id="sso-label"
                 class="option-label"
@@ -259,18 +247,31 @@
                 @change="saveUser()"
               />
             </div>
-            <details
+            <div
               class="option-label"
               style="margin-left: 1rem;"
             >
-              <summary>Label variables</summary>
+              <p style="font-size: .75rem; margin-bottom: .5rem;">
+                Label variables
+              </p>
               <code>{{ "\{\{user\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO user" }} </code><br>
               <code>{{ "\{\{role\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IAM role" }} </code><br>
               <code>{{ "\{\{profile\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO profile" }} </code><br>
               <code>{{ "\{\{account\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWS account ID" }} </code><br>
               <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br>
-            </details>
+            </div>
             <br>
+            <PCheckbox
+              v-if="$ext.platform === 'firefox'"
+              v-model="settings.firefoxContainers"
+              input-id="container"
+              class="option-value setting-checkbox"
+              name="container"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+              @click="toggleContainers()"
+            />
+            <label for="container">Open in Firefox Containers</label><br><br>
             <div
               class="option-value"
               style="width: 40%; float: left;"
@@ -287,7 +288,7 @@
               <label
                 for="labelHeader"
                 class="setting-label"
-              >Label header</label><br>
+              >Label header</label>
               <PCheckbox
                 v-model="user.custom.labelFooter"
                 v-tooltip.bottom="'Apply custom settings to the footer of the AWS console'"
@@ -328,7 +329,7 @@
               <label
                 for="colorHeader"
                 class="setting-label"
-              >Colorize header</label><br>
+              >Colorize header</label>
               <PCheckbox
                 v-model="user.custom.colorFooter"
                 v-tooltip.bottom="'Colorize the footer of the AWS console'"
@@ -357,29 +358,6 @@
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
-            <PDialog
-              v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
-              v-model:visible="colorPickerVisible"
-              :style="{ width: '50vw' }"
-            >
-              <ColorPicker
-                v-if="colorPickerVisible"
-                v-model="user.custom.colorDefault"
-                :inline="true"
-              />
-            </PDialog>
-            <!---
-            <PrimeButton
-              ref="saveConsoleBtn"
-              raised
-              size="small"
-              icon="pi pi-save"
-              class="p-button-primary"
-              label="Save"
-              style="margin-right: 10px"
-              @click="saveConsoleSettings()"
-            />
-            -->
             <h3>
               AWS Console Preview
             </h3>
@@ -393,12 +371,16 @@
                 :key="p.profile.id"
                 :label="consolePreview(p)"
                 :value="p"
+                :style="{
+                  'background-color': `#${'profile' in p ? p.profile.custom?.color : user.custom.colorDefault}`,
+                  color: getFontColor(`#${'profile' in p ? p.profile.custom?.color : user.custom.colorDefault}`),
+                }"
               />
-            </select>
+            </select><br>
             <select
+              v-if="awsIamRoles.length > 0"
               v-model="previewRole"
               :disabled="awsIamRoles.length === 0"
-              style="margin-bottom: 10px; width: 330px;"
               :style="consoleStyle"
             >
               <option
@@ -406,6 +388,10 @@
                 :key="p.profile.id"
                 :label="consolePreviewIam(p)"
                 :value="p"
+                :style="{
+                  'background-color': `#${p.profile.custom?.iamRoles[0].color}`,
+                  color: getFontColor(`#${p.profile.custom?.iamRoles[0].color}`),
+                }"
               />
             </select>
           </form>
@@ -414,6 +400,9 @@
     </div>
     <div class="options-group">
       <div v-if="!permissions.console || !permissions.signin">
+        <h2>
+          Add IAM Assume Roles
+        </h2>
         <p>
           In order to switch IAM roles, this extension requires permissions to the AWS
           console.
@@ -438,21 +427,23 @@
         @saveUser="saveUser"
       />
     </div>
-    <br>
     <div
       class="options-group"
-      style="text-align: center;"
     >
+      <h2>
+        Resources
+      </h2>
       <div
         v-for="res in resources"
         :key="res.label"
         class="option-label"
+        style="text-align: center;"
       >
         <PrimeButton
           text
           plain
           size="small"
-          style="width: 180px; text-align: center;"
+          style="width: 180px; text-align: center; padding: .25rem"
           :icon="'pi ' + res.icon"
           :label="res.label"
           @click="openResource(res.url)"
@@ -506,6 +497,7 @@ export default {
       previewRole: {} as AppData,
       previewProfile: {} as AppData,
       importTimeoutId: setTimeout(() => {}, 0),
+      saveSettingsTimeoutId: setTimeout(() => {}, 0),
       saveUserTimeoutId: setTimeout(() => {}, 0),
       viewJson: false,
       iconColorOptions: {
@@ -575,12 +567,9 @@ export default {
         width: '330px',
         padding: '.5rem',
         'border-radius': '5px',
-        'background-color': `#${this.previewProfile.profile.custom!.color || this.user.custom.colorDefault}`,
-        color: getFontColor(
-          this.previewProfile.profile.custom!.color
-          || this.user.custom.colorDefault,
-        ),
-      };
+        'background-color': `#${this.user.custom.colorDefault}`,
+        color: getFontColor(`#${this.user.custom.colorDefault}`),
+      }; 
     },
     userLabel() {
       return this.user.custom.displayName || this.user.subject;
@@ -648,7 +637,11 @@ export default {
     settings: {
       handler() {
         if (!this.demoMode) {
-          this.$ext.saveSettings(this.settings);
+          this.jsonEditor = {
+            user: this.user.custom,
+            extension: this.settings,
+          } as UserConfig;
+          this.saveSettings();
         }
       },
       deep: true,
@@ -689,6 +682,9 @@ export default {
     this.reload();
   },
   methods: {
+    getFontColor(hex) {
+      return getFontColor(hex);
+    },
     consolePreview(ap) {
       const label = this.$ext.buildLabel(
         this.user.custom.sessionLabelSso,
@@ -734,7 +730,10 @@ export default {
       }, 1000);
     },
     exportUser() {
-      const fileToSave = new Blob([this.dataJson], {
+      const fileToSave = new Blob([JSON.stringify({
+        user: this.user.custom,
+        extension: this.settings,
+      },  null, 2)], {
         type: 'application/json',
       });
       saveAs(fileToSave, `${this.user.custom.displayName || this.user.subject}-${this.$ext.config.name}.json`);
@@ -852,9 +851,15 @@ export default {
         this.$ext.log(this.permissions);
       });
     },
-    resetCustom() {
+    reset() {
       this.user.custom = this.$ext.defaultCustom;
-      this.$ext.saveUser(this.user, this.settings.enableSync);
+      this.settings = this.$ext.defaultSettings;
+      this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
+        this.$ext.saveSettings(this.settings);
+        this.notify('Reset Config', 'success');
+      });
+      
+      // settings saved by watcher
     },
     updateProfile(appProfile: AppData) {
       this.$ext.log('popup:updateProfile');
@@ -863,13 +868,17 @@ export default {
       this.$ext.log(this.user);
       this.saveUser();
     },
-    saveConsoleSettings() {
-      const saveConsoleBtn = (this.$refs.saveConsoleBtn as any).$el as HTMLInputElement;
-      saveConsoleBtn.disabled = true;
-      setTimeout(() => {
-        saveConsoleBtn.disabled = false;
-      }, 1000);
-      this.saveUser();
+    saveSettings() {
+      this.$ext.saveSettings(this.settings).then()
+      this.$ext.log('popup:saveSettings');
+      if (this.loaded && !this.demoMode && !this.user.userId.startsWith('demoUser')) {
+        clearTimeout(this.saveSettingsTimeoutId);
+        this.saveSettingsTimeoutId = setTimeout(() => {
+          this.$ext.saveSettings(this.settings).then(() => {
+            this.notify('Saved Config', 'success');
+          });
+        }, 2000);
+      }
     },
     saveUser() {
       // do not save if user is switching profiles
@@ -877,13 +886,13 @@ export default {
       this.$ext.log(this.switchUser);
       if (this.switchUser) {
         this.switchUser = false;
-      } else if (this.loaded && !this.demoMode && this.user.userId !== 'demoUserId1') {
+      } else if (this.loaded && !this.demoMode && !this.user.userId.startsWith('demoUser')) {
         clearTimeout(this.saveUserTimeoutId);
         this.saveUserTimeoutId = setTimeout(() => {
           this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
             this.notify('Saved Config', 'success');
           });
-        }, 1000);
+        }, 2000);
       }
     },
     updateProfileLabel(event) {
@@ -915,6 +924,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
 .full-screen {
   display: none !important;
 }

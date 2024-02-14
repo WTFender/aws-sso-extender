@@ -110,6 +110,7 @@ export interface UserData {
 
 export interface AppData {
   label?: string
+  preview?: string
   applicationId: string
   applicationName: string
   description: string
