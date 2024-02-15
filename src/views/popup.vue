@@ -4,24 +4,35 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
-    <template v-if="permissions.sso && loaded" #start>
-      <ToggleButton
-        v-model="settingsPage"
+  <PToolbar style="padding: .5rem; height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
+    <template
+      v-if="permissions.sso && loaded"
+      #start
+    >
+      <PrimeButton
+        id="options"
+        text
+        class="toolbar-item user-button"
+        :label="user.custom.displayName || user.subject"
+        icon="pi pi-cog"
         size="small"
-        :style="{
-          fontSize: '12px',
-          border: '1px solid #ced4da',
-          width: settingsWidth,
-        }"
-        class="toolbar-field"
-        :on-label="'Back'"
-        :off-label="settingsLabel"
-        on-icon="pi pi-arrow-left"
-        off-icon="pi pi-cog"
+        :style="{ width: users.length > 1 ? '160px' : '200px' }"
+        @click="$ext.config.browser.runtime.openOptionsPage()"
+      />
+      <PrimeButton
+        v-if="users.length > 1"
+        text
+        class="toolbar-item user-button"
+        icon="pi pi-users"
+        size="small"
+        style="width: 40px; margin-left: .25rem;"
+        @click="nextUser()"
       />
     </template>
-    <template v-if="permissions.sso && loaded" #center>
+    <template
+      v-if="permissions.sso && loaded"
+      #center
+    >
       <div v-if="page === 'settings'">
         <div class="py-2">
           <PrimeButton
@@ -35,21 +46,28 @@
           />
         </div>
       </div>
-      <span v-else class="p-input-icon-left" style="margin: 0px">
+      <span
+        v-else
+        class="p-input-icon-left"
+        style="margin: 0px"
+      >
         <i class="pi pi-search" />
         <InputText
           id="searchBox"
           ref="searchBox"
           v-model="search"
           autofocus
-          class="toolbar-field"
+          class="toolbar-item"
           :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
-          :style="{ width: searchBoxWidth, fontSize: '12px' }"
+          :style="{ width: searchBoxWidth, fontSize: '12px', 'padding-left': '2.5rem !important' }"
         />
       </span>
     </template>
-    <template v-else #center>
+    <template
+      v-else
+      #center
+    >
       <h3>AWS SSO Extender - Setup</h3>
     </template>
     <template #end>
@@ -57,7 +75,7 @@
         v-if="!permissions.sso || !loaded"
         size="small"
         icon="pi pi-play"
-        class="p-button-success toolbar-field"
+        class="p-button-success toolbar-item"
         label="Demo"
         @click="demo()"
       />
@@ -65,8 +83,8 @@
         <ToggleButton
           v-model="tableEditor"
           :disabled="settingsPage"
-          style="width: 40px; border: 1px solid #ced4da;"
-          class="toolbar-field"
+          class="toolbar-item"
+          style="width: 40px; margin-right: .25rem;"
           on-label=""
           off-label=""
           on-icon="pi pi-pencil"
@@ -76,8 +94,8 @@
         <ToggleButton
           v-model="favorites"
           :disabled="settingsPage || tableEditor"
-          style="width: 40px; border: 1px solid #ced4da;"
-          class="toolbar-field"
+          class="toolbar-item"
+          style="width: 40px;"
           on-label=""
           off-label=""
           on-icon="pi pi-star"
@@ -121,8 +139,15 @@
     />
 
     <!--- User (settings) page -->
-    <PScrollPanel v-show="settingsPage" class="scroll" style="max-width: 100%; height: 500px">
-      <div v-if="activeTab === 0" class="settings">
+    <PScrollPanel
+      v-show="settingsPage"
+      class="scroll"
+      style="max-width: 100%; height: 500px"
+    >
+      <div
+        v-if="activeTab === 0"
+        class="settings"
+      >
         <h3>Switch User</h3>
         <PListbox
           v-model="user"
@@ -159,7 +184,6 @@
             :selected="u.userId === settings.defaultUser"
           />
         </select>
-        <h3>User Config</h3>
         <small style="margin-left: 20px;">Display Name</small><br>
         <InputText
           id="displayName"
@@ -184,18 +208,36 @@
           style="margin-right: 5px;"
           @click="importUser = true"
         />
-        <PDialog v-model:visible="importUser" header="Edit User Config" :style="{ width: '500px' }">
-          <PScrollPanel class="scroll" style="max-width: 100%; max-height: 300px">
+        <PDialog
+          v-model:visible="importUser"
+          header="Edit User Config"
+          :style="{ width: '500px' }"
+        >
+          <PScrollPanel
+            class="scroll"
+            style="max-width: 100%; max-height: 300px"
+          >
             <p>
               Edit at your own risk. Settings in users[].custom persist while most other settings are overwritten during SSO login.
             </p>
-            <pre ref="configJson" style="font-size: 0.8rem" contenteditable="true">{{
+            <pre
+              ref="configJson"
+              style="font-size: 0.8rem"
+              contenteditable="true"
+            >{{
               dataJson
             }}</pre>
           </PScrollPanel>
           <template #footer>
-            <PrimeButton label="Save" icon="pi pi-save" @click="importUserConfig()" />
-            <p ref="configError" style="color: red; display: none;">
+            <PrimeButton
+              label="Save"
+              icon="pi pi-save"
+              @click="importUserConfig()"
+            />
+            <p
+              ref="configError"
+              style="color: red; display: none;"
+            >
               Unable to save config JSON.
             </p>
           </template>
@@ -208,10 +250,13 @@
           @click="resetCustom()"
         />
       </div>
-      <div v-if="activeTab === 1" class="settings">
+      <div
+        v-if="activeTab === 1"
+        class="settings"
+      >
         <div v-if="!consolePermissions">
           <p>This extension requires permissions to customize the AWS console:</p>
-          <code>https://*.console.aws.amazon.com/*</code><br />
+          <code>https://*.console.aws.amazon.com/*</code><br>
           <PrimeButton
             size="small"
             icon="pi pi-lock"
@@ -234,10 +279,10 @@
                   style="margin-right: 10px; text-align: middle"
                   @click="toggleContainers()"
                 />
-                <label for="container">Open in Firefox Containers</label><br /><br />
+                <label for="container">Open in Firefox Containers</label><br><br>
               </div>
               <small id="sso-label">SSO Console Label</small>
-              <br />
+              <br>
               <InputText
                 id="sessionLabelSso"
                 v-model="user.custom.sessionLabelSso"
@@ -248,10 +293,10 @@
                 :placeholder="user.custom.sessionLabelSso"
               />
             </div>
-            <br />
+            <br>
             <div>
               <small id="iam-label">IAM Console Label</small>
-              <br />
+              <br>
               <InputText
                 id="sessionLabelIam"
                 v-model="user.custom.sessionLabelIam"
@@ -264,14 +309,14 @@
             </div>
             <details>
               <summary>Use variables in your labels</summary>
-              <br />
-              <code>{{ "\{\{user\}\}        Current AWS SSO user" }} </code><br />
-              <code>{{ "\{\{role\}\}        Current IAM role" }} </code><br />
-              <code>{{ "\{\{profile\}\}     Current AWS SSO profile" }} </code><br />
-              <code>{{ "\{\{account\}\}     Current AWS account ID" }} </code><br />
-              <code>{{ "\{\{accountName\}\} Current AWS account alias" }} </code><br />
+              <br>
+              <code>{{ "\{\{user\}\}        Current AWS SSO user" }} </code><br>
+              <code>{{ "\{\{role\}\}        Current IAM role" }} </code><br>
+              <code>{{ "\{\{profile\}\}     Current AWS SSO profile" }} </code><br>
+              <code>{{ "\{\{account\}\}     Current AWS account ID" }} </code><br>
+              <code>{{ "\{\{accountName\}\} Current AWS account alias" }} </code><br>
             </details>
-            <br />
+            <br>
             <div style="width: 40%; float: left">
               <PCheckbox
                 v-model="user.custom.labelHeader"
@@ -280,7 +325,10 @@
                 :binary="true"
                 class="setting-checkbox"
               />
-              <label for="labelHeader" class="setting-label">Label header</label><br />
+              <label
+                for="labelHeader"
+                class="setting-label"
+              >Label header</label><br>
               <PCheckbox
                 v-model="user.custom.labelFooter"
                 input-id="labelFooter"
@@ -288,7 +336,10 @@
                 :binary="true"
                 class="setting-checkbox"
               />
-              <label for="labelFooter" class="setting-label">Label footer</label>
+              <label
+                for="labelFooter"
+                class="setting-label"
+              >Label footer</label>
             </div>
             <div>
               <PCheckbox
@@ -298,7 +349,10 @@
                 :binary="true"
                 class="setting-checkbox"
               />
-              <label for="colorHeader" class="setting-label">Colorize header</label><br />
+              <label
+                for="colorHeader"
+                class="setting-label"
+              >Colorize header</label><br>
               <PCheckbox
                 v-model="user.custom.colorFooter"
                 input-id="colorFooter"
@@ -306,7 +360,10 @@
                 :binary="true"
                 class="setting-checkbox"
               />
-              <label for="colorFooter" class="setting-label">Colorize footer</label>
+              <label
+                for="colorFooter"
+                class="setting-label"
+              >Colorize footer</label>
             </div>
             <PCheckbox
               v-model="user.custom.labelIcon"
@@ -315,8 +372,11 @@
               :binary="true"
               class="setting-checkbox"
             />
-            <label for="labelIcon" class="setting-label">Show icon in label</label>
-            <br />
+            <label
+              for="labelIcon"
+              class="setting-label"
+            >Show icon in label</label>
+            <br>
             <div style="margin-bottom: 10px; margin-top: 5px;">
               <ColorPicker
                 id="colorDefault"
@@ -331,9 +391,17 @@
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
-            <PDialog v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'" v-model:visible="colorPickerVisible" :style="{ width: '50vw' }">
-              <ColorPicker v-if="colorPickerVisible" v-model="user.custom.colorDefault" :inline="true" />
-            </PDialog><br />
+            <PDialog
+              v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
+              v-model:visible="colorPickerVisible"
+              :style="{ width: '50vw' }"
+            >
+              <ColorPicker
+                v-if="colorPickerVisible"
+                v-model="user.custom.colorDefault"
+                :inline="true"
+              />
+            </PDialog><br>
             <PrimeButton
               ref="saveConsoleBtn"
               size="small"
@@ -346,13 +414,16 @@
           </form>
         </div>
       </div>
-      <div v-if="activeTab === 2" class="settings">
+      <div
+        v-if="activeTab === 2"
+        class="settings"
+      >
         <div v-if="!permissions.console || !permissions.signin">
           <p>
             In order to switch IAM roles, this extension requires permissions to the AWS
             console.
           </p>
-          <code>https://*.console.aws.amazon.com/*</code><br />
+          <code>https://*.console.aws.amazon.com/*</code><br>
           <code>https://signin.aws.amazon.com/switchrole</code>
           <PrimeButton
             size="small"
@@ -373,18 +444,35 @@
           @saveUser="saveUser"
         />
       </div>
-      <div v-if="activeTab === 3" class="settings">
+      <div
+        v-if="activeTab === 3"
+        class="settings"
+      >
         <div style="margin-bottom: 25px">
           <h3>Extension Settings</h3>
           <form style="margin-left: 20px;">
-            <div name="iconColor" class="p-checkbox p-component p-checkbox-disabled" style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
+            <div
+              name="iconColor"
+              class="p-checkbox p-component p-checkbox-disabled"
+              style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
+            >
               <div class="p-hidden-accessible">
-                <input type="checkbox" disabled>
-              </div><div class="p-checkbox-box p-disabled" :style="{ 'background-color': hexColors[settings.iconColor] }">
+                <input
+                  type="checkbox"
+                  disabled
+                >
+              </div><div
+                class="p-checkbox-box p-disabled"
+                :style="{ 'background-color': hexColors[settings.iconColor] }"
+              >
                 <span class="p-checkbox-icon" />
               </div>
             </div>
-            <label v-tooltip.bottom="'Extension icon color'" for="iconColor" style="margin-right: 10px;">Icon Color</label>
+            <label
+              v-tooltip.bottom="'Extension icon color'"
+              for="iconColor"
+              style="margin-right: 10px;"
+            >Icon Color</label>
             <select
               v-model="settings.iconColor"
               style="margin-bottom: 5px;"
@@ -396,7 +484,10 @@
                 :value="c"
               />
             </select>
-            <div v-for="setting in settingOptions" :key="setting.id">
+            <div
+              v-for="setting in settingOptions"
+              :key="setting.id"
+            >
               <PCheckbox
                 v-model="settings[setting.id]"
                 :input-id="setting.id"
@@ -404,7 +495,10 @@
                 :binary="true"
                 style="margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
               />
-              <label v-tooltip.bottom="setting.tooltip" :for="setting.id">{{ setting.label }}</label>
+              <label
+                v-tooltip.bottom="setting.tooltip"
+                :for="setting.id"
+              >{{ setting.label }}</label>
             </div>
           </form>
         </div>
@@ -420,7 +514,10 @@
           </p>
 
           <form style="margin-left: 20px;">
-            <div v-for="hotkey in profileHotkeys" :key="hotkey['name']">
+            <div
+              v-for="hotkey in profileHotkeys"
+              :key="hotkey['name']"
+            >
               <code>{{ hotkey['shortcut'] }}</code><select
                 style="margin-bottom: 10px; margin-left: 20px;"
                 @change="setHotkeyProfileId($event, hotkey['name'])"
@@ -433,13 +530,16 @@
                   :selected="p.profile.id === user.custom.hotkeys[hotkey['name']]"
                 />
               </select>
-              <br />
+              <br>
             </div>
           </form>
         </div>
         <div>
           <h3>Resources</h3>
-          <div v-for="res in resources" :key="res.label">
+          <div
+            v-for="res in resources"
+            :key="res.label"
+          >
             <PrimeButton
               text
               :icon="'pi ' + res.icon"
@@ -455,7 +555,10 @@
 
   <!--- Footer -->
   <div :class="$ext.config.debug ? 'footer-debug' : 'footer'">
-    <p v-if="$ext.config.debug" style="margin: 0px">
+    <p
+      v-if="$ext.config.debug"
+      style="margin: 0px"
+    >
       {{ `${$ext.config.debug ? 'dev' : 'prod'}-${$ext.config.version}-${$ext.config.build}` }}
     </p>
   </div>
@@ -477,6 +580,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      userOptionIdx: 0,
       hexColors: {
         red: '#de2d35',
         blue: '#24b0ff',
@@ -600,12 +704,16 @@ export default {
     defaultUserOptions() {
       let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
       options = options.concat(this.userOptions);
+      this.$ext.log(options);
       return options;
     },
     userOptions() {
       const options = this.users.map((user: UserData) => ({
         ...user,
         label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
+        command: () => {
+          this.user = user;
+        },
       }));
       return options;
     },
@@ -748,6 +856,11 @@ export default {
     this.reload();
   },
   methods: {
+    nextUser() {
+      const options = this.userOptions;
+      const currentUserIdx = options.findIndex((u) => u.userId === this.user.userId);
+      this.user = options[currentUserIdx + 1] || options[0];
+    },
     async getProfileHotkeys() {
       this.profileHotkeys = await this.$ext.config.browser.commands.getAll().then((commands) => {
         this.$ext.log(commands);
@@ -961,6 +1074,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.toolbar-item {
+  font-size: 12px;
+  height: 30px;
+  background: #ffffff;
+  color: #343a40 !important;
+  border: 1px solid #ced4da;
+}
+.user-button:hover {
+  background: #eeeeee !important;
+  color: #343a40 !important;
+  border: 1px solid #ced4da !important;
+}
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);
   border-bottom: 10px solid var(--surface-50);
@@ -1004,10 +1129,6 @@ export default {
   padding: 0px;
   padding-bottom: 3px;
   border: none;
-}
-.toolbar-field {
-  height: 30px;
-  margin-right: 5px;
 }
 .menu-icon {
   font-size: 1.75rem;
@@ -1068,10 +1189,6 @@ export default {
 }
 .p-inputtext {
   padding: 5px !important;
-}
-#searchBox {
-  padding: 10px !important;
-  padding-left: 2.5rem !important;
 }
 
 </style>

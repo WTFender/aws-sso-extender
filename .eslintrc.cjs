@@ -24,12 +24,12 @@ module.exports = {
       ],
       extends: [
         'plugin:vue/vue3-recommended',
-        '@vue/eslint-config-airbnb-with-typescript'
       ],
       parserOptions: {
         project: [
           './tsconfig.json'
-        ]
+        ],
+        extraFileExtensions: ['.vue']
       },
       rules: {
         'linebreak-style': 0,

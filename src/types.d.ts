@@ -110,6 +110,7 @@ export interface UserData {
 
 export interface AppData {
   label?: string
+  preview?: string
   applicationId: string
   applicationName: string
   description: string
@@ -151,4 +152,9 @@ export interface IamRole {
   roleName: string
   label: string
   color: string
+}
+
+export interface UserConfig {
+  user: UserData['custom']
+  extension: ExtensionSettings
 }

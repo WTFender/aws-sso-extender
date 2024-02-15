@@ -1,55 +1,54 @@
 <!-- eslint-disable max-len -->
 <template>
-  <h3>Assume IAM Roles via SSO Profiles</h3>
-  <div style="margin-left: 20px;">
-    <div style="margin-bottom: 10px">
-      <small id="arn-help">IAM Role ARN</small><br />
-      <InputText
-        id="iamRoleArn"
-        v-model="newIamRole.arn"
-        name="arn"
-        class="p-inputtext-sm"
-        aria-describedby="arn-help"
-        style="width: 400px"
-        placeholder="arn:aws:iam::123412341234:role/roleName"
-      />
-    </div>
-    <small id="label-help">Role Label & Color</small>
-    <div style="margin-bottom: 10px">
-      <InputText
-        id="iamRoleLabel"
-        v-model="newIamRole.label"
-        name="label"
-        class="p-inputtext-sm"
-        style="width: 350px; margin-right: 10px"
-        placeholder="roleName"
-        aria-describedby="label-help"
-      />
-      <ColorPicker
-        v-model="newIamRole.color"
-        @click="colorPickerVisible = !colorPickerVisible"
-      />
-      <InputText
-        id="newIamRoleColor"
-        v-model="newIamRole.color"
-        class="p-inputtext-sm"
-        style="width: 100px; margin-left: 10px"
-      />
-    </div>
-    <PDialog
-      v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
-      v-model:visible="colorPickerVisible"
-      :style="{ width: '50vw' }"
-    >
-      <ColorPicker v-if="colorPickerVisible" v-model="newIamRole.color" :inline="true" />
-    </PDialog>
-    <small id="profiles-help">Select the SSO profiles that can assume this IAM role</small>
+  <h2 style="margin-top: 0px;">
+    Add IAM Assume Roles
+  </h2>
+  <div>
+    <small
+      id="sso-label"
+      class="option-label"
+    >IAM Role ARN</small><br>
+    <InputText
+      id="iamRoleArn"
+      v-model="newIamRole.arn"
+      name="arn"
+      class="option-value"
+      aria-describedby="arn-help"
+      style="width: 330px;"
+      placeholder="arn:aws:iam::123412341234:role/roleName"
+    />
+    <small
+      id="label-help"
+      class="option-label"
+    >Role Label & Color</small><br>
+    <InputText
+      id="iamRoleLabel"
+      v-model="newIamRole.label"
+      name="label"
+      class="option-value"
+      style="width: 50%; margin-right: 1rem"
+      placeholder="roleName"
+      aria-describedby="label-help"
+    />
+    <ColorPicker
+      v-model="newIamRole.color"
+      @click="colorPickerVisible = !colorPickerVisible"
+    />
+    <InputText
+      id="newIamRoleColor"
+      v-model="newIamRole.color"
+      style="width: 20%; margin-left: 1rem"
+    />
+    <small
+      id="profiles-help"
+      class="option-label"
+    >Select SSO profiles</small>
     <PListbox
       id="awsAppProfiles"
       v-model="selectedProfiles"
       :options="awsAppProfiles"
-      class="w-full md:w-14rem"
-      style="margin-bottom: 15px"
+      class="option-value"
+      style="margin-bottom: 15px; font-size: .75rem;"
       list-style="max-height:150px"
       multiple
     >
@@ -63,19 +62,13 @@
       </template>
     </PListbox>
     <PrimeButton
+      :disabled="newIamRole.arn === '' || selectedProfiles.length === 0"
       size="small"
       icon="pi pi-user-plus"
       class="p-button-primary"
       label="Add IAM Role"
-      style="margin-right: 10px"
+      style="margin-left: 1rem; margin-right: 1rem"
       @click="addIamRole()"
-    />
-    <PrimeButton
-      size="small"
-      icon="pi pi-trash"
-      class="p-button-danger"
-      label="Reset All IAM Roles"
-      @click="resetIamRoles()"
     />
   </div>
 </template>
@@ -95,7 +88,7 @@ export default {
       type: Array<AppData>,
     },
   },
-  emits: ['addIamRole', 'saveUser', 'updateProfile', 'setPage'],
+  emits: ['addIamRole', 'saveUser', 'updateProfile'],
   data() {
     return {
       colorPickerVisible: false,
@@ -115,7 +108,6 @@ export default {
   methods: {
     setColor() {
       const color = document.getElementById('color') as HTMLInputElement;
-      this.$ext.log(color);
       this.colorPickerVisible = false;
       this.newIamRole.color = color.value;
     },
@@ -182,7 +174,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.p-inputtext {
-  padding: 5px !important;
+h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+.option-label, .option-value {
+  margin-top: .5rem;
+  margin-right: 1rem;
+  font-size: 1rem;
+}
+.option-value {
+  margin-left: 1rem;
+  margin-bottom: 1.5rem;
 }
 </style>
