@@ -8,7 +8,7 @@
     <template #start>
       <PrimeButton
         text
-        class="toolbar-item"
+        class="toolbar-item user-button"
         :label="user.custom.displayName || user.subject"
         icon="pi pi-cog"
         size="small"
@@ -18,7 +18,7 @@
       <PrimeButton
         v-if="users.length > 1"
         text
-        class="toolbar-item"
+        class="toolbar-item user-button"
         icon="pi pi-users"
         size="small"
         style="width: 40px; margin-left: .25rem;"
@@ -980,8 +980,8 @@ h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
   color: #343a40 !important;
   border: 1px solid #ced4da;
 }
-.toolbar-item:hover {
-  background: #f8f9fa !important;
+.user-button:hover {
+  background: #eeeeee !important;
   color: #343a40 !important;
   border: 1px solid #ced4da !important;
 }

@@ -10,8 +10,9 @@
       #start
     >
       <PrimeButton
+        id="options"
         text
-        class="toolbar-item"
+        class="toolbar-item user-button"
         :label="user.custom.displayName || user.subject"
         icon="pi pi-cog"
         size="small"
@@ -21,7 +22,7 @@
       <PrimeButton
         v-if="users.length > 1"
         text
-        class="toolbar-item"
+        class="toolbar-item user-button"
         icon="pi pi-users"
         size="small"
         style="width: 40px; margin-left: .25rem;"
@@ -82,8 +83,8 @@
         <ToggleButton
           v-model="tableEditor"
           :disabled="settingsPage"
-          style="width: 40px; margin-right: .25rem;"
           class="toolbar-item"
+          style="width: 40px; margin-right: .25rem;"
           on-label=""
           off-label=""
           on-icon="pi pi-pencil"
@@ -93,8 +94,8 @@
         <ToggleButton
           v-model="favorites"
           :disabled="settingsPage || tableEditor"
-          style="width: 40px; border: 1px solid #ced4da;"
           class="toolbar-item"
+          style="width: 40px;"
           on-label=""
           off-label=""
           on-icon="pi pi-star"
@@ -1080,8 +1081,8 @@ export default {
   color: #343a40 !important;
   border: 1px solid #ced4da;
 }
-.toolbar-item:hover {
-  background: #f8f9fa !important;
+.user-button:hover {
+  background: #eeeeee !important;
   color: #343a40 !important;
   border: 1px solid #ced4da !important;
 }
