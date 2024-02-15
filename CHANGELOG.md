@@ -1,3 +1,6 @@
+## 1.8.1
+- Fix toolbar icon sizes
+
 ## 1.8.0
 - Move settings to options page
 - Add JSON config editor

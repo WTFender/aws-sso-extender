@@ -13,10 +13,10 @@
         id="options"
         text
         class="toolbar-item user-button"
-        :label="user.custom.displayName || user.subject"
+        :label="(!settings.tableSettings.showIamRoles || !settings.tableSettings.showIcon) ? '' : user.custom.displayName || user.subject"
         icon="pi pi-cog"
         size="small"
-        :style="{ width: users.length > 1 ? '160px' : '200px' }"
+        :style="{ width: (!settings.tableSettings.showIamRoles || !settings.tableSettings.showIcon) ? '40px' : users.length > 1 ? '160px' : '200px' }"
         @click="$ext.config.browser.runtime.openOptionsPage()"
       />
       <PrimeButton
@@ -662,9 +662,6 @@ export default {
   computed: {
     settingsLabel() {
       return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.custom.displayName || this.user.subject : '';
-    },
-    settingsWidth() {
-      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? '130px' : '40px';
     },
     searchBoxWidth() {
       if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
