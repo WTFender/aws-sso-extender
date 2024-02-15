@@ -6,49 +6,49 @@
 <template>
   <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
     <template #start>
-      <PSplitButton
-        v-if="users.length > 1"
+      <PrimeButton
         text
-        class="user-button menu-button"
-        :label="userLabel"
-        icon="pi pi-users"
+        class="toolbar-item"
+        :label="user.custom.displayName || user.subject"
+        icon="pi pi-cog"
         size="small"
-        :model="userOptions"
+        :style="{ width: users.length > 1 ? '160px' : '200px' }"
+        @click="$ext.config.browser.runtime.openOptionsPage()"
       />
       <PrimeButton
-        v-else
+        v-if="users.length > 1"
         text
-        class="user-button menu-button"
-        :label="userLabel"
-        icon="pi pi-user"
+        class="toolbar-item"
+        icon="pi pi-users"
         size="small"
+        style="width: 40px; margin-left: .25rem;"
+        @click="nextUser()"
       />
     </template>
     <template #end>
       <PrimeButton
         raised
         icon="pi pi-download"
-        class="p-button-primary menu-button"
+        class="p-button-primary"
         label="Export"
-        style="margin-right: 1rem;"
+        style="margin-right: 1rem; font-size: 12px; height: 30px;"
         size="small"
         @click="exportUser()"
       />
       <PrimeButton
         raised
         icon="pi pi-trash"
-        class="p-button-danger menu-button reset-button"
+        class="p-button-danger reset-button"
         label="Reset"
-        style="margin-right: 1rem"
+        style="margin-right: 1rem; font-size: 12px; height: 30px;"
         size="small"
         @click="reset()"
       />
       <PrimeButton
         raised
         icon="pi pi-code"
-        class="menu-button"
         :label="viewJson ? 'Settings' : 'JSON'"
-        style="margin-right: 1rem"
+        style="margin-right: 1rem; font-size: 12px; height: 30px;"
         severity="secondary"
         size="small"
         @click="viewJson = !viewJson"
@@ -150,7 +150,6 @@
             :name="setting.id"
             :binary="true"
             style="margin-left: 1rem; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"
-            @change="saveUser()"
           />
           <label
             v-tooltip.bottom="setting.tooltip"
@@ -274,7 +273,7 @@
             <label
               v-if="$ext.platform === 'firefox'"
               for="container"
-            >Open in Firefox Containers</label><br><br>
+            >Open in Firefox Containers</label>
             <div
               class="option-value"
               style="width: 40%; float: left;"
@@ -489,6 +488,7 @@ export default {
         type,
         transition: 'zoom',
         position: 'top-center',
+        hideProgressBar: true,
       }); // ToastOptions
     };
     return { notify };
@@ -496,12 +496,11 @@ export default {
   data() {
     return {
       jsonEditor: {},
-      switchUser: false,
+      switchUser: true,
       previewRole: {} as AppData,
       previewProfile: {} as AppData,
       importTimeoutId: setTimeout(() => {}, 0),
-      saveSettingsTimeoutId: setTimeout(() => {}, 0),
-      saveUserTimeoutId: setTimeout(() => {}, 0),
+      saveTimeoutId: setTimeout(() => {}, 0),
       viewJson: false,
       iconColorOptions: {
         red: '#de2d35',
@@ -561,6 +560,8 @@ export default {
       dataJson: '',
       updatedAt: 0,
       loaded: false,
+      loadedUser: false,
+      loadedSettings: false,
     };
   },
   computed: {
@@ -593,10 +594,13 @@ export default {
         ...user,
         label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
         command: () => {
-          this.switchUser = true;
           this.user = user;
         },
       }));
+      // sort current user as first option
+      const currentUserIdx = options.findIndex(u => u.userId == this.user.userId);
+      this.$ext.log(currentUserIdx);
+      if (currentUserIdx !== -1) { options.unshift(options.splice(currentUserIdx, 1)[0]) };
       return options;
     },
     awsIamRoles(): AppData[] {
@@ -639,7 +643,9 @@ export default {
   watch: {
     settings: {
       handler() {
-        if (!this.demoMode) {
+        if (!this.loadedSettings) {
+          this.loadedSettings = true;
+        } else if (!this.demoMode) {
           this.jsonEditor = {
             user: this.user.custom,
             extension: this.settings,
@@ -656,8 +662,9 @@ export default {
       } as UserConfig;
       if (this.user === null) {
         this.user = this.$ext.getDefaultUser(this.raw);
+      } else if (!this.loadedUser) {
+        this.loadedUser = true;
       }
-      this.settings.lastUserId = this.user.userId;
       this.refreshProfiles();
       // this.reload();
     },
@@ -685,6 +692,12 @@ export default {
     this.reload();
   },
   methods: {
+    nextUser() {
+      this.switchUser = true;
+      const options = this.userOptions;
+      const currentUserIdx = options.findIndex((u) => u.userId === this.user.userId);
+      this.user = options[currentUserIdx + 1] || options[0];
+    },
     getFontColor(hex) {
       return getFontColor(hex);
     },
@@ -822,7 +835,7 @@ export default {
           this.user = this.$ext.getDefaultUser(data);
         } else {
           // eslint-disable-next-line prefer-destructuring
-          this.user = data.users.filter((u) => u.userId === this.user.userId)[0];
+          this.user = data.users.filter((u) => u.userId === this.user?.userId)[0];
         }
 
         // profiles are refreshed/customized on user change
@@ -871,17 +884,22 @@ export default {
       this.$ext.log(this.user);
       this.saveUser();
     },
-    saveSettings() {
-      this.$ext.saveSettings(this.settings).then()
-      this.$ext.log('popup:saveSettings');
+    save() {
+      this.$ext.log('popup:save');
       if (this.loaded && !this.demoMode && !this.user.userId.startsWith('demoUser')) {
-        clearTimeout(this.saveSettingsTimeoutId);
-        this.saveSettingsTimeoutId = setTimeout(() => {
-          this.$ext.saveSettings(this.settings).then(() => {
-            this.notify('Saved Config', 'success');
+        clearTimeout(this.saveTimeoutId);
+        this.saveTimeoutId = setTimeout(() => {
+          this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
+            this.settings.lastUserId = this.user.userId;
+            this.$ext.saveSettings(this.settings).then(() => {
+              this.notify('Saved Config', 'success');
+            });
           });
         }, 2000);
       }
+    },
+    saveSettings() {
+      this.save();
     },
     saveUser() {
       // do not save if user is switching profiles
@@ -889,13 +907,8 @@ export default {
       this.$ext.log(this.switchUser);
       if (this.switchUser) {
         this.switchUser = false;
-      } else if (this.loaded && !this.demoMode && !this.user.userId.startsWith('demoUser')) {
-        clearTimeout(this.saveUserTimeoutId);
-        this.saveUserTimeoutId = setTimeout(() => {
-          this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
-            this.notify('Saved Config', 'success');
-          });
-        }, 2000);
+      } else {
+        this.save()
       }
     },
     updateProfileLabel(event) {
@@ -960,14 +973,17 @@ h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
   margin-left: 1rem;
   margin-bottom: 1.5rem;
 }
-.menu-button,
-.user-button {
+.toolbar-item {
   font-size: 12px;
   height: 30px;
-}
-.user-button {
-  width: 175px;
+  background: #ffffff;
+  color: #343a40 !important;
   border: 1px solid #ced4da;
+}
+.toolbar-item:hover {
+  background: #f8f9fa !important;
+  color: #343a40 !important;
+  border: 1px solid #ced4da !important;
 }
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);
@@ -1013,14 +1029,6 @@ h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
   padding-bottom: 3px;
   border: none;
   min-width: 500px;
-}
-.toolbar-field {
-  height: 30px;
-  margin-right: 5px;
-}
-.menu-icon {
-  font-size: 1.75rem;
-  color: #dee2e6;
 }
 .footer, .footer-debug {
   color: #343a40;

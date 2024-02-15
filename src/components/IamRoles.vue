@@ -108,7 +108,6 @@ export default {
   methods: {
     setColor() {
       const color = document.getElementById('color') as HTMLInputElement;
-      this.$ext.log(color);
       this.colorPickerVisible = false;
       this.newIamRole.color = color.value;
     },

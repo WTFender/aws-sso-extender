@@ -4,31 +4,28 @@
 <!-- eslint-disable max-len -->
 <!-- eslint-disable vue/v-on-event-hyphenation -->
 <template>
-  <PToolbar style="height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
+  <PToolbar style="padding: .5rem; height: 45px; margin: 0px; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap;">
     <template
       v-if="permissions.sso && loaded"
       #start
     >
-      <PSplitButton
-        v-if="users.length > 1"
+      <PrimeButton
         text
-        class="user-button menu-button"
+        class="toolbar-item"
         :label="user.custom.displayName || user.subject"
-        icon="pi pi-users"
+        icon="pi pi-cog"
         size="small"
-        :style="{ width: settingsWidth }"
-        :model="userOptions"
+        :style="{ width: users.length > 1 ? '160px' : '200px' }"
         @click="$ext.config.browser.runtime.openOptionsPage()"
       />
       <PrimeButton
-        v-else
+        v-if="users.length > 1"
         text
-        class="user-button menu-button"
-        :label="user.custom.displayName || user.subject"
-        icon="pi pi-user"
+        class="toolbar-item"
+        icon="pi pi-users"
         size="small"
-        :style="{ width: settingsWidth }"
-        @click="$ext.config.browser.runtime.openOptionsPage()"
+        style="width: 40px; margin-left: .25rem;"
+        @click="nextUser()"
       />
     </template>
     <template
@@ -59,10 +56,10 @@
           ref="searchBox"
           v-model="search"
           autofocus
-          class="toolbar-field"
+          class="toolbar-item"
           :placeholder="!settings.tableSettings.showIamRoles && !settings.tableSettings.showIcon ? 'Search' : 'Search Profiles'"
           size="small"
-          :style="{ width: searchBoxWidth, fontSize: '12px' }"
+          :style="{ width: searchBoxWidth, fontSize: '12px', 'padding-left': '2.5rem !important' }"
         />
       </span>
     </template>
@@ -77,7 +74,7 @@
         v-if="!permissions.sso || !loaded"
         size="small"
         icon="pi pi-play"
-        class="p-button-success toolbar-field"
+        class="p-button-success toolbar-item"
         label="Demo"
         @click="demo()"
       />
@@ -85,8 +82,8 @@
         <ToggleButton
           v-model="tableEditor"
           :disabled="settingsPage"
-          style="width: 40px; border: 1px solid #ced4da;"
-          class="toolbar-field"
+          style="width: 40px; margin-right: .25rem;"
+          class="toolbar-item"
           on-label=""
           off-label=""
           on-icon="pi pi-pencil"
@@ -97,7 +94,7 @@
           v-model="favorites"
           :disabled="settingsPage || tableEditor"
           style="width: 40px; border: 1px solid #ced4da;"
-          class="toolbar-field"
+          class="toolbar-item"
           on-label=""
           off-label=""
           on-icon="pi pi-star"
@@ -582,6 +579,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      userOptionIdx: 0,
       hexColors: {
         red: '#de2d35',
         blue: '#24b0ff',
@@ -705,6 +703,7 @@ export default {
     defaultUserOptions() {
       let options = [{ userId: 'lastUserId', label: 'Last sign-in activity' }];
       options = options.concat(this.userOptions);
+      this.$ext.log(options);
       return options;
     },
     userOptions() {
@@ -856,6 +855,11 @@ export default {
     this.reload();
   },
   methods: {
+    nextUser() {
+      const options = this.userOptions;
+      const currentUserIdx = options.findIndex((u) => u.userId === this.user.userId);
+      this.user = options[currentUserIdx + 1] || options[0];
+    },
     async getProfileHotkeys() {
       this.profileHotkeys = await this.$ext.config.browser.commands.getAll().then((commands) => {
         this.$ext.log(commands);
@@ -1069,6 +1073,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.toolbar-item {
+  font-size: 12px;
+  height: 30px;
+  background: #ffffff;
+  color: #343a40 !important;
+  border: 1px solid #ced4da;
+}
+.toolbar-item:hover {
+  background: #f8f9fa !important;
+  color: #343a40 !important;
+  border: 1px solid #ced4da !important;
+}
 ::v-deep(.p-scrollpanel.scroll .p-scrollpanel-wrapper) {
   border-right: 10px solid var(--surface-50);
   border-bottom: 10px solid var(--surface-50);
@@ -1112,10 +1128,6 @@ export default {
   padding: 0px;
   padding-bottom: 3px;
   border: none;
-}
-.toolbar-field {
-  height: 30px;
-  margin-right: 5px;
 }
 .menu-icon {
   font-size: 1.75rem;
@@ -1176,10 +1188,6 @@ export default {
 }
 .p-inputtext {
   padding: 5px !important;
-}
-#searchBox {
-  padding: 10px !important;
-  padding-left: 2.5rem !important;
 }
 
 </style>

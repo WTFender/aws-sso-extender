@@ -121,7 +121,6 @@ class Extension {
     if (accountName) {
       label = label.replaceAll('{{accountName}}', accountName);
     }
-    this.log(`buildLabel:${label}`);
     return label;
   }
 
