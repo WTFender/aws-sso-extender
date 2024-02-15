@@ -9,7 +9,7 @@
 
 ## Demo
 
-https://github.com/WTFender/aws-sso-extender/assets/12001399/2fdc7459-7d76-4776-a96b-c151d8aa87ef
+https://github.com/WTFender/aws-sso-extender/assets/12001399/d857a4b2-99d6-4189-8565-0e03a4e615c6
 
 ### Firefox Containers
 Open the AWS Console in Firefox containers with IAM & SSO labels.  
@@ -22,10 +22,10 @@ Customize AWS console color & text
 <img src="./docs/img/console.png" width="500">  
 Sort & reorder your profiles  
 <img src="./docs/img/edit.png" width="500">  
-AWS Console settings  
-<img src="./docs/img/console-settings.png" width="500">  
-Add IAM Assume Roles to profiles  
-<img src="./docs/img/roles.png" width="500">  
+Settings & IAM Roles  
+<img src="./docs/img/settings.png" width="500">  
+JSON Editor  
+<img src="./docs/img/json-editor.png" width="500">  
 
 ## Contribute
 

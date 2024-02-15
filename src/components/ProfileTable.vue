@@ -384,7 +384,7 @@
       >●</span>
       <div
         class="profile-field nav"
-        :style="{ width: columnWidth }"
+        :style="{ width: (profile.profile.custom?.iamRoles.length! === 0 && newTableSettings.showIamRoles) ? '57%' : columnWidth }"
         @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <PBadge
