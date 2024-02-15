@@ -1,3 +1,6 @@
+## 1.8.2
+- Expand profile names when no IAM role exists
+
 ## 1.8.1
 - Fix toolbar icon sizes
 
