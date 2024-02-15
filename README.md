@@ -22,10 +22,10 @@ Customize AWS console color & text
 <img src="./docs/img/console.png" width="500">  
 Sort & reorder your profiles  
 <img src="./docs/img/edit.png" width="500">  
-AWS Console settings  
-<img src="./docs/img/console-settings.png" width="500">  
-Add IAM Assume Roles to profiles  
-<img src="./docs/img/roles.png" width="500">  
+Settings & IAM Roles  
+<img src="./docs/img/settings.png" width="500">  
+JSON Editor  
+<img src="./docs/img/json-editor.png" width="500">  
 
 ## Contribute
 
