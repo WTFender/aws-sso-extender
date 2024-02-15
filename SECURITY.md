@@ -1,7 +1,7 @@
 # Security Policy
 
 - AWS SSO Extender does not store credentials or sensitive user data; [read about it here](https://blog.wtfender.com/posts/aws-sso-extender/#tech-bits).
-- Extension permissions can be reviewed in [manifest.json](https://github.com/WTFender/aws-sso-extender/blob/main/src/manifest.json#L92-L116).
+- Extension permissions can be reviewed in [manifest.json](https://github.com/WTFender/aws-sso-extender/blob/main/src/manifest.json#L57-L116).
 - All releases require a CodeQL scan.
 
 ## Reporting a Vulnerability
