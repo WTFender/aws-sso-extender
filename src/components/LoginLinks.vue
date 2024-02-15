@@ -16,7 +16,10 @@
     <h2 v-else>
       Detected Login Links
     </h2>
-    <div v-for="dir in foundDirs" :key="dir">
+    <div
+      v-for="dir in foundDirs"
+      :key="dir"
+    >
       <PrimeButton
         class="p-button-primary"
         :label="dir"
@@ -29,7 +32,7 @@
 
 <script lang="ts">
 export default {
-  name: 'LoginLinks',
+  name: "LoginLinks",
   data() {
     return {
       permissions: {
@@ -54,7 +57,7 @@ export default {
       const dirs: string[] = [];
       return this.$ext.config.browser.history
         .search({
-          text: 'awsapps.com/start#/',
+          text: "awsapps.com/start#/",
           startTime: Date.now() - 1000 * 60 * 60 * 24 * 30, // 1 month ago,
           maxResults: 1000,
         })
@@ -73,19 +76,17 @@ export default {
         });
     },
     openLink(link) {
-      window.open(link, '_blank');
+      window.open(link, "_blank");
     },
     setDirectories(dirs) {
       this.foundDirs = dirs;
     },
     requestHistory() {
       this.$ext.config.browser.permissions.request({
-        permissions: ['history'],
+        permissions: ["history"],
       });
       window.close();
     },
   },
 };
 </script>
-
-<style lang="scss" scoped></style>

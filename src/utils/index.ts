@@ -44,7 +44,6 @@ function waitForElement<TElement extends Element = HTMLElement>(
 }
 
 function getFontColor(hexcolor): 'black' | 'white' {
-  extension.log(hexcolor);
   const r = parseInt(hexcolor.substring(1, 3), 16);
   const g = parseInt(hexcolor.substring(3, 5), 16);
   const b = parseInt(hexcolor.substring(5, 7), 16);

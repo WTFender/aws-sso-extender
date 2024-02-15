@@ -1,3 +1,7 @@
+## 1.8.0
+- Move settings to options page
+- Add JSON config editor
+- Simplify import/export config for easier customizations
 ## 1.7.9
 - Search results now include IAM role name & labels
 
