@@ -56,6 +56,7 @@ class Extension {
     lastProfileId: null,
     firefoxContainers: false,
     firefoxResumeContainer: true,
+    firefoxExpireMinsContainer: 480,
     iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,
@@ -562,6 +563,13 @@ class Extension {
             tabs: tab.index!,
           });
           this.config.browser.windows.update(tab.windowId!, { focused: true });
+          // set container expiration
+          if (settings.firefoxExpireMinsContainer > 0) {
+            this.config.browser.runtime.sendMessage({
+              action: 'expireFirefoxContainer',
+              cookieStoreId: containers[0].cookieStoreId,
+            });
+          }
           nav = false;
         });
       }

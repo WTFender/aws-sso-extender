@@ -239,6 +239,7 @@ const demoData: ExtensionData = {
     lastProfileId: 'p-124',
     firefoxContainers: true,
     firefoxResumeContainer: true,
+    firefoxExpireMinsContainer: 480,
     iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,

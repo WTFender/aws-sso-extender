@@ -63,19 +63,24 @@ extension.loadData().then((data: ExtensionData) => {
     extension.config.browser.runtime.onMessage.addListener(
       (msg: ExtensionMessage) => {
         extension.checkPermissions().then((permissions) => {
+          extension.log(`background:action:${msg.action}`);
           if (msg.action === 'enableFirefoxContainers') {
-            extension.log('background:enableFirefoxContainers');
             if (permissions.containers) {
               listenConsole();
             }
           } else if (msg.action === 'disableFirefoxContainers') {
-            extension.log('background:disableFirefoxContainers');
             if (permissions.containers) {
               // eslint-disable-next-line vue/max-len
               extension.config.browser.webRequest.onBeforeRequest.removeListener(
                 createFirefoxContainer,
               );
             }
+          } else if (msg.action === 'expireFirefoxContainer') {
+            // remove container
+            setTimeout(() => { 
+              extension.log('background:expireFirefoxContainer');
+              extension.config.browser.contextualIdentities.remove(msg.cookieStoreId!);
+            }, data.settings.firefoxExpireMinsContainer);
           }
         });
       },

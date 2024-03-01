@@ -1,3 +1,6 @@
+## 1.8.4
+- Added setting to expire firefox containers after X minutes, ideally set to your session duration
+
 ## 1.8.3
 - Added setting to resume firefox containers or create a new one each time
 
