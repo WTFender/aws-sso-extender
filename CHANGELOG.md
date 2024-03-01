@@ -1,3 +1,6 @@
+## 1.8.5
+- Fix container expiration to be in minutes, not milliseconds
+
 ## 1.8.4
 - Added setting to expire firefox containers after X minutes, ideally set to your session duration
 
