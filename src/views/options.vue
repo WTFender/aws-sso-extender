@@ -263,6 +263,7 @@
             <PCheckbox
               v-if="$ext.platform === 'firefox'"
               v-model="settings.firefoxContainers"
+              v-tooltip.bottom="'Open the AWS Console in Firefox Containers'"
               input-id="container"
               class="option-value setting-checkbox"
               name="container"
@@ -273,7 +274,21 @@
             <label
               v-if="$ext.platform === 'firefox'"
               for="container"
-            >Open in Firefox Containers</label>
+            >Open in Firefox Containers</label><br>
+            <PCheckbox
+              v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
+              v-model="settings.firefoxResumeContainer"
+              v-tooltip.bottom="'Open existing firefox containers; disable to spawn a new container each time.'"
+              input-id="resumeContainer"
+              class="option-value setting-checkbox"
+              name="resumeContainer"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+            />
+            <label
+              v-if="$ext.platform === 'firefox'"
+              for="resumeContainer"
+            >Resume Firefox Containers</label>
             <div
               class="option-value"
               style="width: 40%; float: left;"
@@ -545,6 +560,7 @@ export default {
         lastUserId: '',
         lastProfileId: '',
         firefoxContainers: false,
+        firefoxResumeContainer: true,
         showReleaseNotes: true,
         showAllProfiles: false,
         tableSettings: {
