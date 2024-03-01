@@ -7,25 +7,8 @@
 🔑 Assume IAM roles from your SSO profiles  
 🦊 Open the AWS console in Firefox Containers  
 
-## Demo
-
+## [Demo](https://www.youtube.com/watch?v=Kpd82mK3Itk)
 https://github.com/WTFender/aws-sso-extender/assets/12001399/d857a4b2-99d6-4189-8565-0e03a4e615c6
-
-### Firefox Containers
-Open the AWS Console in Firefox containers with IAM & SSO labels.  
-<img src="./docs/img/ff-containers.png" width="500">
-
-### Screenshots
-Favorite profiles  
-<img src="./docs/img/faves.png" width="500">  
-Customize AWS console color & text  
-<img src="./docs/img/console.png" width="500">  
-Sort & reorder your profiles  
-<img src="./docs/img/edit.png" width="500">  
-Settings & IAM Roles  
-<img src="./docs/img/settings.png" width="500">  
-JSON Editor  
-<img src="./docs/img/json-editor.png" width="500">  
 
 ## Contribute
 
@@ -44,10 +27,21 @@ npm run build:firefox # prod
 2. Update version in `package.json`
 3. Open PR to `release` branch to build packages
 4. Upload packages to publishers
-
-[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/codeql.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/codeql.yml)  
-[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/build.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/build.yml)  
-[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/release.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/release.yml)  
-[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_edge.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_edge.yml)  
-[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_firefox.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_firefox.yml)  
+   
 [![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_chrome.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_chrome.yml)  
+[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_firefox.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_firefox.yml)  
+[![](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_edge.yml/badge.svg)](https://github.com/WTFender/aws-sso-extender/actions/workflows/publish_edge.yml)  
+
+### Screenshots
+Favorite profiles  
+<img src="./docs/img/faves.png" width="500">  
+Customize AWS console color & text  
+<img src="./docs/img/console.png" width="500">  
+Sort & reorder your profiles  
+<img src="./docs/img/edit.png" width="500">  
+Settings & IAM Roles  
+<img src="./docs/img/settings.png" width="500">  
+JSON Editor  
+<img src="./docs/img/json-editor.png" width="500">  
+Open the AWS Console in Firefox containers  
+<img src="./docs/img/ff-containers.png" width="500">

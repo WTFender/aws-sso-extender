@@ -1,4 +1,4 @@
-import Browser from 'webextension-polyfill';
+import Browser, { contextualIdentities } from 'webextension-polyfill';
 import {
   type ExtensionConfig,
   type UserData,
@@ -9,6 +9,7 @@ import {
   CustomData,
   ExtensionPermissions,
   UserConfig,
+  ContextualIdentity,
 } from '../types';
 
 function encodeUriPlusParens(str) {
@@ -54,6 +55,7 @@ class Extension {
     lastUserId: null,
     lastProfileId: null,
     firefoxContainers: false,
+    firefoxResumeContainer: true,
     iconColor: 'red',
     showReleaseNotes: true,
     showAllProfiles: false,
@@ -541,9 +543,13 @@ class Extension {
     this.log(profile);
     const profileUrl = this.createProfileUrl(user, profile);
     if (this.platform === 'firefox' && settings.firefoxContainers) {
-      const containers = await this.config.browser.contextualIdentities.query({
-        name: this.sessionLabelSso(profile, user),
-      });
+      let containers: ContextualIdentity[] = [];
+      // query existing containers
+      if (settings.firefoxResumeContainer) {
+        containers = await this.config.browser.contextualIdentities.query({
+          name: this.sessionLabelSso(profile, user),
+        });
+      }
       if (containers.length >= 1) {
         // eslint-disable-next-line vue/max-len
         const tabs = this.config.browser.tabs.query({

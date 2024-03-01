@@ -641,6 +641,7 @@ export default {
         lastUserId: '',
         lastProfileId: '',
         firefoxContainers: false,
+        firefoxResumeContainer: true,
         showReleaseNotes: true,
         showAllProfiles: false,
         tableSettings: {

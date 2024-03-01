@@ -1,3 +1,6 @@
+## 1.8.3
+- Added setting to resume firefox containers or create a new one each time
+
 ## 1.8.2
 - Expand profile names when no IAM role exists
 
