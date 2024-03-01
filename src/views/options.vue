@@ -390,7 +390,6 @@
               class="option-value"
               style="width: 60px; height: 1rem; margin-left: 3rem; margin-right: 10px; margin-bottom: 5px;"
               suffix=" mins"
-              :placeholder="settings.firefoxExpireMinsContainer"
               @change="saveUser()"
             />
             <h3>
