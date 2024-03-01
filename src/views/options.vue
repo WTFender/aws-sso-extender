@@ -260,35 +260,6 @@
               <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br>
             </div>
             <br>
-            <PCheckbox
-              v-if="$ext.platform === 'firefox'"
-              v-model="settings.firefoxContainers"
-              v-tooltip.bottom="'Open the AWS Console in Firefox Containers'"
-              input-id="container"
-              class="option-value setting-checkbox"
-              name="container"
-              :binary="true"
-              style="margin-right: 10px; text-align: middle"
-              @click="toggleContainers()"
-            />
-            <label
-              v-if="$ext.platform === 'firefox'"
-              for="container"
-            >Open in Firefox Containers</label><br>
-            <PCheckbox
-              v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
-              v-model="settings.firefoxResumeContainer"
-              v-tooltip.bottom="'Open existing firefox containers; disable to spawn a new container each time.'"
-              input-id="resumeContainer"
-              class="option-value setting-checkbox"
-              name="resumeContainer"
-              :binary="true"
-              style="margin-right: 10px; text-align: middle"
-            />
-            <label
-              v-if="$ext.platform === 'firefox'"
-              for="resumeContainer"
-            >Resume Firefox Containers</label>
             <div
               class="option-value"
               style="width: 40%; float: left;"
@@ -375,6 +346,53 @@
                   Colorpicker, dropdowns, and certain other elements won't stay open on firefox
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
+            <PCheckbox
+              v-if="$ext.platform === 'firefox'"
+              v-model="settings.firefoxContainers"
+              v-tooltip.bottom="'Open the AWS Console in Firefox Containers'"
+              input-id="container"
+              class="option-value setting-checkbox"
+              name="container"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+              @click="toggleContainers()"
+            />
+            <label
+              v-if="$ext.platform === 'firefox'"
+              for="container"
+            >Open in Firefox Containers</label><br>
+            <PCheckbox
+              v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
+              v-model="settings.firefoxResumeContainer"
+              v-tooltip.bottom="'Open existing firefox containers; disable to spawn a new container each time.'"
+              input-id="resumeContainer"
+              class="option-value setting-checkbox"
+              name="resumeContainer"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+            />
+            <label
+              v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
+              for="resumeContainer"
+            >Resume Firefox Containers</label><br>
+            <label
+              v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
+              for="expireContainer"
+              style="margin-left: 3rem;"
+            >Remove Firefox Containers</label><br>
+            <InputNumber
+              v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
+              id="expireContainer"
+              v-model="settings.firefoxExpireMinsContainer"
+              v-tooltip.bottom="'Remove firefox containers after X minutes; set this to your session duration. Set to 0 to disable.'"
+              aria-describedby="expireContainer"
+              name="expireContainer"
+              class="option-value"
+              style="width: 60px; height: 1rem; margin-left: 3rem; margin-right: 10px; margin-bottom: 5px;"
+              suffix=" mins"
+              :placeholder="settings.firefoxExpireMinsContainer"
+              @change="saveUser()"
+            />
             <h3>
               AWS Console Preview
             </h3>

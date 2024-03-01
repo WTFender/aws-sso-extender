@@ -26,6 +26,7 @@ export interface ExtensionSettings {
   lastProfileId: string;
   firefoxContainers?: boolean;
   firefoxResumeContainer: boolean;
+  firefoxExpireMinsContainer: number;
   iconColor: string;
   showReleaseNotes: boolean;
   showAllProfiles: boolean;
@@ -56,7 +57,8 @@ export interface ExtensionData {
 }
 
 export interface ExtensionMessage {
-  action: 'enableFirefoxContainers' | 'disableFirefoxContainers' | 'openProfile1' | 'openProfile2' | 'openProfile3'
+  action: 'enableFirefoxContainers' | 'disableFirefoxContainers' | 'expireFirefoxContainer' | 'openProfile1' | 'openProfile2' | 'openProfile3'
+  cookieStoreId?: string
 }
 
 export interface ApiData {

@@ -12,6 +12,7 @@ import DataTable from 'primevue/datatable';
 import Dialog from 'primevue/dialog';
 import Divider from 'primevue/divider';
 import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber'
 import Listbox from 'primevue/listbox';
 import PrimeVue from 'primevue/config';
 import Panel from 'primevue/panel';
@@ -42,6 +43,7 @@ app.config.globalProperties.$ext = extension;
 app.component('ColorPicker', ColorPicker);
 app.component('DataTable', DataTable);
 app.component('InputText', InputText);
+app.component('InputNumber', InputNumber);
 app.component('PAccordion', Accordion);
 app.component('PAccordionTab', AccordionTab);
 app.component('PBadge', Badge);
