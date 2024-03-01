@@ -80,7 +80,7 @@ extension.loadData().then((data: ExtensionData) => {
             setTimeout(() => { 
               extension.log('background:expireFirefoxContainer');
               extension.config.browser.contextualIdentities.remove(msg.cookieStoreId!);
-            }, data.settings.firefoxExpireMinsContainer);
+            }, (data.settings.firefoxExpireMinsContainer * 60 * 1000));
           }
         });
       },
