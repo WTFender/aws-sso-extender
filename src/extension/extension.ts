@@ -578,7 +578,7 @@ class Extension {
       this.config.browser.tabs.create({
         url: profileUrl,
       });
-      // window.open(profileUrl, '_blank');
+      window.close();
     }
   }
 
