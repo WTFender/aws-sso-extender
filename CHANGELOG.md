@@ -1,3 +1,6 @@
+## 1.8.7
+- Respect profile labels when sorting profiles
+
 ## 1.8.6
 - Firefox: close extension when navigating to profile
 

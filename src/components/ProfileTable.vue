@@ -593,10 +593,18 @@ export default {
       }
       // sort profile name
       if (this.newTableSettings.sortProfile === 'asc') {
-        return profiles.sort((a, b) => b.profile.name.localeCompare(a.profile.name));
+        return profiles.sort((a, b) => {
+          const sortA = a.profile.custom?.label || a.profile.name;
+          const sortB = b.profile.custom?.label || b.profile.name;
+          return sortB.localeCompare(sortA);
+        });
       }
       if (this.newTableSettings.sortProfile === 'desc') {
-        return profiles.sort((a, b) => a.profile.name.localeCompare(b.profile.name));
+        return profiles.sort((a, b) => { 
+          const sortA = a.profile.custom?.label || a.profile.name;
+          const sortB = b.profile.custom?.label || b.profile.name;
+          return sortA.localeCompare(sortB);
+        });
       }
       // unsorted or last custom sort
       return profiles;
