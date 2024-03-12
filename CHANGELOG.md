@@ -1,3 +1,6 @@
+## 1.8.6
+- Firefox: close extension when navigating to profile
+
 ## 1.8.5
 - Fix container expiration to be in minutes, not milliseconds
 
