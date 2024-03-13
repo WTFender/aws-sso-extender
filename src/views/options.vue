@@ -608,9 +608,6 @@ export default {
         color: getFontColor(`#${this.user.custom.colorDefault}`),
       }; 
     },
-    userLabel() {
-      return this.user.custom.displayName || this.user.subject;
-    },
     consolePermissions() {
       if (this.$ext.platform === 'firefox') {
         return this.permissions.console && this.permissions.containers;
@@ -633,7 +630,7 @@ export default {
       // sort current user as first option
       const currentUserIdx = options.findIndex(u => u.userId == this.user.userId);
       this.$ext.log(currentUserIdx);
-      if (currentUserIdx !== -1) { options.unshift(options.splice(currentUserIdx, 1)[0]) };
+      if (currentUserIdx !== -1) { options.unshift(options.splice(currentUserIdx, 1)[0]) }
       return options;
     },
     awsIamRoles(): AppData[] {
@@ -651,7 +648,7 @@ export default {
       });
       this.$ext.log('iamRoles');
       this.$ext.log(iamRoles);
-      return iamRoles;
+      return iamRoles
     },
     awsAppProfiles(): AppData[] {
       const appProfiles = this.userProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
@@ -831,18 +828,6 @@ export default {
       [this.previewRole] = this.awsIamRoles;
       this.loaded = true;
     },
-    demo() {
-      this.$ext.log('popup:demoMode');
-      this.demoMode = true;
-      this.permissions = {
-        console: true,
-        history: true,
-        signin: true,
-        sso: true,
-        containers: true,
-      };
-      this.load(demoData);
-    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setHotkeyProfileId(event: any, hotkeyId: string) {
       this.$ext.log(`popup:setHotkeyProfileId:${hotkeyId}:${event.target.value}`);
@@ -943,16 +928,6 @@ export default {
       } else {
         this.save()
       }
-    },
-    updateProfileLabel(event) {
-      const { newData } = event;
-      if ('profile.custom.label' in newData) {
-        newData.profile.custom.label = newData['profile.custom.label'];
-      }
-      if ('profile.custom.color' in newData) {
-        newData.profile.custom.color = newData['profile.custom.color'];
-      }
-      this.updateProfile(newData);
     },
     addIamRole(role: IamRole) {
       this.$ext.log('popup:addIamRole');

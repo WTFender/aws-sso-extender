@@ -106,7 +106,7 @@ async function createFirefoxContainer(details) {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  filter.onstop = async (event) => {
+  filter.onstop = async () => {
     // The first OPTIONS request has no response body
     if (str.length > 0) {
       // signInToken

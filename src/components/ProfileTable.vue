@@ -452,18 +452,6 @@ export default {
       required: true,
       type: Boolean,
     },
-    tableSettings: {
-      type: Object,
-      required: false,
-      default: () => ({
-        showAllUsers: false,
-        showIamRoles: true,
-        showIcon: true,
-        sortCustom: false,
-        sortApp: 'desc' as false | string,
-        sortProfile: false as false | string,
-      }),
-    },
     tableEditor: {
       type: Boolean,
       default: false,
@@ -510,7 +498,6 @@ export default {
   data() {
     return {
       focusedProfileIdx: null as null | number,
-      activeContainer: null,
       containers: [] as ContextualIdentity[],
       openContainers: [] as ContextualIdentity[],
       newTableSettings: {
@@ -526,16 +513,6 @@ export default {
       colorPickerVisible: false,
       editorVisible: false,
       iconPickerVisible: false,
-      searchableFields: [
-        'id',
-        'applicationId',
-        'description',
-        'profile.custom.label',
-        'profile.id',
-        'profile.description',
-        'profile.protocol',
-      ],
-      selectedProfile: null,
       sourceProfile: {} as AppData,
       selectIcons: '⚠⚡✆♿✈☎☏☂☔✉☄☽☾☕✇❤☯✝✞✟☨☦☭☮☪☫☬☩✠☧✡♈♉♊♋♌♍♎♏♐♑♒♓♀♂☿♁⚢⚣⚤⚥⚦⚧⚨⚩❁❀✿✽✾❃⚘☘♚♔♛♕♜♖♝♗♞♘♟♙♥♡♠♤♦♢♣♧✩★☆✪✫✬✭✮✯✰☼☸☉❂♬♫♩♺♽♼♻♲♳♴♵♶♷♸♹✱✲✳✴✵✶✷✸✹✺✻✼❉❊❋❄❅❆☤⚕⚒⚓⚙⚜☢☣⚝⚛☐☑☒✓✔✕✖✗✘✚✌✍☟☝☜☚☞☛➘➙➚➝➜➟➡➢➤➩⟲⟳⟷⟵⟶⟿✂✄✏✎✐©®¢£¤¥¶§¨¬¯´µ·¸±¹²³°ªº¼½¾¿¡¦«»■□▢▣▤▥▦▧▨▩▪▫▬▭▮▯▰▱▲△▴▵▶▷▸▹►▻▼▽▾▿◀◁◂◃◄◅◆◇◈◉◊○◌◍◎●◐◑◒◓◔◕◖◗◘◙◚◛◜◝◞◟◠◡◢◣◤◥◦◧◨◩◪◫◬◭◮◯◰◱◲◳◴◵◶◷◸◹◺◻◼◽◾◿⬒⬓⬔⬕⬖⬗⬘⬙⬚⬟⬠⬡⬢⬣⬤⭓⭔☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕☖☗☘☙☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀♁♂♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓♔♕♖♗♘♙♚♛♜♝♞♟♠♡♢♣♤♥♦♧♨♩♪♫♬♭♮♯♰♱♲♳♴♵♶♷♸♹♺♻♼♽♾♿⚀⚁⚂⚃⚄⚅⚆⚇⚈⚉⚊⚋⚌⚍⚎⚏⚐⚑⚒⚓⚔⚕⚖⚗⚘⚙⚚⚛⚜⚠⚡⚢⚣⚤⚥⚦⚧⚨⚩⚪⚫⚬⚭⚮⚯⚰⚱⚲⚳⚴⚵⚶⚷⚸✁✂✃✄✆✇✈✉✌✍✎✏✐✑✒✓✔✕✖✗✘✙✚✛✜✝✞✟✠✡✢✣✤✥✦✧✩✪✫✬✭✮✯✰✱✲✳✴✵✶✷✸✹✺✻✼✽✾✿❀❁❂❃❄❅❆❇❈❉❊❋❍❏❐❑❒❖❘❙❚❛❜❝❞❡❢❣❤❥❦❧❨❩❪❫❬❭❮❯❰❱❲❳❴❵❶❷❸❹❺❻❼❽❾❿➀➁➂➃➄➅➆➇➈➉➊➋➌➍➎➏➐➑➒➓',
     };
@@ -552,9 +529,6 @@ export default {
         return '40%';
       }
       return '30%';
-    },
-    tableSettingsChanged() {
-      return JSON.stringify(this.tableSettings) !== JSON.stringify(this.newTableSettings);
     },
     sortedProfiles() {
       const profiles: AppData[] = [];
@@ -843,12 +817,6 @@ export default {
       appProfile.profile.custom!.iamRoles = iamRoles;
       this.$emit('updateProfile', appProfile);
     },
-    setProfiles(profiles) {
-      this.$ext.log('setProfiles');
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      profiles.forEach((profile) => {});
-      this.$ext.log(profiles);
-    },
     assumeIamRole(iamRole, appProfile) {
       // TODO notify on silent failure switching role
       this.$ext.log('assumeIamRole');
@@ -871,12 +839,6 @@ export default {
           window.open(profileUrl, '_blank');
         });
       });
-    },
-    encodeUriPlusParens(str) {
-      return encodeURIComponent(str).replace(
-        /[!'()*]/g,
-        (c) => `%${c.charCodeAt(0).toString(16)}`,
-      );
     },
     fave(appProfile) {
       // TODO fix favorite issue for multi users

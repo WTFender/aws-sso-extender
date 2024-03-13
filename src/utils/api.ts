@@ -51,7 +51,7 @@ export default async function api<ResponseType = ApiData>(path: string): Promise
     retryDelay: (n) => BACKOFF_FACTOR ** n * BACKOFF_DELAY_IN_MS,
 
     // Retries on 429 (throttled) and 5xx errors
-    retryOn: (n, err, res) => !!(res && (res.status === 429 || res.status >= 500)),
+    retryOn: (_, __, res) => !!(res && (res.status === 429 || res.status >= 500)),
     headers: { 'x-amz-sso_bearer_token': getToken() },
   }).then(async (response) => {
     extension.log(`aws-sso:api:${path}:results`);

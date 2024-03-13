@@ -580,7 +580,6 @@ export default {
   name: 'PopupView',
   data() {
     return {
-      userOptionIdx: 0,
       hexColors: {
         red: '#de2d35',
         blue: '#24b0ff',
@@ -627,10 +626,6 @@ export default {
         sso: false,
         containers: false,
       },
-      setupSteps: [
-        { id: 'permissions', title: 'Required Permissions', ref: this.permissions },
-        { id: 'login', title: 'Login to AWS SSO', ref: this.loaded },
-      ],
       loaded: false,
       user: {
         custom: {},
@@ -661,9 +656,6 @@ export default {
     };
   },
   computed: {
-    settingsLabel() {
-      return this.settings.tableSettings.showIamRoles && this.settings.tableSettings.showIcon ? this.user.custom.displayName || this.user.subject : '';
-    },
     searchBoxWidth() {
       if (!this.settings.tableSettings.showIcon && !this.settings.tableSettings.showIamRoles) {
         return '135px';
@@ -681,17 +673,6 @@ export default {
         return '480px';
       }
       return '580px';
-    },
-    isPageProfiles() {
-      return this.page === 'profiles';
-    },
-    userConfigUpdate() {
-      let update = false;
-      if (this.dataJson !== (this.$refs.userConfigJson as any).innerText) {
-        update = true;
-      }
-      this.$ext.log(`popup:userConfigUpdate:${update}`);
-      return update;
     },
     consolePermissions() {
       if (this.$ext.platform === 'firefox') {

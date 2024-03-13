@@ -1,4 +1,4 @@
-import Browser, { contextualIdentities } from 'webextension-polyfill';
+import Browser from 'webextension-polyfill';
 import {
   type ExtensionConfig,
   type UserData,
