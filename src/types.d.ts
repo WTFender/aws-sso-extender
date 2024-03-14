@@ -10,6 +10,7 @@ export interface ExtensionConfig {
   build: string
   permissions: {
     sso: string[]
+    saml: string[]
     signin: string[]
     console: string[]
     containers: string[]

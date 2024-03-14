@@ -78,6 +78,15 @@
       "js": [
         "src/entry/aws-switchrole.ts"
       ]
+    },
+    {
+      "matches": [
+        "https://signin.aws.amazon.com/saml",
+        "https://*.signin.aws.amazon.com/saml"
+      ],
+      "js": [
+        "src/entry/aws-saml.ts"
+      ]
     }
   ],
   "{{chrome}}.content_security_policy": {

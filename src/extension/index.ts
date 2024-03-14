@@ -11,6 +11,7 @@ const extensionConfig: ExtensionConfig = {
   permissions: {
     console: ['https://*.console.aws.amazon.com/*'],
     signin: ['https://signin.aws.amazon.com/switchrole?*'],
+    saml: ['https://signin.aws.amazon.com/saml'],
     sso: ['https://*.awsapps.com/start*'],
     containers: [
       'https://*.amazonaws.com/federation/console?*',
