@@ -23,6 +23,7 @@ module.exports = {
         'src/**/*.d.ts'
       ],
       extends: [
+        'eslint:recommended',
         'plugin:vue/vue3-recommended',
       ],
       parserOptions: {
@@ -32,6 +33,11 @@ module.exports = {
         extraFileExtensions: ['.vue']
       },
       rules: {
+        'vue/no-unused-properties': ['error', {
+          'groups': [ 'props', 'data', 'computed', 'methods' ],
+          'deepData': true,
+          'ignorePublicMembers': true
+        }],
         'linebreak-style': 0,
         'vuejs-accessibility/click-events-have-key-events': 'off',
         'no-param-reassign': ['error', { props: false }],

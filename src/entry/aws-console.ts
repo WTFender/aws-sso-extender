@@ -68,8 +68,8 @@ function findIamRole(aws: AwsConsole): IamRole {
   const iamRoles: IamRole[] = [];
   aws.data?.users.forEach((user) => {
     // app profiles
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax
-    for (const [profileId, profile] of Object.entries(user.custom.profiles)) {
+    // eslint-disable-next-line no-unused-vars
+    for (const [_, profile] of Object.entries(user.custom.profiles)) {
       // eslint-disable-next-line @typescript-eslint/no-loop-func
       profile.iamRoles.forEach((role) => {
         if (role.accountId === aws.accountId

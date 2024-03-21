@@ -1,3 +1,6 @@
+## 1.8.8
+- Support new AWS access portal
+
 ## 1.8.7
 - Respect profile labels when sorting profiles
 

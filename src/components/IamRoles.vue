@@ -79,10 +79,6 @@ import { AppData } from '../types';
 export default {
   name: 'IamRoles',
   props: {
-    appProfiles: {
-      required: true,
-      type: Array<AppData>,
-    },
     awsAppProfiles: {
       required: true,
       type: Array<AppData>,
@@ -106,18 +102,6 @@ export default {
     //
   },
   methods: {
-    setColor() {
-      const color = document.getElementById('color') as HTMLInputElement;
-      this.colorPickerVisible = false;
-      this.newIamRole.color = color.value;
-    },
-    resetIamRoles() {
-      this.resetIamRolePage();
-      this.appProfiles.forEach((ap) => {
-        ap.profile!.custom!.iamRoles = [];
-        this.$emit('updateProfile', ap);
-      });
-    },
     invalid(id) {
       const el = document.getElementById(id);
       if (el) { el.classList.add('p-invalid'); }

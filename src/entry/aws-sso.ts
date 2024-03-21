@@ -1,15 +1,26 @@
 import extension from '../extension';
 import { AppData, ProfileData, UserData } from '../types';
+import { waitForElement } from '../utils';
 import api, { RateLimiter, Semaphore } from '../utils/api';
 
 /* collect user, app, and profiles from the AWS SSO directory page */
 
-function getRegion(): string {
-  const region = (
-    document.head.querySelector('[name~=region][content]') as HTMLMetaElement
-  ).content;
-  extension.log(`aws-sso:getRegion:${region}`);
-  return region;
+interface AwsEnvironment {
+  FDLEnabled: boolean
+  PKCEEnabled: boolean
+  allowAllCookiesByDefault: boolean
+  oidcApiEndpoint: string
+  panoramaEnabled: true
+  partition: string
+  region: string
+  shortbreadEnabled: boolean
+  stage: string
+}
+
+function getEnvironment(): Promise<AwsEnvironment>{
+  return waitForElement('#env').then((envEl) => {
+    return JSON.parse(envEl.textContent!);
+  });
 }
 
 async function getUserData(): Promise<UserData> {
@@ -35,27 +46,37 @@ async function getAppProfiles(app: AppData): Promise<ProfileData[]> {
 }
 
 if (extension.ssoUrlRegex.test(window.location.href)) {
-  // getUserData > getApps > getProfiles > resolve promises > saveData
-  extension.log('aws-sso:run');
-  extension.ssoUrl = `https://portal.sso.${getRegion()}.amazonaws.com`;
-  getUserData().then((user) => {
-    const profiles: Array<Promise<ProfileData | void>> = [];
-    getApps().then((apps) => {
-      apps.forEach((app) => {
-        profiles.push(
-          getAppProfiles(app).then((appProfiles) => {
-            const appWithProfiles = app;
-            appWithProfiles.profiles = appProfiles;
-            extension.apps.push(appWithProfiles);
-          }),
-        );
-      });
-      Promise.all(profiles).then(() => {
-        extension.update(user);
-        extension.loaded = true;
-      }).catch((err) => {
-        throw new Error('Something went terribly wrong and it needs to be handled', { cause: err });
-      });
+  // delay if sso login is still in progress, need to wait on session token
+  let delay = window.location.href.includes('state=') ? (extension.config.delay * 3) : 0;
+  extension.log(`aws-sso:delay:${delay}`);
+  setTimeout(() => {
+    getEnvironment().then((env) => {
+      extension.log('aws-sso:env');
+      extension.log(env);
+      // getUserData > getApps > getProfiles > resolve promises > saveData
+      extension.ssoUrl = `https://portal.sso.${env.region}.amazonaws.com`;
+        getUserData().then((user) => {
+          const profiles: Array<Promise<ProfileData | void>> = [];
+          getApps().then((apps) => {
+            apps.forEach((app) => {
+              profiles.push(
+                getAppProfiles(app).then((appProfiles) => {
+                  const appWithProfiles = app;
+                  appWithProfiles.profiles = appProfiles;
+                  extension.apps.push(appWithProfiles);
+                }),
+              );
+            });
+            Promise.all(profiles).then(() => {
+              extension.update(user);
+              extension.loaded = true;
+            }).catch((err) => {
+              throw new Error('Something went terribly wrong and it needs to be handled', { cause: err });
+            });
+          });
+        });
+    
     });
-  });
+  }, delay);
+
 }

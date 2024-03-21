@@ -36,7 +36,6 @@ export default {
   data() {
     return {
       permissions: {
-        sso: false,
         history: false,
       },
       foundDirs: [],
