@@ -74,7 +74,7 @@ class Extension {
     this.config = config;
     this.platform = this.checkPlatform();
     this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|support|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
-    this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/\??(tab=.*)?$/;
+    this.ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com\/start\/?#?\/(\?(state|tab)=.*)?$/;
     this.ssoUrl = '';
     this.loaded = false;
     this.apps = [];
