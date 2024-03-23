@@ -57,7 +57,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.awsapps.com/start*"
+        "https://*.awsapps.com/start/"
       ],
       "js": [
         "src/entry/aws-sso.ts"

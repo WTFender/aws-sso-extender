@@ -61,8 +61,9 @@ export default {
           maxResults: 1000,
         })
         .then((results) => {
+          const ssoUrlRegex = /^https:\/\/(?<directoryId>.{1,64})\.awsapps\.com/;
           results?.forEach((site) => {
-            const match = this.$ext.ssoUrlRegex.exec(site.url as string);
+            const match = ssoUrlRegex.exec(site.url as string);
             if (match?.groups != null) {
               if (!(match.groups.directoryId in dirs)) {
                 dirs.push(match.groups.directoryId);

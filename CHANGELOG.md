@@ -1,3 +1,6 @@
+## 1.8.9
+- Fixed inconsistent profile updates when logging-in to the AWS access portal
+
 ## 1.8.8
 - Support new AWS access portal
 
