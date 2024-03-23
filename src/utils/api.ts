@@ -45,6 +45,10 @@ const fetchWithRetry = fetchRetry(fetch);
 
 export default async function api<ResponseType = ApiData>(path: string): Promise<ResponseType> {
   extension.log(`aws-sso:api:${path}`);
+  const token = getToken()
+  if (!token) {
+    throw new Error('No SSO token found');
+  }
   return fetchWithRetry(`${extension.ssoUrl}${path}`, {
     retries: MAXIMUM_RETRIES,
 
@@ -52,7 +56,7 @@ export default async function api<ResponseType = ApiData>(path: string): Promise
 
     // Retries on 429 (throttled) and 5xx errors
     retryOn: (_, __, res) => !!(res && (res.status === 429 || res.status >= 500)),
-    headers: { 'x-amz-sso_bearer_token': getToken() },
+    headers: { 'x-amz-sso_bearer_token': token },
   }).then(async (response) => {
     extension.log(`aws-sso:api:${path}:results`);
     return response.json() as ResponseType;
