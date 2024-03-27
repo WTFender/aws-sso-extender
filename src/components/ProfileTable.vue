@@ -29,13 +29,31 @@
       </PDialog>
       <form style="margin-left: 10px">
         <div style="margin-bottom: 10px">
-          <small id="profile-label-help">Profile Name</small>
+          <small id="profile-label-help">Profile Name</small><br>
           <InputText
             v-model="activeProfile.profile.name"
             class="p-inputtext-sm"
             aria-describedby="profile-label-help"
-            style="width: 400px"
+            style="width: 340px"
             :disabled="true"
+          />
+          <div
+            style="margin-left: 1rem"
+            class="pi"
+            :class="{
+              'pi-eye-slash': activeProfile.profile.custom?.hide,
+              'pi-eye': !activeProfile.profile.custom?.hide,
+            }"
+            @click="activeProfile.profile.custom!.hide = !activeProfile.profile.custom?.hide"
+          />
+          <div
+            style="margin-left: 1rem;"
+            class="pi"
+            :class="{
+              'pi-star-fill': activeProfile.profile.custom?.favorite,
+              'pi-star': !activeProfile.profile.custom?.favorite,
+            }"
+            @click="activeProfile.profile.custom!.favorite = !activeProfile.profile.custom?.favorite"
           />
         </div>
         <small id="label-help">
@@ -321,6 +339,7 @@
   >
     <div
       v-for="(profile, idx) in sortedProfiles"
+      v-show="!profile.profile.custom?.hide || tableEditor"
       :key="`${profile.id}-${profile.profile.id}`"
       class="profile"
       :class="{ 'profile-selected': focusedProfileIdx === idx }"
@@ -348,7 +367,7 @@
       >
       <div
         class="profile-field nav"
-        :style="{ width: columnWidth }"
+        style="width: 120px;"
         @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <div v-if="profile.applicationName === 'AWS Account'">
@@ -384,7 +403,7 @@
       >●</span>
       <div
         class="profile-field nav"
-        :style="{ width: (profile.profile.custom?.iamRoles.length! === 0 && newTableSettings.showIamRoles) ? '57%' : columnWidth }"
+        :style="{ width: (profile.profile.custom?.iamRoles.length! === 0 && newTableSettings.showIamRoles) ? '50%' : columnWidth }"
         @click="!tableEditor ? $ext.navSelectedProfile(profile, user, users, settings) : editProfile(profile)"
       >
         <PBadge
@@ -421,20 +440,32 @@
           @click="!tableEditor ? assumeIamRole(role, profile) : editProfile(profile)"
         />
       </div>
-      <div
-        style="float: right; margin-top: 5px"
-        class="pi"
-        :class="{
-          'pi-star-fill': profile.profile.custom?.favorite,
-          'pi-star': !profile.profile.custom?.favorite,
-        }"
-        @click="fave(profile)"
-      />
-      <div
-        v-if="!user.appProfileIds.includes(profile.profile.id)"
-        style="color: lightgrey; float: right; margin-top: 5px; margin-right: 10px;"
-        class="pi pi-share-alt"
-      />
+      <div style="float: right; margin-top: .5rem;">
+        <div
+          v-show="tableEditor"
+          style="margin-left: .5rem;"
+          class="pi"
+          :class="{
+            'pi-eye-slash': profile.profile.custom?.hide,
+            'pi-eye': !profile.profile.custom?.hide,
+          }"
+          @click="hide(profile)"
+        />
+        <div
+          style="margin-left: .5rem;"
+          class="pi"
+          :class="{
+            'pi-star-fill': profile.profile.custom?.favorite,
+            'pi-star': !profile.profile.custom?.favorite,
+          }"
+          @click="fave(profile)"
+        />
+        <div
+          style="margin-left: .5rem;"
+          :style="{ color: !user.appProfileIds.includes(profile.profile.id) ? 'lightgrey' : 'transparent' }"
+          class="pi pi-share-alt"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -786,6 +817,7 @@ export default {
       const profile = this.activeProfile;
       profile.profile.custom = {
         favorite: profile.profile.custom!.favorite,
+        hide: profile.profile.custom!.hide,
         icon: null,
         label: null,
         color: '',
@@ -840,6 +872,10 @@ export default {
         });
       });
     },
+    hide(appProfile) {
+      appProfile.profile.custom.hide = !appProfile.profile.custom.hide;
+      this.$emit('updateProfile', appProfile);
+    },
     fave(appProfile) {
       // TODO fix favorite issue for multi users
       appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
@@ -886,6 +922,7 @@ export default {
   padding-left: 10px;
   padding-right: 10px;
   border-bottom: 1px solid #dee2e6;
+  min-height: 45px;
 }
 .profile:hover, .profile-selected {
   background-color: #f3f5fb;
@@ -933,6 +970,8 @@ export default {
   color: gold !important;
 }
 
+.pi-eye:hover,
+.pi-eye-slash:hover,
 .pi-star-fill:hover {
   color: grey !important;
   cursor: pointer;
