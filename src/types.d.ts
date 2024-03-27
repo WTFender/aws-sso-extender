@@ -143,6 +143,7 @@ export interface ProfileData {
 
 export interface CustomData {
   favorite?: boolean
+  hide?: boolean
   icon?: string | null
   label?: string | null
   color: string;

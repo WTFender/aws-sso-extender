@@ -403,6 +403,7 @@ class Extension {
     this.log('customizeProfiles');
     const defaults: Partial<CustomData> = {
       favorite: false,
+      hide: false,
       label: null,
       iamRoles: [] as IamRole[],
     };

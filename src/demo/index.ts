@@ -49,6 +49,7 @@ const users: UserData[] = [
           color: '23b0ff',
           label: null,
           favorite: true,
+          hide: false,
           iamRoles: [{
             profileId: 'p-123',
             accountId: '432143214321',
@@ -61,6 +62,7 @@ const users: UserData[] = [
           color: 'FF5733',
           label: null,
           favorite: false,
+          hide: false,
           iamRoles: [{
             profileId: 'p-124',
             accountId: '432143214321',
@@ -73,6 +75,7 @@ const users: UserData[] = [
           color: 'FF5733',
           label: null,
           favorite: true,
+          hide: false,
           iamRoles: [],
         },
       },
@@ -103,6 +106,7 @@ const appProfiles: AppData[] = [
       custom: {
         color: '',
         favorite: false,
+        hide: false,
         label: null,
         iamRoles: [{
           profileId: 'p-123',
@@ -136,6 +140,7 @@ const appProfiles: AppData[] = [
       custom: {
         color: '',
         favorite: true,
+        hide: false,
         label: null,
         iamRoles: [],
       },
@@ -163,6 +168,7 @@ const appProfiles: AppData[] = [
       custom: {
         color: '',
         favorite: false,
+        hide: false,
         label: null,
         iamRoles: [],
       },
@@ -190,6 +196,7 @@ const appProfiles: AppData[] = [
       custom: {
         color: '',
         favorite: false,
+        hide: false,
         label: null,
         iamRoles: [],
       },
@@ -217,6 +224,7 @@ const appProfiles: AppData[] = [
       custom: {
         color: '',
         favorite: false,
+        hide: false,
         label: null,
         iamRoles: [],
       },
