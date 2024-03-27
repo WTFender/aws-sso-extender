@@ -874,11 +874,17 @@ export default {
     },
     hide(appProfile) {
       appProfile.profile.custom.hide = !appProfile.profile.custom.hide;
+      if(appProfile.profile.custom.hide) {
+        appProfile.profile.custom.favorite = false;
+      }
       this.$emit('updateProfile', appProfile);
     },
     fave(appProfile) {
       // TODO fix favorite issue for multi users
       appProfile.profile.custom.favorite = !appProfile.profile.custom.favorite;
+      if(appProfile.profile.custom.favorite) {
+        appProfile.profile.custom.hide = false;
+      }
       this.$emit('updateProfile', appProfile);
     },
   },
