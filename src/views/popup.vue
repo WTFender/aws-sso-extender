@@ -245,8 +245,9 @@ export default {
       return options;
     },
     faveProfiles(): AppData[] {
+      // favorite & not hidden
       return this.userProfiles.filter(
-        (ap: AppData) => ap.profile.custom?.favorite === true,
+        (ap: AppData) => ap.profile.custom?.favorite === true && ap.profile.custom?.hide === false,
       );
     },
     userProfiles() {

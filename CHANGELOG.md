@@ -1,3 +1,7 @@
+## 1.8.10
+- Add setting to hide profiles
+- UX improvements
+
 ## 1.8.9
 - Fixed inconsistent profile updates when logging-in to the AWS access portal
 

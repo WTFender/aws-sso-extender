@@ -938,6 +938,7 @@ export default {
           color: '',
           label: null,
           favorite: false,
+          hide: false,
           iamRoles: [role],
         };
       }
