@@ -508,19 +508,15 @@ class Extension {
 
   switchRole(role: IamRole) {
     const roleArgs = [
-      `${this.config.name}=true`, // identify when this extension is switching roles
       `displayName=${role.label}`,
       `roleName=${role.roleName}`,
       `account=${role.accountId}`,
-      `color=${role.color}`,
-      'action=switchFromBasis',
-      'mfaNeeded=0',
-      'src=nav',
       `redirect_uri=${encodeURIComponent(
         'https://console.aws.amazon.com/console/home',
       )}`,
     ].join('&');
-    window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}`;
+    // using the url hash, identify when this extension is switching roles
+    window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}#${this.config.name}`;
   }
 
   // eslint-disable-next-line vue/max-len

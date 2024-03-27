@@ -215,38 +215,10 @@
       background-color: #f3f5fb;
       border-bottom: 3px solid #dee2e6;
       padding-top: 10px;
-      padding-bottom: 10px;
     "
   >
     <PrimeButton
-      size="small"
-      :icon="newTableSettings.showIcon ? 'pi pi-check-circle' : 'pi pi-circle'"
-      class="filter-button"
-      :class="
-        newTableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'
-      "
-      label="Icons"
-      @click="
-        newTableSettings.showIcon = !newTableSettings.showIcon;
-        $emit('updateTableSettings', newTableSettings);
-      "
-    />
-    <PrimeButton
-      size="small"
-      :icon="newTableSettings.showIamRoles ? 'pi pi-check-circle' : 'pi pi-circle'"
-      class="filter-button"
-      :class="
-        newTableSettings.showIamRoles !== false
-          ? 'p-button-primary'
-          : 'p-button-secondary'
-      "
-      label="IAM Roles"
-      @click="
-        newTableSettings.showIamRoles = !newTableSettings.showIamRoles;
-        $emit('updateTableSettings', newTableSettings);
-      "
-    />
-    <PrimeButton
+      v-if="users.length > 1"
       size="small"
       :icon="newTableSettings.showAllUsers ? 'pi pi-check-circle' : 'pi pi-circle'"
       class="filter-button"
@@ -261,7 +233,6 @@
         $emit('updateTableSettings', newTableSettings);
       "
     />
-    <br>
     <PrimeButton
       size="small"
       :icon="sortAppIcon"
@@ -292,12 +263,41 @@
       "
       label="Custom"
     />
+    <PrimeButton
+      size="small"
+      :icon="newTableSettings.showIcon ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="
+        newTableSettings.showIcon !== false ? 'p-button-primary' : 'p-button-secondary'
+      "
+      label="Icons"
+      @click="
+        newTableSettings.showIcon = !newTableSettings.showIcon;
+        $emit('updateTableSettings', newTableSettings);
+      "
+    />
+    <PrimeButton
+      size="small"
+      :icon="newTableSettings.showIamRoles ? 'pi pi-check-circle' : 'pi pi-circle'"
+      class="filter-button"
+      :class="
+        newTableSettings.showIamRoles !== false
+          ? 'p-button-primary'
+          : 'p-button-secondary'
+      "
+      label="IAM Roles"
+      @click="
+        newTableSettings.showIamRoles = !newTableSettings.showIamRoles;
+        $emit('updateTableSettings', newTableSettings);
+      "
+    />
   </div>
 
   <!-- header -->
   <div
     v-if="tableEditor"
     class="profile"
+    style="min-height: unset;"
   >
     <div
       class="pi"
