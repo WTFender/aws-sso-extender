@@ -1,3 +1,7 @@
+## 1.8.11
+- Support the new IAM switch role form
+- UX improvements
+
 ## 1.8.10
 - Add setting to hide profiles
 - UX improvements

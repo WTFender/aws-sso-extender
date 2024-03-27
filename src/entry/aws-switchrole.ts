@@ -13,21 +13,18 @@ function parseQuery(queryString): object {
   return query;
 }
 
-function switchRole(query): Boolean {
-  const form = (document.getElementById('switchrole_form') as HTMLFormElement);
-  const account = (document.getElementById('account') as HTMLInputElement).value;
+function switchRole(): Boolean {
+  const form = (document.getElementsByTagName('form')[0] as HTMLFormElement);
+  const account = (document.getElementById('accountId') as HTMLInputElement).value;
   const roleName = (document.getElementById('roleName') as HTMLInputElement).value;
-  const colorBox = (document.getElementById('color0') as HTMLInputElement);
-  const noColorBox = (document.getElementById('none') as HTMLInputElement);
+  extension.log([form, account, roleName])
   // if form elements are present
-  if (account && roleName && colorBox && noColorBox) {
-    // select color
-    if (!('color' in query)) { noColorBox.click(); } else {
-      colorBox.value = query.color;
-      colorBox.click();
-    }
-    // switch role
-    form!.submit();
+  if (form && account && roleName) {
+    setTimeout(() => {
+      extension.log('switchRole:submit');
+      // switch role
+      form!.getElementsByTagName('button')[1].click();
+    }, extension.config.delay);
     return true;
   }
   return false;
@@ -38,12 +35,12 @@ if (window.location.href.includes('signin.aws.amazon.com/switchrole')) {
   const query = parseQuery(window.location.search);
   extension.log(query);
   // only switch role if it originated from this extension
-  if (query[`${extension.config.name}`] === 'true') {
+  if (window.location.hash === `#${extension.config.name}`) {
     extension.log('switchrole');
     // switch role, try again with delay
-    if (!switchRole(query)) {
+    if (!switchRole()) {
       setTimeout(() => {
-        switchRole(query);
+        switchRole();
       }, extension.config.delay);
     }
   }
