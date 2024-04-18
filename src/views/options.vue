@@ -454,10 +454,8 @@
       </div>
       <IamRoles
         v-else
-        :app-profiles="userProfiles"
         :aws-app-profiles="awsAppProfiles"
-        @addIamRole="addIamRole"
-        @updateProfile="updateProfile"
+        @updateProfiles="updateProfiles"
         @saveUser="saveUser"
       />
     </div>
@@ -502,10 +500,8 @@ import { getFontColor } from '../utils';
 import demoData from '../demo';
 import {
   AppData,
-  CustomData,
   ExtensionData,
   ExtensionSettings,
-  IamRole,
   UserConfig,
   UserData,
 } from '../types';
@@ -528,7 +524,7 @@ export default {
   data() {
     return {
       jsonEditor: {},
-      switchUser: true,
+      switchUser: false,
       previewRole: {} as AppData,
       previewProfile: {} as AppData,
       importTimeoutId: setTimeout(() => {}, 0),
@@ -702,10 +698,10 @@ export default {
       handler(newVal, oldVal) {
         delete newVal.updatedAt;
         delete oldVal.updatedAt;
-        this.$ext.log('newVal');
-        this.$ext.log(newVal);
-        this.$ext.log(oldVal);
-        if (newVal !== oldVal) {
+        if (newVal !== oldVal && Object.keys(oldVal).length > 0){
+          this.$ext.log('newVal');
+          this.$ext.log(newVal);
+          this.$ext.log(oldVal);
           this.saveUser();
         }
       },
@@ -892,15 +888,7 @@ export default {
         this.$ext.saveSettings(this.settings);
         this.notify('Reset Config', 'success');
       });
-      
       // settings saved by watcher
-    },
-    updateProfile(appProfile: AppData) {
-      this.$ext.log('popup:updateProfile');
-      this.user.custom.profiles[appProfile.profile.id] = appProfile.profile
-        .custom as CustomData;
-      this.$ext.log(this.user);
-      this.saveUser();
     },
     save() {
       this.$ext.log('popup:save');
@@ -929,20 +917,15 @@ export default {
         this.save()
       }
     },
-    addIamRole(role: IamRole) {
-      this.$ext.log('popup:addIamRole');
-      if (role.profileId in this.user.custom.profiles) {
-        this.user.custom.profiles[role.profileId].iamRoles.push(role);
-      } else {
-        this.user.custom.profiles[role.profileId] = {
-          color: '',
-          label: null,
-          favorite: false,
-          hide: false,
-          iamRoles: [role],
-        };
+    updateProfiles(profiles: UserData["custom"]["profiles"]) {
+      this.$ext.log('popup:updateProfiles');
+      this.user.custom.profiles = {
+        ...this.user.custom.profiles,
+        ...profiles,
       }
+      this.saveUser();
       this.$ext.log(this.user);
+      this.refreshProfiles();
     },
   },
 };

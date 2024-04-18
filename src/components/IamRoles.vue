@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts">
-import { AppData } from '../types';
+import { AppData, UserData } from '../types';
 
 export default {
   name: 'IamRoles',
@@ -84,7 +84,7 @@ export default {
       type: Array<AppData>,
     },
   },
-  emits: ['addIamRole', 'saveUser', 'updateProfile'],
+  emits: ['updateProfiles', 'saveUser'],
   data() {
     return {
       colorPickerVisible: false,
@@ -132,17 +132,22 @@ export default {
     },
     addIamRole() {
       if (this.validateNewIamRole()) {
+        const profiles: UserData["custom"]["profiles"] = {};
         this.selectedProfiles.forEach((ap) => {
-          this.$emit('addIamRole', {
-            profileId: ap.profile.id,
-            accountId: this.newIamRole.accountId,
-            roleName: this.newIamRole.roleName,
-            color: this.newIamRole.color.replace('#', ''),
-            label: this.newIamRole.label,
-          });
+          profiles[ap.profile.id] = {
+            ...ap.profile.custom!,
+            iamRoles: [ ...ap.profile.custom!.iamRoles, {
+              profileId: ap.profile.id,
+              accountId: this.newIamRole.accountId,
+              roleName: this.newIamRole.roleName,
+              color: this.newIamRole.color.replace('#', ''),
+              label: this.newIamRole.label,
+            }],
+          };
         });
+        this.$emit('updateProfiles', profiles);
         this.resetIamRolePage();
-        this.$emit('saveUser');
+        // this.$emit('saveUser');
       }
     },
     resetIamRolePage() {
