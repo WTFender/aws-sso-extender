@@ -420,7 +420,7 @@
               <option
                 v-for="p in awsIamRoles"
                 :key="p.profile.id"
-                :label="consolePreviewIam(p)"
+                :label="p.label"
                 :value="p"
                 :style="{
                   'background-color': `#${p.profile.custom?.iamRoles[0].color}`,
@@ -632,18 +632,24 @@ export default {
     awsIamRoles(): AppData[] {
       // eslint-disable-next-line vue/max-len
       const iamRoles = [] as AppData[];
-      this.awsAppProfiles.filter((ap) => ap.profile.custom?.iamRoles.length! > 0).forEach((ap) => {
+      const iamRoleAppProfiles = this.awsAppProfiles.filter((ap) => ap.profile.custom?.iamRoles.length! > 0)
+      iamRoleAppProfiles.forEach((ap) => {
         ap.profile.custom!.iamRoles.forEach((role) => {
-          const appProfile = {
+          iamRoles.push({
             ...ap,
-            label: `${role.roleName} - ${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name}`,
-          };
-          appProfile.profile.custom!.iamRoles = [role];
-          iamRoles.push(appProfile);
+            label: this.consolePreviewIam({
+              ...ap,
+              profile: {
+                ...ap.profile,
+                custom: {
+                  ...ap.profile.custom,
+                  iamRoles: [role],
+                },
+              },
+            }),
+          });
         });
       });
-      this.$ext.log('iamRoles');
-      this.$ext.log(iamRoles);
       return iamRoles
     },
     awsAppProfiles(): AppData[] {
