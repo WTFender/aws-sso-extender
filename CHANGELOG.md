@@ -1,3 +1,6 @@
+## 1.8.12
+- Fix support for multiple IAM roles per profile
+
 ## 1.8.11
 - Support the new IAM switch role form
 - UX improvements
