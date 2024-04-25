@@ -435,6 +435,7 @@
             width: '100%',
             'background-color': `#${role.color}`,
             verticalAlign: 'middle',
+            'margin-top': roleIdx > 0 ? '.25rem' : 'inherit',
           }"
           :title="role.label || role.roleName"
           @click="!tableEditor ? assumeIamRole(role, profile) : editProfile(profile)"
