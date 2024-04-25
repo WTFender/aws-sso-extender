@@ -5,7 +5,7 @@
   "author": "WTFender",
   "url": "https://github.com/WTFender/aws-sso-extender",
   "private": true,
-  "version": "1.8.11",
+  "version": "1.8.12",
   "type": "module",
   "scripts": {
     "prepare": "husky install",
