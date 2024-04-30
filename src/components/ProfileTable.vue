@@ -412,6 +412,7 @@
           :title="profile.profile.custom?.label || profile.profile.name"
           class="truncate"
           :style="{
+            'font-size': (profile.profile.custom?.label || profile.profile.name).length > 34 ? '0.5rem' : 'inherit',
             verticalAlign: 'middle',
             width: '100%',
             'background-color': profile.profile.custom?.color
