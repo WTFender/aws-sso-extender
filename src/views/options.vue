@@ -669,7 +669,7 @@ export default {
     awsAppProfiles(): AppData[] {
       const appProfiles = this.userProfiles.filter((ap) => (ap as AppData).applicationName === 'AWS Account') as AppData[];
       // eslint-disable-next-line no-param-reassign
-      appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} (${ap.searchMetadata!.AccountName}) - ${ap.profile.name} (${ap.profile.custom?.iamRoles.length})`; });
+      appProfiles.forEach((ap) => { ap.label = `${ap.searchMetadata!.AccountId} - ${ap.profile.custom?.label || ap.profile.name} (${ap.profile.custom?.iamRoles.length})`; });
       this.$ext.log(appProfiles);
       return appProfiles;
     },

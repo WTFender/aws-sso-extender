@@ -55,7 +55,7 @@
       <template #option="slotProps">
         <div
           class="flex align-items-center"
-          style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px"
+          style="max-height: 30px; line-height: 0; padding: 0px; margin: 0px; white-space: nowrap;"
         >
           <small>{{ slotProps.option.label }}</small>
         </div>
