@@ -1,3 +1,6 @@
+## 1.8.14
+- Improve account labels & names overflowing fields
+
 ## 1.8.13
 - Add 'copy link' button to [share the current AWS console page](https://docs.aws.amazon.com/singlesignon/latest/userguide/createshortcutlink.html) (thanks @mbourgeois-fetch)
 
