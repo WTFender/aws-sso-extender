@@ -541,6 +541,7 @@ export default {
         { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
         { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
         { label: 'Sync User Settings', id: 'enableSync', tooltip: 'Sync user settings across browsers. (default: true)' },
+        { label: 'Show Copy Link Button', id: 'copyLinkButton', tooltip: 'Display a button that copies a signin link for the current console URL, including the account and profile. (default: true)' },
       ],
       resources: [
         {
