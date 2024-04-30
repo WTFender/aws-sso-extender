@@ -22,6 +22,7 @@ export interface ExtensionConfig {
 export interface ExtensionSettings {
   defaultUser: string;
   enableSync: boolean;
+  copyLinkButton: boolean;
   lastUserId: string;
   lastProfileId: string;
   firefoxContainers?: boolean;

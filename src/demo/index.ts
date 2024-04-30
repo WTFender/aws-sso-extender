@@ -243,6 +243,7 @@ const demoData: ExtensionData = {
   settings: {
     defaultUser: 'lastUserId',
     enableSync: false,
+    copyLinkButton: true,
     lastUserId: users[0].userId,
     lastProfileId: 'p-124',
     firefoxContainers: true,

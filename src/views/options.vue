@@ -347,6 +347,20 @@
                   Workaround is to render our own dialog box on firefox with the elements
                 -->
             <PCheckbox
+              v-model="settings.copyLinkButton"
+              v-tooltip.bottom="'Show button to copy a shareable link to the current AWS account, role, & console page (default: true)'"
+              input-id="copyLink"
+              class="option-value setting-checkbox"
+              name="copyLink"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+              @click="settings.copyLinkButton = !settings.copyLinkButton;"
+            />
+            <label
+              for="copyLink"
+              style="font-size: 1rem; vertical-align: middle;"
+            >Show Copy Link Button</label><br>
+            <PCheckbox
               v-if="$ext.platform === 'firefox'"
               v-model="settings.firefoxContainers"
               v-tooltip.bottom="'Open the AWS Console in Firefox Containers'"
@@ -355,11 +369,12 @@
               name="container"
               :binary="true"
               style="margin-right: 10px; text-align: middle"
-              @click="toggleContainers()"
+              @click="settings.firefoxContainers = !settings.firefoxContainers;"
             />
             <label
               v-if="$ext.platform === 'firefox'"
               for="container"
+              style="font-size: 1rem; vertical-align: middle;"
             >Open in Firefox Containers</label><br>
             <PCheckbox
               v-if="$ext.platform === 'firefox' && settings.firefoxContainers"
@@ -367,7 +382,6 @@
               v-tooltip.bottom="'Open existing firefox containers; disable to spawn a new container each time.'"
               input-id="resumeContainer"
               class="option-value setting-checkbox"
-              name="resumeContainer"
               :binary="true"
               style="margin-right: 10px; text-align: middle"
             />
@@ -785,9 +799,6 @@ export default {
         type: 'application/json',
       });
       saveAs(fileToSave, `${this.user.custom.displayName || this.user.subject}-${this.$ext.config.name}.json`);
-    },
-    toggleContainers() {
-      this.settings.firefoxContainers = !this.settings.firefoxContainers;
     },
     requestPermissionsContainers() {
       this.$ext.config.browser.permissions.request({
