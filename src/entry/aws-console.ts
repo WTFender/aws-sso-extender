@@ -176,7 +176,7 @@ function customizeConsole(aws: AwsConsole): void {
           // if it's a button we'll change the id to be unique from the label button
           if (copiedNode.nodeName=="BUTTON") copiedNode.id="copyLinkButton"
           // Append the element as a child for each time we go through the loop after the first.  The childmost element will have its text updated
-          if (priorNode) {copiedNode.appendChild(priorNode)} else {copiedNode.textContent="Copy Link"; copiedNode.title="Copy direct signin link"}
+          if (priorNode) {copiedNode.appendChild(priorNode)} else {copiedNode.textContent="Copy Link"; copiedNode.title="Copy link to current AWS console page"}
           priorNode=copiedNode
           parentElement=parentElement.parentElement
         }
