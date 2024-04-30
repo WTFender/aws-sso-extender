@@ -1,3 +1,6 @@
+## 1.8.13
+- Add 'copy link' button to [share the current AWS console page](https://docs.aws.amazon.com/singlesignon/latest/userguide/createshortcutlink.html) (thanks @mbourgeois-fetch)
+
 ## 1.8.12
 - Fix support for multiple IAM roles per profile
 
