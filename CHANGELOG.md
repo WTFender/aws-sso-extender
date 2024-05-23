@@ -1,3 +1,6 @@
+## 1.8.16
+- Added setting to only navigate current browser tab (default: false)
+
 ## 1.8.15
 - Fix IAM label format not applying to AWS Console
 
