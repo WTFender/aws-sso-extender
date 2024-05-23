@@ -20,15 +20,16 @@ export interface ExtensionConfig {
 }
 
 export interface ExtensionSettings {
+  copyLinkButton: boolean;
   defaultUser: string;
   enableSync: boolean;
-  copyLinkButton: boolean;
-  lastUserId: string;
-  lastProfileId: string;
   firefoxContainers?: boolean;
   firefoxResumeContainer: boolean;
   firefoxExpireMinsContainer: number;
   iconColor: string;
+  lastUserId: string;
+  lastProfileId: string;
+  navCurrentTab: boolean;
   showReleaseNotes: boolean;
   showAllProfiles: boolean;
   tableSettings: {

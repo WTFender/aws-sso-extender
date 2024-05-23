@@ -250,6 +250,7 @@ const demoData: ExtensionData = {
     firefoxResumeContainer: true,
     firefoxExpireMinsContainer: 480,
     iconColor: 'red',
+    navCurrentTab: false,
     showReleaseNotes: true,
     showAllProfiles: false,
     tableSettings: {

@@ -92,10 +92,12 @@ function checkIamLogins(aws: AwsConsole) {
   if (ap.profile.id in data.iamLogins) {
     const role: IamRole = data.iamLogins[ap.profile.id];
     if (role.profileId === ap.profile.id) {
-      extension.switchRole({
-        ...role,
-        label: encodeURIComponent(sessionLabel(aws)),
-      });
+      aws.iamRole = role;
+      aws.userType = 'iam';
+      extension.switchRole(
+        encodeURIComponent(sessionLabel(aws)),
+        role,
+      );
       extension.removeIamLogin(role.profileId);
     }
   }

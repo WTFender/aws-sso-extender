@@ -870,7 +870,11 @@ export default {
             user = this.$ext.findUserByProfileId(appProfile.profile.id, this.users);
           }
           const profileUrl = this.$ext.createProfileUrl(user, appProfile);
-          window.open(profileUrl, '_blank');
+          if (this.settings.navCurrentTab) {
+            this.$ext.navCurrentTab(profileUrl);
+          } else {
+            window.open(profileUrl, '_blank');
+          }
         });
       });
     },

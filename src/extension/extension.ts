@@ -56,6 +56,7 @@ class Extension {
     firefoxResumeContainer: true,
     firefoxExpireMinsContainer: 480,
     iconColor: 'red',
+    navCurrentTab: false,
     showReleaseNotes: true,
     showAllProfiles: false,
     tableSettings: {
@@ -506,9 +507,9 @@ class Extension {
     });
   }
 
-  switchRole(role: IamRole) {
+  switchRole(label: string, role: IamRole) {
     const roleArgs = [
-      `displayName=${role.label}`,
+      `displayName=${label}`,
       `roleName=${role.roleName}`,
       `account=${role.accountId}`,
       `redirect_uri=${encodeURIComponent(
@@ -517,6 +518,15 @@ class Extension {
     ].join('&');
     // using the url hash, identify when this extension is switching roles
     window.location.href = `https://signin.aws.amazon.com/switchrole?${roleArgs}#${this.config.name}`;
+  }
+
+  async navCurrentTab(url: string) {
+    this.config.browser.tabs.query({currentWindow: true, active: true}).then((tabs) => {
+      this.config.browser.tabs.update(
+        tabs[0].id,
+        {url: url}
+      )
+    });
   }
 
   // eslint-disable-next-line vue/max-len
@@ -569,9 +579,13 @@ class Extension {
       }
     }
     if (nav === true) {
-      this.config.browser.tabs.create({
-        url: profileUrl,
-      });
+      if (settings.navCurrentTab) {
+        this.navCurrentTab(profileUrl);
+      } else {
+        this.config.browser.tabs.create({
+          url: profileUrl,
+        });
+      }
       window.close();
     }
   }

@@ -1,3 +1,7 @@
+## 1.8.15
+- Added setting to only navigate current browser tab (default: false)
+- Fix IAM label format not applying to AWS Console
+
 ## 1.8.14
 - Improve account labels & names overflowing fields
 
