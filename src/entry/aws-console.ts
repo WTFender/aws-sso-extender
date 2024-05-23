@@ -92,10 +92,12 @@ function checkIamLogins(aws: AwsConsole) {
   if (ap.profile.id in data.iamLogins) {
     const role: IamRole = data.iamLogins[ap.profile.id];
     if (role.profileId === ap.profile.id) {
-      extension.switchRole({
-        ...role,
-        label: encodeURIComponent(sessionLabel(aws)),
-      });
+      aws.iamRole = role;
+      aws.userType = 'iam';
+      extension.switchRole(
+        encodeURIComponent(sessionLabel(aws)),
+        role,
+      );
       extension.removeIamLogin(role.profileId);
     }
   }
@@ -161,43 +163,6 @@ function customizeConsole(aws: AwsConsole): void {
       headerLbl.textContent = `${aws.user?.custom.labelIcon && aws.appProfile?.profile.custom?.icon ? aws.appProfile?.profile.custom?.icon : ''} ${label || defaultHeader}`;
     });
   }
-
-  if (aws.data?.settings.copyLinkButton){
-    // make a copy link button
-    waitForElement("#awsc-navigation__more-menu--list").then((menuList) => {
-      getHeaderLabel(aws.userType).then((headerLbl) => {
-        var parentElement:HTMLElement|null = headerLbl;
-        var priorNode: HTMLElement|null=null;
-        var copiedNode:HTMLElement|null=null;
-        // find the li element which is parent of the header label button, shallow clone so we can create a new element with matching style, but not create the other child elements
-        while ( parentElement && (priorNode==null || priorNode.nodeName!="LI") )
-        {
-          copiedNode=<HTMLElement>parentElement.cloneNode()
-          // if it's a button we'll change the id to be unique from the label button
-          if (copiedNode.nodeName=="BUTTON") copiedNode.id="copyLinkButton"
-          // Append the element as a child for each time we go through the loop after the first.  The childmost element will have its text updated
-          if (priorNode) {copiedNode.appendChild(priorNode)} else {copiedNode.textContent="Copy Link"; copiedNode.title="Copy link to current AWS console page"}
-          priorNode=copiedNode
-          parentElement=parentElement.parentElement
-        }
-        // add the new node we made in the above loop to the nav bar
-        if (copiedNode) menuList.append(copiedNode);
-        // run the function below when the button is clicked
-        document.getElementById("copyLinkButton")?.addEventListener("click", () => copyToClipBoard(aws.user!.managedActiveDirectoryId,aws.accountId!,aws.ssoRoleName!))
-      });
-    });
-  }
-}
-
-
-function copyToClipBoard(awsDirectoryId: string,accountId: string,ssoRoleName: string){
-  var linkurl="https://"+awsDirectoryId+".awsapps.com/start/#/console?account_id="+accountId+"&role_name="+ssoRoleName+"&destination="+encodeURIComponent(window.location.href);
-  navigator.clipboard.writeText(linkurl);
-  waitForElement('#copyLinkButton').then(async (el)=> { var textElement=el.querySelector("span"); if (textElement){textElement.textContent="Link Copied"; await delay(1000); textElement.textContent="Copy Link"}})
-}
-
-function delay(ms: number) {
-  return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
 async function init(): Promise<AwsConsole> {

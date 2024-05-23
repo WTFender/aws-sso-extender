@@ -506,9 +506,9 @@ class Extension {
     });
   }
 
-  switchRole(role: IamRole) {
+  switchRole(label: string, role: IamRole) {
     const roleArgs = [
-      `displayName=${role.label}`,
+      `displayName=${label}`,
       `roleName=${role.roleName}`,
       `account=${role.accountId}`,
       `redirect_uri=${encodeURIComponent(
