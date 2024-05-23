@@ -552,6 +552,7 @@ export default {
       },
       profileHotkeys: [],
       settingOptions: [
+        { label: 'Only Use Current Tab', id: 'navCurrentTab', tooltip: 'Only use the current tab when navigating to profiles and URLs.'},
         { label: 'Show All Profiles on Open', id: 'showAllProfiles', tooltip: 'Show all profiles when opening the extension popup, instead of filtering to favorites (default: false)' },
         { label: 'Show Release Notes on Update', id: 'showReleaseNotes', tooltip: 'When the extension is updated, open a browser tab with a link to the release notes (default: true)' },
         { label: 'Sync User Settings', id: 'enableSync', tooltip: 'Sync user settings across browsers. (default: true)' },
@@ -588,6 +589,7 @@ export default {
         lastProfileId: '',
         firefoxContainers: false,
         firefoxResumeContainer: true,
+        navCurrentTab: false,
         showReleaseNotes: true,
         showAllProfiles: false,
         tableSettings: {

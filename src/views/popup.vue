@@ -197,6 +197,7 @@ export default {
         lastProfileId: '',
         firefoxContainers: false,
         firefoxResumeContainer: true,
+        navCurrentTab: false,
         showReleaseNotes: true,
         showAllProfiles: false,
         tableSettings: {
