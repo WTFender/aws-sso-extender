@@ -1,3 +1,6 @@
+## 1.8.15
+- Fix IAM label format not applying to AWS Console
+
 ## 1.8.14
 - Improve account labels & names overflowing fields
 
