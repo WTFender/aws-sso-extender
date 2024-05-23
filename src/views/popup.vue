@@ -164,6 +164,7 @@ export default {
   name: 'PopupView',
   data() {
     return {
+      currentTheme: 'lara-light-blue',
       profileHotkeys: [],
       profileEditor: false,
       settingsPage: false,
@@ -369,6 +370,7 @@ export default {
     },
   },
   created() {
+    this.$ext.log('popup:created');
     this.$ext.config.browser.permissions.onAdded.addListener(this.handlePermissions);
     // eslint-disable-next-line func-names
     this.$ext.checkPermissions().then((perms) => {
@@ -378,6 +380,26 @@ export default {
     this.reload();
   },
   methods: {
+    changeTheme(evt) {
+      let newTheme = evt.target.value;
+      newTheme = newTheme.replace('-', this.darkMode() ? '-dark-' : '-light-');
+      this.$primevue.changeTheme(this.currentTheme, newTheme, 'theme-link', () => {
+        this.$ext.log(`popup:themeChanged:${this.currentTheme}:${newTheme}`);
+        this.currentTheme = newTheme;
+      });
+    },
+    darkMode() {
+      return this.settings.darkMode === true || this.settings.darkMode === 'system' && this.isSystemDarkMode();
+    },
+    isSystemDarkMode() {
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        return true;
+      }
+      return false;
+    },
     nextUser() {
       const options = this.userOptions;
       const currentUserIdx = options.findIndex((u) => u.userId === this.user.userId);
@@ -431,6 +453,9 @@ export default {
       this.raw = data;
       this.dataJson = JSON.stringify(data, null, 2);
       this.settings = data.settings;
+      if (this.settings.theme != this.currentTheme) {
+        this.changeTheme({ target: { value: this.settings.theme } });
+      }
       this.users = data.users;
       if (this.users.length > 0) {
         this.updatedAt = data.updatedAt as number;
@@ -509,12 +534,8 @@ export default {
 .toolbar-item {
   font-size: 12px;
   height: 30px;
-  background: #ffffff;
-  color: #343a40 !important;
-  border: 1px solid #ced4da;
 }
 .user-button:hover {
-  background: #eeeeee !important;
   color: #343a40 !important;
   border: 1px solid #ced4da !important;
 }
@@ -554,7 +575,6 @@ export default {
 }
 
 .card {
-  background-color: white;
   max-height: 500px;
   display: inline-block;
   margin: 0px;
@@ -591,7 +611,6 @@ export default {
 .footer, .footer-debug {
   color: #343a40;
   border-top: 1px solid #dee2e6;
-  background: #f8f9fa;
   position: fixed;
   bottom: 0px;
   left: 0px;

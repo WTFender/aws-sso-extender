@@ -103,6 +103,22 @@
           :selected="u.userId === settings.defaultUser"
         />
       </select><br>
+      <small class="option-label">Color Theme</small><br>
+      <select
+        id="colorTheme"
+        v-model="settings.theme"
+        name="colorTheme"
+        class="option-value"
+        style="margin-bottom: 1.5rem; width: 330px; padding: 1rem; border-radius: 5px;"
+        @change="changeTheme($event)"
+      >
+        <option
+          v-for="t in themes"
+          :key="t"
+          :label="t"
+          :value="t"
+        />
+      </select><br>
       <small
         v-tooltip.bottom="$ext.platform === 'firefox' ? 'Customize key binds @ about:addons' : 'Customize key binds @ chrome://extensions/shortcuts'"
         class="option-label"
@@ -537,6 +553,19 @@ export default {
   },
   data() {
     return {
+      currentTheme: 'lara-light-blue',
+      themes: [
+        'bootstrap4-blue',
+        'bootstrap4-purple',
+        'lara-blue',
+        'lara-indigo',
+        'lara-purple',
+        'lara-teal',
+        'md-deeppurple',
+        'md-indigo',
+        'mdc-deeppurple',
+        'mdc-indigo',
+      ],
       jsonEditor: {},
       switchUser: false,
       previewRole: {} as AppData,
@@ -740,6 +769,26 @@ export default {
     this.reload();
   },
   methods: {
+    changeTheme(evt) {
+      let newTheme = evt.target.value;
+      newTheme = newTheme.replace('-', this.darkMode() ? '-dark-' : '-light-');
+      this.$primevue.changeTheme(this.currentTheme, newTheme, 'theme-link', () => {
+        this.$ext.log(`popup:themeChanged:${this.currentTheme}:${newTheme}`);
+        this.currentTheme = newTheme;
+      });
+    },
+    darkMode() {
+      return this.settings.darkMode === true || this.settings.darkMode === 'system' && this.isSystemDarkMode();
+    },
+    isSystemDarkMode() {
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        return true;
+      }
+      return false;
+    },
     nextUser() {
       this.switchUser = true;
       const options = this.userOptions;
@@ -861,6 +910,9 @@ export default {
       this.raw = data;
       this.dataJson = JSON.stringify(data, null, 2);
       this.settings = data.settings;
+      if (this.settings.theme != this.currentTheme) {
+        this.changeTheme({ target: { value: this.settings.theme } });
+      }
       this.users = data.users;
       if (this.users.length > 0) {
         this.updatedAt = data.updatedAt as number;
@@ -987,12 +1039,10 @@ h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
 .toolbar-item {
   font-size: 12px;
   height: 30px;
-  background: #ffffff;
   color: #343a40 !important;
   border: 1px solid #ced4da;
 }
 .user-button:hover {
-  background: #eeeeee !important;
   color: #343a40 !important;
   border: 1px solid #ced4da !important;
 }
@@ -1032,7 +1082,6 @@ h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
 }
 
 .card {
-  background-color: white;
   display: inline-block;
   margin: 0px;
   margin-left: 40px;
@@ -1044,7 +1093,6 @@ h2, h3, h4, h5, h6, p, small, label, span, select, option, input, button, a {
 .footer, .footer-debug {
   color: #343a40;
   border-top: 1px solid #dee2e6;
-  background: #f8f9fa;
   position: fixed;
   bottom: 0px;
   left: 0px;

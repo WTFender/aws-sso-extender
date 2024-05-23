@@ -28,7 +28,6 @@ import ProfileTable from '../components/ProfileTable.vue';
 import Popup from '../views/popup.vue';
 import LoginLinks from '../components/LoginLinks.vue';
 import IamRoles from '../components/IamRoles.vue';
-import 'primevue/resources/themes/lara-light-indigo/theme.css';
 import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
 

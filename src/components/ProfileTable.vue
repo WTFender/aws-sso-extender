@@ -212,7 +212,6 @@
   <div
     v-if="tableEditor"
     style="
-      background-color: #f3f5fb;
       border-bottom: 3px solid #dee2e6;
       padding-top: 10px;
     "
@@ -937,8 +936,8 @@ export default {
   min-height: 45px;
 }
 .profile:hover, .profile-selected {
-  background-color: #f3f5fb;
-  box-shadow: rgba(149, 157, 165, 0.2) 0px 5px 5px;
+  filter: brightness(105%);
+  box-shadow: rgba(149, 157, 165, 0.2) 0px .25rem .25rem;
 }
 .profile:last-child {
   padding-bottom: 8px;
@@ -964,7 +963,7 @@ export default {
 }
 
 .role-link:hover {
-  background-color: #5e3add !important;
+  filter: brightness(105%);
   cursor: pointer;
 }
 

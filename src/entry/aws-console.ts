@@ -122,6 +122,8 @@ function getFooterLabel() {
   return waitForElement("#awsc-nav-footer-content span[data-testid='awsc-footer-copyright']");
 }
 
+const defaultAwsColor = '222f3e';
+
 function customizeConsole(aws: AwsConsole): void {
   extension.log('customizeConsole');
   const defaultHeader = 'Services';
@@ -135,7 +137,7 @@ function customizeConsole(aws: AwsConsole): void {
   let footerLblPromise;
   if (aws.user!.custom.colorHeader) {
     getHeader().then((header) => {
-      header.style.backgroundColor = `#${color || '222f3e'}`;
+      header.style.backgroundColor = `#${color || defaultAwsColor}`;
     });
     headerLblPromise = getHeaderLabel(aws.userType);
     headerLblPromise.then((headerLbl) => {
@@ -144,7 +146,7 @@ function customizeConsole(aws: AwsConsole): void {
   }
   if (aws.user!.custom.colorFooter) {
     getFooter().then((footer) => {
-      footer.style.backgroundColor = `#${color || '222f3e'}`;
+      footer.style.backgroundColor = `#${color || defaultAwsColor}`;
     });
     footerLblPromise = getFooterLabel();
     footerLblPromise.then((footerLbl) => {

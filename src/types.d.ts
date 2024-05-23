@@ -20,6 +20,8 @@ export interface ExtensionConfig {
 }
 
 export interface ExtensionSettings {
+  theme: string;
+  darkMode: boolean | 'system';
   copyLinkButton: boolean;
   defaultUser: string;
   enableSync: boolean;

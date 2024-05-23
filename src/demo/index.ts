@@ -243,6 +243,8 @@ const demoData: ExtensionData = {
   settings: {
     defaultUser: 'lastUserId',
     enableSync: false,
+    theme: 'lara-light-blue',
+    darkMode: 'system',
     copyLinkButton: true,
     lastUserId: users[0].userId,
     lastProfileId: 'p-124',
