@@ -1,3 +1,6 @@
+## 1.8.16
+- Fix for role names with underscores not applying console customizations
+
 ## 1.8.15
 - Added setting to only navigate current browser tab (default: false)
 - Fix IAM label format not applying to AWS Console
