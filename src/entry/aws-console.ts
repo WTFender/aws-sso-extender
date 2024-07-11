@@ -60,7 +60,10 @@ function sessionLabel(aws: AwsConsole): string {
 function ssoRoleName(roleName: string): string | null {
   if (!roleName) { return null; }
   if (!roleName.startsWith('AWSReservedSSO_')) { throw Error('roleName is not an SSO role'); }
-  return roleName.split('_')[1];
+  // AWSReservedSSO_ROLE_WITH_UNDERSCORES_641d4a863dea1899/wtfender
+  // to
+  // ROLE_WITH_UNDERSCORES
+  return roleName.substring('AWSReservedSSO_'.length).split('/')[0].slice(0, -17);
 }
 
 function findIamRole(aws: AwsConsole): IamRole {
