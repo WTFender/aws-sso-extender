@@ -35,6 +35,22 @@ const users: UserData[] = [
     subject: 'demouser',
     userId: 'demoUserId1',
     custom: {
+      accounts: {
+        '123412341234': {
+          color: '880808',
+          label: 'AO-Label',
+          favorite: true,
+          hide: false,
+          iamRoles: [{
+            profileId: 'p-789',
+            accountId: '123412341234',
+            roleName: 'AO-IAM-roleName',
+            color: '880808',
+            label: 'AO-DemoCrossAccountRole',
+          }],
+        },
+      },
+      accountsOverride: false,
       displayName: '',
       sessionLabelSso: 'demo {{profile}} @ {{account}}',
       sessionLabelIam: 'demo {{role}} @ {{account}}',

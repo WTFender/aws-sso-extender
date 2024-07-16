@@ -78,6 +78,7 @@ async function createFirefoxContainer(details) {
         role.label || role.roleName,
         role.accountId,
         ap?.searchMetadata?.AccountName,
+        user.custom.accounts,
       );
       extension.log('iamContainerName');
       extension.log(iamContainerName);
@@ -92,6 +93,7 @@ async function createFirefoxContainer(details) {
       null,
       accountNumber,
       accountName,
+      user.custom.accounts,
     );
   }
   extension.log('label');

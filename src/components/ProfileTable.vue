@@ -93,11 +93,13 @@
           <ColorPicker
             v-if="activeProfile.applicationName === 'AWS Account'"
             v-model="activeProfile.profile.custom!.color"
+            :disabled="user.custom.accountsOverride && activeProfile.searchMetadata!.AccountId in user.custom.accounts"
             @click="colorPickerVisible = !colorPickerVisible"
           />
           <InputText
             v-if="activeProfile.applicationName === 'AWS Account'"
             v-model="activeProfile.profile.custom!.color"
+            :disabled="user.custom.accountsOverride && activeProfile.searchMetadata!.AccountId in user.custom.accounts"
             class="p-inputtext-sm"
             style="width: 60px; margin-left: 10px"
           />
@@ -105,6 +107,7 @@
           <PDialog
             v-if="$ext.platform === 'firefox' || $ext.platform === 'safari'"
             v-model:visible="colorPickerVisible"
+            :disabled="user.custom.accountsOverride && activeProfile.searchMetadata!.AccountId in user.custom.accounts"
             :style="{ width: '50vw' }"
           >
             <ColorPicker
@@ -148,7 +151,7 @@
           <div style="margin-bottom: 10px">
             <small id="account-name-label-help">AWS Account Name</small>
             <InputText
-              v-model="activeProfile.searchMetadata!.AccountName"
+              :placeholder="awsAccountNameLabel"
               class="p-inputtext-sm"
               aria-describedby="account-name-label-help"
               style="width: 400px"
@@ -551,6 +554,15 @@ export default {
     };
   },
   computed: {
+    awsAccountNameLabel() {
+      // accountName
+      let label = this.activeProfile.searchMetadata!.AccountName
+      // accountName (label) 
+      if (this.activeProfile.searchMetadata!.AccountId in this.user.custom.accounts) {
+        label += ` (${this.user.custom.accounts[this.activeProfile.searchMetadata!.AccountId].label})`
+      }
+      return label;
+    },
     awsIconUrl() {
       return new URL('../assets/img/aws.png', import.meta.url).href;
     },
@@ -636,6 +648,7 @@ export default {
         null,
         this.activeProfile.searchMetadata!.AccountId,
         this.activeProfile.searchMetadata!.AccountName,
+        this.user.custom.accounts,
       );
     },
   },
