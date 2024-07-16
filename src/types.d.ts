@@ -70,6 +70,8 @@ export interface ApiData {
 export interface UserData {
   updatedAt: number
   custom: {
+    accounts: Record<string, CustomData>
+    accountsOverride: boolean
     displayName: string,
     sessionLabelSso: string,
     sessionLabelIam: string,
