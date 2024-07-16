@@ -361,6 +361,20 @@
               style="font-size: 1rem; vertical-align: middle;"
             >Show Copy Link Button</label><br>
             <PCheckbox
+              v-model="user.custom.accountsOverride"
+              v-tooltip.bottom="'AWS account settings take priority over profile settings (default: false)'"
+              input-id="accountsOverride"
+              class="option-value setting-checkbox"
+              name="accountsOverride"
+              :binary="true"
+              style="margin-right: 10px; text-align: middle"
+              @click="user.custom.accountsOverride = !user.custom.accountsOverride;"
+            />
+            <label
+              for="accountsOverride"
+              style="font-size: 1rem; vertical-align: middle;"
+            >AWS Account Colors Override Profile</label><br>
+            <PCheckbox
               v-if="$ext.platform === 'firefox'"
               v-model="settings.firefoxContainers"
               v-tooltip.bottom="'Open the AWS Console in Firefox Containers'"
@@ -473,6 +487,13 @@
         @saveUser="saveUser"
       />
     </div>
+    <div class="options-group">
+      <AddAwsAccounts
+        :profiles="awsAppProfiles"
+        :aws-accounts="user.custom.accounts"
+        @addAccount="addAccount"
+      />
+    </div>
     <div
       class="options-group"
     >
@@ -514,6 +535,7 @@ import { getFontColor } from '../utils';
 import demoData from '../demo';
 import {
   AppData,
+  CustomData,
   ExtensionData,
   ExtensionSettings,
   UserConfig,
@@ -716,6 +738,13 @@ export default {
       this.refreshProfiles();
       // this.reload();
     },
+    'user.custom.accountsOverride': {
+      handler(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.saveUser();
+        }
+      },
+    },
     'user.custom': {
       handler(newVal, oldVal) {
         delete newVal.updatedAt;
@@ -757,6 +786,7 @@ export default {
         null,
         ap.searchMetadata!.AccountId,
         ap.searchMetadata!.AccountName,
+        this.user.custom.accounts,
       );
       return `${this.user?.custom.labelIcon && ap?.profile.custom?.icon ? ap?.profile.custom?.icon : ''} ${label}`;
     },
@@ -768,6 +798,7 @@ export default {
         ap.profile.custom.iamRoles[0].label || ap.profile.custom.iamRoles[0].roleName,
         ap.searchMetadata!.AccountId,
         ap.searchMetadata!.AccountName,
+        this.user.custom.accounts,
       );
       return `${this.user?.custom.labelIcon && ap?.profile.custom?.icon ? ap?.profile.custom?.icon : ''} ${label}`;
     },
@@ -935,6 +966,14 @@ export default {
       } else {
         this.save()
       }
+    },
+    addAccount(accountId, account: CustomData){
+      this.$ext.log('popup:addAccount');
+      this.$ext.log(account);
+      this.user.custom.accounts[accountId] = account;
+      this.saveUser();
+      this.$ext.log(this.user);
+      this.refreshProfiles();
     },
     updateProfiles(profiles: UserData["custom"]["profiles"]) {
       this.$ext.log('popup:updateProfiles');

@@ -30,6 +30,8 @@ class Extension {
   loaded: boolean;
 
   defaultCustom = {
+    accounts: {},
+    accountsOverride: false,
     displayName: '',
     sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
     sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
@@ -105,8 +107,9 @@ class Extension {
     return 'chrome';
   }
 
-  buildLabel(s, user, profile, role, account, accountName): string {
+  buildLabel(s, user, profile, role, account, accountName, accounts): string {
     let label = s;
+    // apply profile settings
     if (user) {
       label = label.replaceAll('{{user}}', user);
     }
@@ -120,7 +123,13 @@ class Extension {
       label = label.replaceAll('{{account}}', account);
     }
     if (accountName) {
-      label = label.replaceAll('{{accountName}}', accountName);
+      let accountLabel = accountName;
+      if (accounts[account] !== undefined) {
+        if (accounts[account].label) {
+          accountLabel = accounts[account].label;
+        }
+      }
+      label = label.replaceAll('{{accountName}}', accountLabel);
     }
     return label;
   }
@@ -399,25 +408,34 @@ class Extension {
   customizeProfiles(
     user: UserData,
     appProfiles: AppData[],
-    setDefaultColor: Boolean = true,
   ): AppData[] {
     this.log('customizeProfiles');
-    const defaults: Partial<CustomData> = {
+    const defaults: CustomData = {
       favorite: false,
       hide: false,
       label: null,
       iamRoles: [] as IamRole[],
+      color: user.custom.colorDefault
     };
-    if (setDefaultColor) {
-      defaults.color = user.custom.colorDefault;
-    }
+
     const customProfiles: AppData[] = [];
     appProfiles.forEach((ap) => {
-      const profile = ap;
+      let profile = ap;
       // eslint-disable-next-line max-len, vue/max-len
       profile.profile.custom = ap.profile.id in user.custom.profiles
         ? user.custom.profiles[ap.profile.id]
         : defaults as CustomData;
+      // inherit or override account color
+      if (profile.applicationName === 'AWS Account') {
+        if (profile.searchMetadata?.AccountId! in user.custom.accounts) {
+          if (user.custom.accountsOverride || profile.profile.custom.color === user.custom.colorDefault) {
+            profile.profile.custom = { 
+              ...profile.profile.custom,
+              color: user.custom.accounts[ap.searchMetadata?.AccountId!].color,
+            };
+          }
+        }
+      }
       customProfiles.push(profile);
     });
     this.log(user);
@@ -601,6 +619,7 @@ class Extension {
       null,
       profile.searchMetadata!.AccountId,
       profile.searchMetadata!.AccountName,
+      user.custom.accounts,
     );
   }
 

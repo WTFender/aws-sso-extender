@@ -29,6 +29,7 @@ import SetupSteps from '../components/SetupSteps.vue';
 import ProfileTable from '../components/ProfileTable.vue';
 import Options from '../views/options.vue';
 import LoginLinks from '../components/LoginLinks.vue';
+import AddAwsAccounts from '../components/AddAwsAccounts.vue';
 import IamRoles from '../components/IamRoles.vue';
 import 'primevue/resources/themes/lara-light-indigo/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -62,6 +63,7 @@ app.component('TabView', TabView);
 app.component('ToggleButton', ToggleButton);
 app.directive('tooltip', Tooltip);
 // Custom components
+app.component('AddAwsAccounts', AddAwsAccounts);
 app.component('IamRoles', IamRoles);
 app.component('LoginLinks', LoginLinks);
 app.component('ProfileTable', ProfileTable);

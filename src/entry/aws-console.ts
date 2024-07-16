@@ -54,6 +54,7 @@ function sessionLabel(aws: AwsConsole): string {
     role,
     account,
     accountName,
+    aws.user?.custom.accounts,
   );
 }
 
@@ -132,13 +133,13 @@ function customizeConsole(aws: AwsConsole): void {
   const label = sessionLabel(aws);
   const color = aws.userType === 'iam' && aws.iamRole!.color !== ''
     ? aws.iamRole!.color
-    : aws.appProfile?.profile.custom?.color || aws.user?.custom.colorDefault;
+    : aws.appProfile?.profile.custom?.color;
   // customize
   let headerLblPromise;
   let footerLblPromise;
   if (aws.user!.custom.colorHeader) {
     getHeader().then((header) => {
-      header.style.backgroundColor = `#${color || '222f3e'}`;
+      header.style.backgroundColor = `#${color}`;
     });
     headerLblPromise = getHeaderLabel(aws.userType);
     headerLblPromise.then((headerLbl) => {
@@ -147,7 +148,7 @@ function customizeConsole(aws: AwsConsole): void {
   }
   if (aws.user!.custom.colorFooter) {
     getFooter().then((footer) => {
-      footer.style.backgroundColor = `#${color || '222f3e'}`;
+      footer.style.backgroundColor = `#${color}`;
     });
     footerLblPromise = getFooterLabel();
     footerLblPromise.then((footerLbl) => {
