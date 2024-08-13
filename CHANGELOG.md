@@ -1,3 +1,6 @@
+## 1.9.1
+- (fix) Apply account label names to profile list
+
 ## 1.9.0
 - Assign labels and colors to your AWS accounts
 - Template `{{accountName}}` will resolve to your account label, fallback to account name
