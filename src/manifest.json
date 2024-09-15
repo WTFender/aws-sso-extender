@@ -90,15 +90,18 @@
     "value": "same-origin"
   },
   "{{safari}}.permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
   "{{chrome}}.permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
   "{{firefox}}.permissions": [
     "contextualIdentities",
     "cookies",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "{{chrome}}.optional_permissions": [
     "history"
@@ -106,7 +109,6 @@
   "{{firefox}}.optional_permissions": [
     "activeTab",
     "history",
-    "tabs",
     "webRequest",
     "webRequestBlocking",
     "webRequestFilterResponse",
