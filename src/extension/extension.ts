@@ -74,7 +74,7 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = this.checkPlatform();
-    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|support|s3)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
+    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrl = '';
     this.loaded = false;
     this.apps = [];
@@ -429,7 +429,7 @@ class Extension {
       if (profile.applicationName === 'AWS Account') {
         if (profile.searchMetadata?.AccountId! in user.custom.accounts) {
           if (user.custom.accountsOverride || profile.profile.custom.color === user.custom.colorDefault) {
-            profile.profile.custom = { 
+            profile.profile.custom = {
               ...profile.profile.custom,
               color: user.custom.accounts[ap.searchMetadata?.AccountId!].color,
             };
