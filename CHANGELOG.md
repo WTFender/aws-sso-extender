@@ -1,3 +1,6 @@
+## 1.9.2
+- Add support for health dashboard
+
 ## 1.9.1
 - (fix) Apply account label names to profile list
 
