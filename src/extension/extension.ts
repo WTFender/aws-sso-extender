@@ -320,17 +320,24 @@ class Extension {
     return data;
   }
 
-  createProfileUrl(user: UserData, appProfile: AppData) {
-    this.log('createProfileUrl');
+  async createProfileUrl(user: UserData, appProfile: AppData): Promise<string> {
+    console.log('createProfileUrl');
     const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml`;
     const appProfileName = encodeUriPlusParens(appProfile.name);
+
     if (appProfile.profile.name === 'Default') {
       return `${ssoDirUrl}/default/${appProfileName}/${appProfile.id}`;
     }
-    const appProfilePath = encodeUriPlusParens(
-      btoa(`${user.accountId}_${appProfile.id}_${appProfile.profile.id}`),
-    );
-    return `${ssoDirUrl}/custom/${appProfileName}/${appProfilePath}`;
+
+    let consoleUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/console?account_id=${appProfile.searchMetadata?.AccountId}&role_name=${appProfile.profile.name}`;
+
+    const currentTab = (await this.config.browser.tabs.query({currentWindow: true, active: true}))[0];
+    // if the current tab in the console, specify the destination
+    if (currentTab.url?.match(this.consoleUrlRegex)) {
+      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTab.url)}`;
+    }
+
+    return consoleUrl;
   }
 
   parseAppProfiles(): AppData[] {
@@ -564,7 +571,7 @@ class Extension {
       user = this.findUserByProfileId(profile.profile.id, users);
     }
     this.log(profile);
-    const profileUrl = this.createProfileUrl(user, profile);
+    const profileUrl = await this.createProfileUrl(user, profile);
     if (this.platform === 'firefox' && settings.firefoxContainers) {
       let containers: ContextualIdentity[] = [];
       // query existing containers
