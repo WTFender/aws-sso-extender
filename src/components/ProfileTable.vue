@@ -586,8 +586,10 @@ export default {
         } else {
           profile.sortName = profile.profile.custom?.label || profile.name;
         }
+        // search filter
         if (
           profile.name.toLowerCase().includes(this.search.toLowerCase())
+          || profile.profile.custom?.label?.toLowerCase().includes(this.search.toLowerCase())
           || profile.profile.name.toLowerCase().includes(this.search.toLowerCase())
           // eslint-disable-next-line vue/max-len
           || (profile.profile.custom?.iamRoles.filter((role) => role.roleName.toLowerCase().includes(this.search.toLowerCase())))!.length > 0
