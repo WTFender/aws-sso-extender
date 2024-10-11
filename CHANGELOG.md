@@ -1,3 +1,6 @@
+## 1.9.3
+- (fix) Search will now filter on profile labels
+
 ## 1.9.2
 - Add support for health dashboard
 
