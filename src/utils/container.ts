@@ -47,21 +47,20 @@ async function createFirefoxContainer(details) {
   extension.log(details);
 
   // If we're in a container already, check if iam role, update label
+  /*
   if (details.cookieStoreId !== 'firefox-default') {
     extension.log('inContainer');
     extension.log(details);
     return {};
   }
+  */
 
   // Intercept our response
   const filter = extension.config.browser.webRequest.filterResponseData(details.requestId);
 
   // Parse some params for container name
   const accountRole = details.url.split('=')[2];
-  // account is account ID and account name in parens
-  const account = decodeURIComponent(details.originUrl.split('/')[7]);
-  const accountName = account.split('(')[1].slice(0, -1);
-  const accountNumber = account.split(' ')[0];
+  const accountNumber = details.url.split('=')[1].split('&')[0]
   // load extension data
   const data = await extension.loadData();
   const ap = await extension.findAppProfile(accountRole, accountNumber, data);
@@ -92,7 +91,7 @@ async function createFirefoxContainer(details) {
       ap?.profile.custom?.label || ap?.profile.name,
       null,
       accountNumber,
-      accountName,
+      ap?.searchMetadata?.AccountName,
       user.custom.accounts,
     );
   }
@@ -115,7 +114,6 @@ async function createFirefoxContainer(details) {
       // signInFederationLocation
       // destination
       const object = JSON.parse(str);
-
       // If we have a sign-in token, hijack this into a container
       if (object.signInToken) {
         let { destination } = object;

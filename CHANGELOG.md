@@ -1,3 +1,8 @@
+## 1.9.4
+- Switching profiles will now retain the focused profile's region & page (thanks @j-smz)
+- Fixed console labels not displaying due to AWS console changes (thanks @chrisgilbert)
+- Fixed firefox containers not working due to AWS url changes
+
 ## 1.9.3
 - (fix) Search will now filter on profile labels
 
@@ -17,7 +22,7 @@
 - Added setting to only navigate current browser tab (default: false)
 - Fix IAM label format not applying to AWS Console
 - Improve account labels & names overflowing fields
-- Add 'copy link' button to [share the current AWS console page](https://docs.aws.amazon.com/singlesignon/latest/userguide/createshortcutlink.html) (thanks @mbourgeois-fetch)
+- Add 'copy link' button to [share the current AWS console page](https://docs.aws.amazon.com/singlesignon/latest/userguide/createshortcutlink.html)
 - Fix support for multiple IAM roles per profile
 - Support the new IAM switch role form
 - UX improvements

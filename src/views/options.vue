@@ -841,7 +841,6 @@ export default {
         ],
         permissions: [
           'activeTab',
-          'tabs',
           'webRequest',
           'webRequestBlocking',
           'webRequestFilterResponse',

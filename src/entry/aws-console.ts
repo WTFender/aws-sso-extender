@@ -6,18 +6,18 @@ import {
 
 /* assume IAM roles for SSO users / redirect to switchrole */
 
-const accountPrompts = [
-  'Account ID: ',
-  'Konto-ID: ',
-  'ID de cuenta: ',
-  'ID de compte: ',
-  'アカウント ID: ',
-  'ID Akun: ',
-  'ID account: ',
-  'ID da conta: ',
-  '계정 ID: ',
-  '账户 ID: ',
-  '帳戶 ID: ',
+const ssoAccountPrompts = [
+  'Account ID',
+  'Konto-ID',
+  'ID de cuenta',
+  'ID de compte',
+  'アカウント ID',
+  'ID Akun',
+  'ID account',
+  'ID da conta',
+  '계정 ID',
+  '账户 ID',
+  '帳戶 ID',
 ];
 
 type AwsConsole = {
@@ -217,20 +217,40 @@ async function init(): Promise<AwsConsole> {
     appProfile: null,
     iamRole: null,
   };
+  // scrape values from the aws console account menu (top right)
+  // some pages are using an older version of the menu
+  // the old menu prompt includes the ': ', new one does not
+  // old iam: 'Currently active as: '
+  // old sso: 'Account ID: '
+  // new iam: 'Currently active as'
+  // new sso: 'Account ID'
   const menu = await getMenu();
   const accountMenu = menu.firstElementChild!.firstElementChild!;
-  const accountPrompt = accountMenu!.firstElementChild!.getElementsByTagName('span')[0].textContent;
-  extension.log(accountPrompt);
-  if (accountPrompt === 'Currently active as: ') {
+  const oldAccountPrompt = accountMenu.firstElementChild!.getElementsByTagName('span')[0].textContent || '';
+  let accountPrompt = '';
+  if (oldAccountPrompt === '') {
+    accountPrompt = accountMenu!.firstElementChild!.firstElementChild!.firstElementChild!.firstElementChild!.textContent!;
+  }
+  if (oldAccountPrompt === 'Currently active as: ') {
     aws.userType = 'iam';
     aws.accountId = accountMenu!.lastElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
     aws.roleName = accountMenu!.firstElementChild!.getElementsByTagName('span')[1].textContent!;
-  }
-  if (accountPrompts.includes(accountPrompt!)) {
+  } else if (ssoAccountPrompts.includes(oldAccountPrompt!.replace(': ', ''))) {
     aws.userType = 'sso';
     aws.accountId = accountMenu!.firstElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
     aws.roleName = accountMenu!.lastElementChild!.getAttribute('title')!;
     aws.ssoRoleName = ssoRoleName(aws.roleName);
+  } else if (ssoAccountPrompts.includes(accountPrompt)) {
+    extension.log('sso user');
+    aws.userType = 'sso';
+    aws.accountId = accountMenu!.firstElementChild!.getElementsByTagName('span')[3].textContent!.replaceAll('-', '');
+    aws.roleName = accountMenu!.firstElementChild!.lastElementChild?.firstElementChild!.getAttribute('title')!;
+    aws.ssoRoleName = ssoRoleName(aws.roleName);
+  } else {
+    extension.log('iam user');
+    aws.userType = 'iam';
+    aws.accountId = accountMenu.getElementsByTagName('span')[7].textContent!.replaceAll('-', '');
+    aws.roleName = accountMenu.getElementsByTagName('span')[3].textContent!
   }
   if ((aws.userType === 'sso' && aws.ssoRoleName)
     || (aws.userType === 'iam' && aws.roleName)) {

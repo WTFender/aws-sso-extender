@@ -557,7 +557,7 @@ export default {
     awsAccountNameLabel() {
       // accountName
       let label = this.activeProfile.searchMetadata!.AccountName
-      // accountName (label) 
+      // accountName (label)
       if (this.activeProfile.searchMetadata!.AccountId in this.user.custom.accounts) {
         label += ` (${this.user.custom.accounts[this.activeProfile.searchMetadata!.AccountId].label})`
       }
@@ -621,7 +621,7 @@ export default {
         });
       }
       if (this.newTableSettings.sortProfile === 'desc') {
-        return profiles.sort((a, b) => { 
+        return profiles.sort((a, b) => {
           const sortA = a.profile.custom?.label || a.profile.name;
           const sortB = b.profile.custom?.label || b.profile.name;
           return sortA.localeCompare(sortB);
@@ -890,12 +890,13 @@ export default {
           if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(appProfile.profile.id)) {
             user = this.$ext.findUserByProfileId(appProfile.profile.id, this.users);
           }
-          const profileUrl = this.$ext.createProfileUrl(user, appProfile);
-          if (this.settings.navCurrentTab) {
-            this.$ext.navCurrentTab(profileUrl);
-          } else {
-            window.open(profileUrl, '_blank');
-          }
+          this.$ext.createProfileUrl(user, appProfile).then((profileUrl) => {
+            if (this.settings.navCurrentTab) {
+              this.$ext.navCurrentTab(profileUrl);
+            } else {
+              window.open(profileUrl, '_blank');
+            }
+          });
         });
       });
     },
