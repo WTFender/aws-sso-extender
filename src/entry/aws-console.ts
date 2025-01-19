@@ -207,40 +207,67 @@ function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const accountMenuHasOneOfAccountPrompts = (accountMenu: HTMLElement, prompts: string[]): boolean => {
-  const allDivs = Array.from(accountMenu.querySelectorAll('div'));
-  
-  return allDivs.some(div => {
-    const text = div.textContent?.trim() ?? '';
-    return prompts.includes(text);
-  });
-};
-
-const parseSsoMenu = (accountMenu: HTMLElement, prompts: string[]): {
+interface AccountMenuInfo {
   accountId: string | null;
   roleName: string | null;
   ssoRoleName: string | null;
-} => {
-  const accountIdDiv = Array.from(accountMenu.querySelectorAll('div')).find(div => {
-    const text = div.textContent?.trim() ?? '';
-      return prompts.includes(text)
-  });
-  
-  let accountId: string|null = null;
-    if (accountIdDiv) {
-      const accountIdSpan = accountIdDiv.parentElement?.querySelector('div > span:last-of-type');
-
-    if (accountIdSpan) {
-      accountId = accountIdSpan.textContent?.replaceAll('-', '') || null;
-    }
-  }
-
-  const roleNameDiv = accountMenu.querySelector('div[title]');
-  const roleName = roleNameDiv?.getAttribute('title') || null;  
-  const ssoRole = roleName ? ssoRoleName(roleName) : null;
-
-  return { accountId, roleName, ssoRoleName: ssoRole };
+  userType: 'iam' | 'sso';
 }
+
+const parseAccountMenu = (accountMenu: HTMLElement, prompts: string[]): AccountMenuInfo => {
+  // scrape values from the aws console account menu (top right)
+  // some pages are using an older version of the menu
+  // the old menu prompt includes the ': ', new one does not
+  // old iam: 'Currently active as: '
+  // old sso: 'Account ID: '
+  // new iam: 'Currently active as'
+  // new sso: 'Account ID'
+  const oldAccountPrompt = accountMenu.firstElementChild?.getElementsByTagName('span')[0].textContent || '';
+  
+  if (oldAccountPrompt === 'Currently active as: ') {
+    return {
+      userType: 'iam',
+      accountId: accountMenu.lastElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', ''),
+      roleName: accountMenu.firstElementChild!.getElementsByTagName('span')[1].textContent!,
+      ssoRoleName: null
+    };
+  }
+  
+  if (oldAccountPrompt.replace(': ', '') && prompts.includes(oldAccountPrompt.replace(': ', ''))) {
+    const accountId = accountMenu.firstElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
+    const roleName = accountMenu.lastElementChild!.getAttribute('title')!;
+    return {
+      userType: 'sso',
+      accountId,
+      roleName,
+      ssoRoleName: ssoRoleName(roleName)
+    };
+  }
+  
+  const allDivs = Array.from(accountMenu.querySelectorAll('div'));
+  const accountIdDiv = allDivs.find(div => prompts.includes(div.textContent?.trim() ?? ''));
+  
+  if (accountIdDiv) {
+    const accountIdSpan = accountIdDiv.parentElement?.querySelector('div > span:last-of-type');
+    const accountId = accountIdSpan?.textContent?.replaceAll('-', '') || null;
+    const roleNameDiv = accountMenu.querySelector('div[title]');
+    const roleName = roleNameDiv?.getAttribute('title') || null;
+    
+    return {
+      userType: 'sso',
+      accountId,
+      roleName,
+      ssoRoleName: roleName ? ssoRoleName(roleName) : null
+    };
+  }
+  
+  return {
+    userType: 'iam',
+    accountId: accountMenu.getElementsByTagName('span')[7].textContent!.replaceAll('-', ''),
+    roleName: accountMenu.getElementsByTagName('span')[3].textContent!,
+    ssoRoleName: null
+  };
+};
 
 async function init(): Promise<AwsConsole> {
   const aws: AwsConsole = {
@@ -253,38 +280,17 @@ async function init(): Promise<AwsConsole> {
     appProfile: null,
     iamRole: null,
   };
-  // scrape values from the aws console account menu (top right)
-  // some pages are using an older version of the menu
-  // the old menu prompt includes the ': ', new one does not
-  // old iam: 'Currently active as: '
-  // old sso: 'Account ID: '
-  // new iam: 'Currently active as'
-  // new sso: 'Account ID'
+
   const accountMenu = await getAccountMenu();
-  const oldAccountPrompt = accountMenu!.firstElementChild!.getElementsByTagName('span')[0].textContent || '';
-  if (oldAccountPrompt === 'Currently active as: ') {
-    aws.userType = 'iam';
-    aws.accountId = accountMenu!.lastElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
-    aws.roleName = accountMenu!.firstElementChild!.getElementsByTagName('span')[1].textContent!;
-  } else if (ssoAccountPrompts.includes(oldAccountPrompt!.replace(': ', ''))) {
-    aws.userType = 'sso';
-    aws.accountId = accountMenu!.firstElementChild!.getElementsByTagName('span')[1].textContent!.replaceAll('-', '');
-    aws.roleName = accountMenu!.lastElementChild!.getAttribute('title')!;
-    aws.ssoRoleName = ssoRoleName(aws.roleName);
-  } else if (accountMenuHasOneOfAccountPrompts(accountMenu, ssoAccountPrompts)) {
-    extension.log('sso user');
-    aws.userType = 'sso';
-    Object.assign(aws, parseSsoMenu(accountMenu, ssoAccountPrompts));
-  } else {
-    extension.log('iam user');
-    aws.userType = 'iam';
-    aws.accountId = accountMenu.getElementsByTagName('span')[7].textContent!.replaceAll('-', '');
-    aws.roleName = accountMenu.getElementsByTagName('span')[3].textContent!
-  }
+  const menuInfo = parseAccountMenu(accountMenu, ssoAccountPrompts);
+  
+  Object.assign(aws, menuInfo);
+
   if ((aws.userType === 'sso' && aws.ssoRoleName)
     || (aws.userType === 'iam' && aws.roleName)) {
     aws.data = await extension.loadData();
   }
+
   if (aws.data) { aws.user = extension.findUser(aws.data); }
   if (aws.user && aws.userType === 'sso') {
     aws.iamRole = null;
