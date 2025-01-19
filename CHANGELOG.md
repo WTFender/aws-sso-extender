@@ -1,3 +1,6 @@
+## 1.10.0
+- Manage [AWS Console multi-session feature](https://aws.amazon.com/fr/about-aws/whats-new/2025/01/aws-management-console-simultaneous-sign-in-multiple-accounts/)
+
 ## 1.9.4
 - Switching profiles will now retain the focused profile's region & page (thanks @j-smz)
 - Fixed console labels not displaying due to AWS console changes (thanks @chrisgilbert)
