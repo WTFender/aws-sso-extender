@@ -332,8 +332,11 @@ class Extension {
 
     const currentTab = (await this.config.browser.tabs.query({currentWindow: true, active: true}))[0];
     // if the current tab in the console, specify the destination
-    if (currentTab.url?.match(this.consoleUrlRegex)) {
-      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTab.url)}`;
+
+    const matches = currentTab.url?.match(this.consoleUrlRegex);
+    if (matches && currentTab.url) {
+      const currentTabUrl = matches.groups?.random ? currentTab.url.replace(`${matches.groups?.random}.`, '') : currentTab.url;
+      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTabUrl)}`;
     }
 
     return consoleUrl;
