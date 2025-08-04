@@ -1,3 +1,6 @@
+## 1.9.5
+ - Added support for using local storage as   an alternative to sync storage. This helps prevent failures caused by sync storage quota limits when managing many profiles (fixes #172).
+
 ## 1.9.4
 - Switching profiles will now retain the focused profile's region & page (thanks @j-smz)
 - Fixed console labels not displaying due to AWS console changes (thanks @chrisgilbert)

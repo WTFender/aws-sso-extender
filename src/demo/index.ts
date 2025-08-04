@@ -257,6 +257,7 @@ const demoData: ExtensionData = {
   appProfiles,
   iamLogins: [],
   settings: {
+    lastUpdated: Date.now(),
     defaultUser: 'lastUserId',
     enableSync: false,
     copyLinkButton: true,

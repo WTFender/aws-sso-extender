@@ -51,7 +51,9 @@ class Extension {
 
   defaultSettings = {
     defaultUser: 'lastUserId',
-    enableSync: true,
+    lastUpdated: Date.now(),
+    copyLinkButton: true, 
+    enableSync: false,
     lastUserId: null,
     lastProfileId: null,
     firefoxContainers: false,
@@ -244,7 +246,7 @@ class Extension {
     const users: Array<Promise<UserData>> = [];
     const usersKey = `${this.config.name}-users`;
     // keep users list in sync
-    const usersData = await this.config.browser.storage.sync.get(usersKey);
+    const usersData = enableSync ? await this.config.browser.storage.sync.get(usersKey) : await this.config.browser.storage.local.get(usersKey);
     const userIds = usersData[usersKey] === undefined
       ? []
       : JSON.parse(usersData[usersKey]).users;
@@ -258,31 +260,66 @@ class Extension {
   }
 
   async saveSettings(settings: ExtensionSettings): Promise<void> {
+    settings.lastUpdated = Date.now()
     await this.saveData(
       `${this.config.name}-settings`,
       settings,
-      this.config.browser.storage.sync,
+      settings.enableSync ? this.config.browser.storage.sync : this.config.browser.storage.local,
     );
   }
 
   async loadSettings(): Promise<ExtensionSettings> {
     this.log('loadSettings');
     const setKey = `${this.config.name}-settings`;
-    const setData = await this.config.browser.storage.sync.get(setKey);
-    // eslint-disable-next-line vue/max-len
-    const settings = setData[setKey] === undefined
-      ? this.defaultSettings
-      : JSON.parse(setData[setKey]);
-    // replace missing settings with default settings
+    const dataSyncStorage = (await this.config.browser.storage.sync.get(setKey))[setKey] as string | undefined;
+    const dataLocalStorage = (await this.config.browser.storage.local.get(setKey))[setKey] as string | undefined;
+    const localParsed = dataLocalStorage === undefined? undefined : JSON.parse(dataLocalStorage)
+    const syncParsed = dataSyncStorage === undefined? undefined : JSON.parse(dataSyncStorage)
+    const settings  = this.selectSettingsFromStorageProvider(syncParsed, localParsed)
+    return settings
+  }
+
+  selectSettingsFromStorageProvider(syncProviderData:any , localProviderData:any ): ExtensionSettings{
+    const local = this.fillMissingSettings(localProviderData)
+    const sync = this.fillMissingSettings(syncProviderData)   
+
+    let settings:any 
+    if (local === undefined && sync === undefined) {
+      settings  = this.defaultSettings 
+    }
+    if (local === undefined && sync !== undefined )
+      settings =  sync
+
+    if (local !== undefined && sync === undefined )
+      settings =  local
+    
+    // Checking which storage type that was last updated, and choose it as the storage provider
+    this.log(local)
+    this.log(sync)
+    if (!settings)
+      if (local.lastUpdated > sync.lastUpdated)
+          settings =  local
+      else 
+          settings = sync
+    
+    return settings as ExtensionSettings
+
+  }
+
+  fillMissingSettings(settings:any){
+     // replace missing settings with default settings
     // useful when adding new settings between versions
+    if (settings === undefined)
+      return settings
     Object.keys(this.defaultSettings).forEach((key) => {
       // no key or undefined
       if (!Object.prototype.hasOwnProperty.call(settings, key)) {
         settings[key] = this.defaultSettings[key];
       }
     });
-    return settings as ExtensionSettings;
+    return settings
   }
+
 
   getDefaultUser(data: ExtensionData): UserData {
     this.log('getDefaultUser');
@@ -525,7 +562,7 @@ class Extension {
       this.saveData(
         `${this.config.name}-users`,
         { users: [...new Set(userIds)] },
-        this.config.browser.storage.sync,
+        data.settings.enableSync ? this.config.browser.storage.sync : this.config.browser.storage.local,
       );
       this.saveAppProfiles(user, data.settings.enableSync);
     });
