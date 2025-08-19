@@ -44,6 +44,7 @@ export default defineConfig(async ({ mode }) => {
         browser: platform,
         manifest: action === 'watch' ? generateManifestDevtools : generateManifest,
         watchFilePaths: ['package.json', 'manifest.json'],
+        skipManifestValidation: true,
       }),
     ],
   };
