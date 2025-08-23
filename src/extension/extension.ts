@@ -389,7 +389,7 @@ class Extension {
     
 
     //Specific region in profile takes precedence over defaultRegion
-    const region = customRegion ?? defaultRegion;
+    const region = customRegion ? customRegion : defaultRegion;
     const consoleUrl = new URL(originalUrl);
     let destination  = consoleUrl.searchParams.get("destination")
    
