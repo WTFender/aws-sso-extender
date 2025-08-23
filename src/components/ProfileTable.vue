@@ -139,6 +139,17 @@
         </div>
         <div v-else-if="activeProfile.applicationName === 'AWS Account'">
           <div style="margin-bottom: 10px">
+            <small id="account-label-help" style="display: block;">Region</small>
+            <InputText
+              v-model="activeProfile.profile.custom!.region"
+              class="p-inputtext-sm"
+              aria-describedby="account-label-help"
+              style="width: 400px"
+              :disabled="false"
+              placeholder="Specify a region eg. (eu-west-1)"
+            />
+          </div>
+          <div style="margin-bottom: 10px">
             <small id="account-label-help">AWS Account ID</small>
             <InputText
               v-model="activeProfile.searchMetadata!.AccountId"
@@ -890,7 +901,7 @@ export default {
           if (this.settings.showAllProfiles && !this.user.appProfileIds.includes(appProfile.profile.id)) {
             user = this.$ext.findUserByProfileId(appProfile.profile.id, this.users);
           }
-          this.$ext.createProfileUrl(user, appProfile).then((profileUrl) => {
+          this.$ext.createProfileUrl(user, appProfile,settings).then((profileUrl) => {
             if (this.settings.navCurrentTab) {
               this.$ext.navCurrentTab(profileUrl);
             } else {

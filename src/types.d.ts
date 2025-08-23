@@ -23,6 +23,7 @@ export interface ExtensionSettings {
   lastUpdated: number;
   copyLinkButton: boolean;
   defaultUser: string;
+  defaultRegion: string | null
   enableSync: boolean;
   firefoxContainers?: boolean;
   firefoxResumeContainer: boolean;
@@ -151,6 +152,7 @@ export interface CustomData {
   hide?: boolean
   icon?: string | null
   label?: string | null
+  region?: string | null
   color: string;
   iamRoles: IamRole[]
 }
