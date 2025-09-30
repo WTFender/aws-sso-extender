@@ -76,7 +76,10 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = this.checkPlatform();
-    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
+    // Updated regex to handle both standard and multi-session URLs
+    // Standard: https://us-east-1.console.aws.amazon.com/...
+    // Multi-session: https://412381741422-hh323s3c.us-east-1.console.aws.amazon.com/...
+    this.consoleUrlRegex = /^https:\/\/(\d{12}-[a-z0-9]+\.)?(((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrl = '';
     this.loaded = false;
     this.apps = [];
