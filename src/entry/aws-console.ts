@@ -197,20 +197,16 @@ function customizeConsole(aws: AwsConsole): void {
 
 
 function getSsoSubdomain(user: UserData): string {
-  // Try to get SSO subdomain from user's custom settings first (for vanity URLs like acme.awsapps.com)
   if (user.custom?.ssoSubdomain) {
     return user.custom.ssoSubdomain;
   }
-  // Fall back to managed directory ID (like d-123abc1234)
   return user.managedActiveDirectoryId;
 }
 
 function copyToClipBoard(aws: AwsConsole){
   let linkurl: string;
 
-  // Strip multi-session subdomain from destination URL
-  // Convert: https://123456789012-abc123xy.us-east-1.console.aws.amazon.com/...
-  // To: https://us-east-1.console.aws.amazon.com/...
+  // Strip multi-session subdomain for shareable URL
   const cleanDestinationUrl = window.location.href.replace(/https:\/\/\d{12}-[a-z0-9]+\./, 'https://');
 
   const ssoSubdomain = getSsoSubdomain(aws.user!);
@@ -236,19 +232,12 @@ async function init(): Promise<AwsConsole> {
     iamRole: null,
   };
 
-  // Detect if multi-session mode is enabled by checking URL format
-  // Multi-session: https://123456789012-abc123xy.us-east-1.console.aws.amazon.com/...
-  // Non-multi-session: https://us-east-1.console.aws.amazon.com/...
   const isMultiSession = /^https:\/\/\d{12}-[a-z0-9]+\./.test(window.location.href);
   extension.log(`Multi-session mode: ${isMultiSession}`);
 
   if (isMultiSession) {
-    // Multi-session mode: Parse from button attributes (title has complete info)
-    // Wait for the button and its title to be populated (it gets set dynamically)
     let menuButton: Element | null = null;
     let title = '';
-
-    // Poll for title to be populated - usually takes 600-800ms
     for (let i = 0; i < 30; i++) {
       menuButton = document.querySelector('button[aria-controls="menu--account"]');
       title = menuButton?.getAttribute('title') || '';
@@ -261,14 +250,11 @@ async function init(): Promise<AwsConsole> {
 
     extension.log(`Button title: ${title}`);
 
-    // Extract role name from title
     const roleMatch = title.match(/^([^/]+)/);
     if (roleMatch) {
       aws.roleName = roleMatch[1].trim();
       extension.log(`Role name: ${aws.roleName}`);
 
-      // Detect SSO vs IAM from role name pattern
-      // AWS IAM Identity Center always creates roles with AWSReservedSSO_ prefix
       if (aws.roleName.startsWith('AWSReservedSSO_')) {
         extension.log('sso user (multi-session)');
         aws.userType = 'sso';
@@ -279,15 +265,12 @@ async function init(): Promise<AwsConsole> {
         aws.userType = 'iam';
       }
     }
-
-    // Extract account ID from title
     const accountMatch = title.match(/@\s*([\d-]+)$/);
     if (accountMatch) {
       aws.accountId = accountMatch[1].replaceAll('-', '');
       extension.log(`Account ID: ${aws.accountId}`);
     }
   } else {
-    // Non-multi-session mode: Use original DOM scraping logic
     const menu = await getMenu();
     const accountMenu = menu.firstElementChild!.firstElementChild!;
     const oldAccountPrompt = accountMenu.firstElementChild!.getElementsByTagName('span')[0].textContent || '';
