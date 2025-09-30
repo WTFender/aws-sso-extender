@@ -107,19 +107,8 @@ function checkIamLogins(aws: AwsConsole) {
   }
 }
 
-async function getMenu() {
-  // In both multi-session and non-multi-session modes, the menu element
-  // exists in the DOM (though may be hidden). Use querySelector directly.
-  // Add small retry in case the DOM isn't quite ready yet.
-  for (let i = 0; i < 20; i++) {
-    const menu = document.querySelector('#menu--account');
-    if (menu) {
-      return menu;
-    }
-    // Wait a bit if not found yet (rare case)
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  throw new Error('Timeout: Element not found with selector "#menu--account"');
+function getMenu() {
+  return waitForElement('#menu--account');
 }
 function getHeader() {
   return waitForElement('#awsc-top-level-nav');
