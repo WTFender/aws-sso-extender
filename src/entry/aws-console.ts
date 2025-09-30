@@ -272,17 +272,23 @@ async function init(): Promise<AwsConsole> {
 
     extension.log(`Button title: ${title}`);
 
-    // Check for "Federated user" label to detect SSO
-    const menu = await getMenu();
-    const allElements = Array.from(menu.querySelectorAll('*'));
-    const hasFederatedUser = allElements.some(el => el.textContent?.trim() === 'Federated user');
+    // Extract role name from title
+    const roleMatch = title.match(/^([^/]+)/);
+    if (roleMatch) {
+      aws.roleName = roleMatch[1].trim();
+      extension.log(`Role name: ${aws.roleName}`);
 
-    if (hasFederatedUser) {
-      extension.log('sso user (multi-session)');
-      aws.userType = 'sso';
-    } else {
-      extension.log('iam user (multi-session)');
-      aws.userType = 'iam';
+      // Detect SSO vs IAM from role name pattern
+      // AWS IAM Identity Center always creates roles with AWSReservedSSO_ prefix
+      if (aws.roleName.startsWith('AWSReservedSSO_')) {
+        extension.log('sso user (multi-session)');
+        aws.userType = 'sso';
+        aws.ssoRoleName = ssoRoleName(aws.roleName);
+        extension.log(`SSO role name: ${aws.ssoRoleName}`);
+      } else {
+        extension.log('iam user (multi-session)');
+        aws.userType = 'iam';
+      }
     }
 
     // Extract account ID from title
@@ -290,17 +296,6 @@ async function init(): Promise<AwsConsole> {
     if (accountMatch) {
       aws.accountId = accountMatch[1].replaceAll('-', '');
       extension.log(`Account ID: ${aws.accountId}`);
-    }
-
-    // Extract role name from title
-    const roleMatch = title.match(/^([^/]+)/);
-    if (roleMatch) {
-      aws.roleName = roleMatch[1].trim();
-      extension.log(`Role name: ${aws.roleName}`);
-      if (aws.userType === 'sso') {
-        aws.ssoRoleName = ssoRoleName(aws.roleName);
-        extension.log(`SSO role name: ${aws.ssoRoleName}`);
-      }
     }
   } else {
     // Non-multi-session mode: Use original DOM scraping logic
