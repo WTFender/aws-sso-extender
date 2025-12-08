@@ -10,17 +10,19 @@ extension.loadData().then((data: ExtensionData) => {
   });
 
   // listen for hotkey commands
-  extension.config.browser.commands.onCommand.addListener((command) => {
+  extension.config.browser.commands.onCommand.addListener(async (command) => {
     extension.log(`background:command:${command}`);
     // message popup to open profile
     if (command.startsWith('openProfile')) {
-      extension.log(data);
-      const user = extension.findUser(data);
-      const appProfileId = user.custom.hotkeys[command];
+      // load fresh data at command time to avoid stale state
+      const latest: ExtensionData = await extension.loadData();
+      extension.log(latest);
+      const activeUser = extension.findUser(latest);
+      const appProfileId = activeUser.custom.hotkeys[command];
       extension.log(`background:command:appProfileId:${appProfileId}`);
       const appProfiles = extension.customizeProfiles(
-        data.users[0],
-        data.appProfiles,
+        activeUser,
+        latest.appProfiles,
       );
       const appProfile = extension.findAppProfileById(
         appProfileId,
@@ -29,9 +31,9 @@ extension.loadData().then((data: ExtensionData) => {
       extension.log(appProfile);
       extension.navSelectedProfile(
         appProfile,
-        data.users[0],
-        data.users,
-        data.settings,
+        activeUser,
+        latest.users,
+        latest.settings,
       );
     }
   });

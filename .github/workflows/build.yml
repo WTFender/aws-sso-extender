@@ -36,12 +36,12 @@ jobs:
       - name: Build Firefox Extension
         run: npm run build:firefox
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: aws_sso_extender-${{ steps.setup.outputs.version }}-chrome.zip
           path: ./release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: aws_sso_extender-${{ steps.setup.outputs.version }}-firefox.zip
           path: ./release/firefox/aws_sso_extender-${{ steps.setup.outputs.version }}.zip

@@ -38,11 +38,19 @@ jobs:
           npm run build:chrome
           cd dist/chrome/ && zip -r ../../release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip .
       
+      # - name: Publish to Edge store
+      #   uses: hocgin/action-edge-addone-upload@main
+      #   with:
+      #     product_id: ${{ secrets.EDGE_PRODUCT_ID }}
+      #     client_id: ${{ secrets.EDGE_CLIENT_ID }}
+      #     client_secret: ${{ secrets.EDGE_CLIENT_SECRET }}
+      #     access_token_url: ${{ secrets.EDGE_ACCESS_TOKEN_URL }}
+      #     addone_file: release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+      
       - name: Publish to Edge store
-        uses: hocgin/action-edge-addone-upload@main
+        uses: wdzeng/edge-addon@v2
         with:
-          product_id: ${{ secrets.EDGE_PRODUCT_ID }}
-          client_id: ${{ secrets.EDGE_CLIENT_ID }}
-          client_secret: ${{ secrets.EDGE_CLIENT_SECRET }}
-          access_token_url: ${{ secrets.EDGE_ACCESS_TOKEN_URL }}
-          addone_file: release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+          product-id: ${{ secrets.EDGE_PRODUCT_ID }}
+          zip-path: release/chrome/aws_sso_extender-${{ steps.setup.outputs.version }}.zip
+          api-key: ${{ secrets.EDGE_API_KEY }}
+          client-id: ${{ secrets.EDGE_CLIENT_ID }}
