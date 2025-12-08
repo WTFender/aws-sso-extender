@@ -51,6 +51,7 @@ class Extension {
 
   defaultSettings = {
     defaultUser: 'lastUserId',
+    defaultRegion: null,
     lastUpdated: Date.now(),
     copyLinkButton: true, 
     enableSync: false,
@@ -356,7 +357,7 @@ class Extension {
     return data;
   }
 
-  async createProfileUrl(user: UserData, appProfile: AppData): Promise<string> {
+  async createProfileUrl(user: UserData, appProfile: AppData,settings: ExtensionSettings): Promise<string> {
     console.log('createProfileUrl');
     const ssoDirUrl = `https://${user.managedActiveDirectoryId}.awsapps.com/start/#/saml`;
     const appProfileName = encodeUriPlusParens(appProfile.name);
@@ -375,8 +376,40 @@ class Extension {
       const currentTabUrl = matches.groups?.random ? currentTab.url.replace(`${matches.groups?.random}.`, '') : currentTab.url;
       consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTabUrl)}`;
     }
-
+    consoleUrl = this.applyRegionToDestinationUrl(consoleUrl, appProfile, settings)
     return consoleUrl;
+  }
+
+  applyRegionToDestinationUrl(originalUrl:string,  appProfile: AppData, settings: ExtensionSettings ): string {
+    const customRegion = appProfile.profile.custom?.region;
+    const defaultRegion = settings?.defaultRegion;
+    this.log( "CustomRegion" + customRegion)
+    this.log("DefaultRegion" + defaultRegion)
+
+    //Eearly exist if no settings are set for regions
+    if (!customRegion && !defaultRegion) 
+      return originalUrl;
+    
+
+    //Specific region in profile takes precedence over defaultRegion
+    const region = customRegion ? customRegion : defaultRegion;
+    const consoleUrl = new URL(originalUrl);
+    let destination  = consoleUrl.searchParams.get("destination")
+   
+    // If destinaton is not defined, default to aws home screen
+    if (!destination )
+      destination  = `https://${region}.console.aws.amazon.com/console/home?region=${region}`
+
+    
+    const destinationUrl = new URL(destination )
+    destinationUrl.searchParams.set("region", region!)
+    consoleUrl.searchParams.set("destination", destinationUrl.toString())
+ 
+
+    this.log("Console url")
+    this.log(consoleUrl.toString())
+    return consoleUrl.toString()
+
   }
 
   parseAppProfiles(): AppData[] {
@@ -612,7 +645,7 @@ class Extension {
     this.log('createProfileUrl');
     this.log(user);
     this.log(profile);
-    const profileUrl = await this.createProfileUrl(user, profile);
+    const profileUrl = await this.createProfileUrl(user, profile,settings);
     this.log(profileUrl);
     if (this.platform === 'firefox' && settings.firefoxContainers) {
       let containers: ContextualIdentity[] = [];

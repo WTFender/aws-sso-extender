@@ -259,6 +259,7 @@ const demoData: ExtensionData = {
   settings: {
     lastUpdated: Date.now(),
     defaultUser: 'lastUserId',
+    defaultRegion: null,
     enableSync: false,
     copyLinkButton: true,
     lastUserId: users[0].userId,

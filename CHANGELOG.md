@@ -1,3 +1,6 @@
+## 1.9.6
+- Add support for specifying a custom global default region, as well as account-specific regions. (Feature request #175)
+
 ## 1.9.5
 - Added support for using local storage as   an alternative to sync storage. This helps prevent failures caused by sync storage quota limits when managing many profiles (fixes #172).
 - Manage [AWS Console multi-session feature](https://aws.amazon.com/fr/about-aws/whats-new/2025/01/aws-management-console-simultaneous-sign-in-multiple-accounts/)

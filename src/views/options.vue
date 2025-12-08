@@ -103,6 +103,16 @@
           :selected="u.userId === settings.defaultUser"
         />
       </select><br>
+      <small class="option-label">Default Region</small><br>
+      <InputText
+        id="defaultRegion"
+        v-model="settings.defaultRegion"
+        name="defaultRegion"
+        class="option-value"
+        style="width: 330px;"
+        :placeholder="settings.defaultRegion?? 'Specify a default region'"
+        @change="saveUser()"
+      />
       <small
         v-tooltip.bottom="$ext.platform === 'firefox' ? 'Customize key binds @ about:addons' : 'Customize key binds @ chrome://extensions/shortcuts'"
         class="option-label"
