@@ -646,6 +646,7 @@ export default {
       loaded: false,
       loadedUser: false,
       loadedSettings: false,
+      isSaving: false,
     };
   },
   computed: {
@@ -732,7 +733,7 @@ export default {
       handler() {
         if (!this.loadedSettings) {
           this.loadedSettings = true;
-        } else if (!this.demoMode) {
+        } else if (!this.demoMode && !this.isSaving) {
           this.jsonEditor = {
             user: this.user.custom,
             extension: this.settings,
@@ -788,9 +789,11 @@ export default {
   methods: {
     nextUser() {
       this.switchUser = true;
-      const options = this.userOptions;
-      const currentUserIdx = options.findIndex((u) => u.userId === this.user.userId);
-      this.user = options[currentUserIdx + 1] || options[0];
+      // iterate using stable users list to avoid reordering from userOptions
+      const idx = this.users.findIndex((u) => u.userId === this.user.userId);
+      const nextIdx = (idx === -1 ? 0 : (idx + 1) % this.users.length);
+      // eslint-disable-next-line prefer-destructuring
+      this.user = this.users[nextIdx];
     },
     getFontColor(hex) {
       return getFontColor(hex);
@@ -961,12 +964,19 @@ export default {
       if (this.loaded && !this.demoMode && !this.user.userId.startsWith('demoUser')) {
         clearTimeout(this.saveTimeoutId);
         this.saveTimeoutId = setTimeout(() => {
-          this.$ext.saveUser(this.user, this.settings.enableSync).then(() => {
-            this.settings.lastUserId = this.user.userId;
-            this.$ext.saveSettings(this.settings).then(() => {
+          this.isSaving = true;
+          this.$ext.saveUser(this.user, this.settings.enableSync)
+            .then(() => {
+              // update lastUserId once per save cycle; watcher ignores while isSaving
+              this.settings.lastUserId = this.user.userId;
+              return this.$ext.saveSettings(this.settings);
+            })
+            .then(() => {
               this.notify('Saved Config', 'success');
+            })
+            .finally(() => {
+              this.isSaving = false;
             });
-          });
         }, 2000);
       }
     },

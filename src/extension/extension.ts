@@ -76,10 +76,7 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = this.checkPlatform();
-    // Updated regex to handle both standard and multi-session URLs
-    // Standard: https://us-east-1.console.aws.amazon.com/...
-    // Multi-session: https://412381741422-hh323s3c.us-east-1.console.aws.amazon.com/...
-    this.consoleUrlRegex = /^https:\/\/(\d{12}-[a-z0-9]+\.)?(((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
+    this.consoleUrlRegex = /^https:\/\/((((?<random>[0-9A-Za-z-]+)\.)?((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon)|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrl = '';
     this.loaded = false;
     this.apps = [];
@@ -372,8 +369,11 @@ class Extension {
 
     const currentTab = (await this.config.browser.tabs.query({currentWindow: true, active: true}))[0];
     // if the current tab in the console, specify the destination
-    if (currentTab.url?.match(this.consoleUrlRegex)) {
-      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTab.url)}`;
+
+    const matches = currentTab.url?.match(this.consoleUrlRegex);
+    if (matches && currentTab.url) {
+      const currentTabUrl = matches.groups?.random ? currentTab.url.replace(`${matches.groups?.random}.`, '') : currentTab.url;
+      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTabUrl)}`;
     }
 
     return consoleUrl;
