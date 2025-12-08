@@ -9,7 +9,7 @@ function waitForElement<TElement extends Element = HTMLElement>(
   } = {},
 ): Promise<TElement> {
   extension.log(`waitForElement:${selector}`);
-  const { timeout = 3000, parentNode = document } = options;
+  const { timeout = 20_000, parentNode = document } = options;
 
   return new Promise((resolve, reject) => {
     const element = parentNode.querySelector<TElement>(selector);
