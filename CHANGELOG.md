@@ -1,3 +1,8 @@
+## 1.9.6
+- Fixes for multi-session support (thanks @shouze)
+- Fixes for user switching and save loops (thanks @hoshsadiq)
+- Increased timeout for finding HTML elements (thanks @vmaerten)
+
 ## 1.9.5
  - Added support for using local storage as   an alternative to sync storage. This helps prevent failures caused by sync storage quota limits when managing many profiles (fixes #172).
 
