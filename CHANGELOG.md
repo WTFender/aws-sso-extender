@@ -1,5 +1,6 @@
 ## 1.9.5
- - Added support for using local storage as   an alternative to sync storage. This helps prevent failures caused by sync storage quota limits when managing many profiles (fixes #172).
+- Added support for using local storage as   an alternative to sync storage. This helps prevent failures caused by sync storage quota limits when managing many profiles (fixes #172).
+- Manage [AWS Console multi-session feature](https://aws.amazon.com/fr/about-aws/whats-new/2025/01/aws-management-console-simultaneous-sign-in-multiple-accounts/)
 
 ## 1.9.4
 - Switching profiles will now retain the focused profile's region & page (thanks @j-smz)

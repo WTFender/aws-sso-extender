@@ -76,7 +76,7 @@ class Extension {
   constructor(config: ExtensionConfig) {
     this.config = config;
     this.platform = this.checkPlatform();
-    this.consoleUrlRegex = /^https:\/\/(((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
+    this.consoleUrlRegex = /^https:\/\/((((?<random>[0-9A-Za-z-]+)\.)?((?<region>\w{2}-\w+-\d{1,2})|support|s3|health)\.console\.aws\.amazon)|console\.amazonaws-us-gov)\.com\/(?<path>.*)?$/;
     this.ssoUrl = '';
     this.loaded = false;
     this.apps = [];
@@ -369,8 +369,11 @@ class Extension {
 
     const currentTab = (await this.config.browser.tabs.query({currentWindow: true, active: true}))[0];
     // if the current tab in the console, specify the destination
-    if (currentTab.url?.match(this.consoleUrlRegex)) {
-      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTab.url)}`;
+
+    const matches = currentTab.url?.match(this.consoleUrlRegex);
+    if (matches && currentTab.url) {
+      const currentTabUrl = matches.groups?.random ? currentTab.url.replace(`${matches.groups?.random}.`, '') : currentTab.url;
+      consoleUrl = `${consoleUrl}&destination=${encodeURIComponent(currentTabUrl)}`;
     }
 
     return consoleUrl;

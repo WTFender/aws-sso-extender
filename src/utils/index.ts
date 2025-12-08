@@ -19,26 +19,19 @@ function waitForElement<TElement extends Element = HTMLElement>(
       return;
     }
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        Array.from(mutation.addedNodes).forEach((addedNode) => {
-          if (addedNode.nodeType === Node.ELEMENT_NODE) {
-            const targetElement = (addedNode as Element).querySelector<TElement>(selector);
-
-            if (targetElement) {
-              observer.disconnect();
-              resolve(targetElement);
-            }
-          }
-        });
-      });
+    const observer = new MutationObserver(() => {
+      const element = document.querySelector<TElement>(selector);
+      if (element) {
+        observer.disconnect();
+        resolve(element);
+      }
     });
 
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
     setTimeout(() => {
       observer.disconnect();
-      reject(new Error(`Timeout: Element not found with selector "${selector}"`));
+      reject(new Error(`Timeout: Element not found with selector "${selector}" after ${timeout}ms`));
     }, timeout);
   });
 }
