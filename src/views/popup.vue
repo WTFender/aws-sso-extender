@@ -235,16 +235,7 @@ export default {
       }
       return '580px';
     },
-    userOptions() {
-      const options = this.users.map((user: UserData) => ({
-        ...user,
-        label: `${user.custom.displayName || user.subject} @ ${user.managedActiveDirectoryId}${user.custom.displayName ? ` (${user.subject})` : ''}`,
-        command: () => {
-          this.user = user;
-        },
-      }));
-      return options;
-    },
+
     faveProfiles(): AppData[] {
       // favorite & not hidden
       return this.userProfiles.filter(
@@ -379,9 +370,11 @@ export default {
   },
   methods: {
     nextUser() {
-      const options = this.userOptions;
-      const currentUserIdx = options.findIndex((u) => u.userId === this.user.userId);
-      this.user = options[currentUserIdx + 1] || options[0];
+      // iterate using stable users list to avoid reordering from userOptions
+      const idx = this.users.findIndex((u) => u.userId === this.user.userId);
+      const nextIdx = (idx === -1 ? 0 : (idx + 1) % this.users.length);
+      // eslint-disable-next-line prefer-destructuring
+      this.user = this.users[nextIdx];
     },
     async getProfileHotkeys() {
       this.profileHotkeys = await this.$ext.config.browser.commands.getAll().then((commands) => {
