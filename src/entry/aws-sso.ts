@@ -30,19 +30,48 @@ async function getUserData(): Promise<UserData> {
 }
 
 async function getApps(): Promise<AppData[]> {
-  await RateLimiter();
-  await Semaphore.acquire();
-  return (api('/instance/appinstances').then(
-    (data) => data.result,
-  ) as Promise<AppData[]>).finally(() => { Semaphore.release(); });
+  const apps: AppData[] = [];
+  let nextToken: string | undefined;
+
+  do {
+    await RateLimiter();
+    await Semaphore.acquire();
+
+    const path = nextToken
+      ? `/instance/appinstances?next_token=${encodeURIComponent(nextToken)}`
+      : '/instance/appinstances';
+
+    // eslint-disable-next-line no-await-in-loop
+    const data = await api(path).finally(() => { Semaphore.release(); });
+
+    apps.push(...(data.result as AppData[]));
+    nextToken = data.paginationToken;
+  } while (nextToken);
+
+  return apps;
 }
 
 async function getAppProfiles(app: AppData): Promise<ProfileData[]> {
-  await RateLimiter();
-  await Semaphore.acquire();
-  return (api(`/instance/appinstance/${app.id}/profiles`).then(
-    (data) => data.result,
-  ) as Promise<ProfileData[]>).finally(() => { Semaphore.release(); });
+  const profiles: ProfileData[] = [];
+  let nextToken: string | undefined;
+
+  do {
+    await RateLimiter();
+    await Semaphore.acquire();
+
+    const base = `/instance/appinstance/${app.id}/profiles`;
+    const path = nextToken
+      ? `${base}?next_token=${encodeURIComponent(nextToken)}`
+      : base;
+
+    // eslint-disable-next-line no-await-in-loop
+    const data = await api(path).finally(() => { Semaphore.release(); });
+
+    profiles.push(...(data.result as ProfileData[]));
+    nextToken = data.paginationToken;
+  } while (nextToken);
+
+  return profiles;
 }
 
 extension.log(window.location.href);

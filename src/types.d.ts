@@ -66,6 +66,7 @@ export interface ExtensionMessage {
 
 export interface ApiData {
   result: AppData[] | ProfileData[]
+  paginationToken?: string
 }
 
 export interface UserData {
