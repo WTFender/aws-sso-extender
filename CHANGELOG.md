@@ -1,3 +1,6 @@
+## 1.9.7
+- Fix to support 100+ accounts (thank @nis17nagaid)
+
 ## 1.9.6
 - Fixes for multi-session support (thanks @shouze)
 - Fixes for user switching and save loops (thanks @hoshsadiq)
