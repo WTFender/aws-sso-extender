@@ -90,8 +90,7 @@ setTimeout(() => {
           apps.forEach((app) => {
             profiles.push(
               getAppProfiles(app).then((appProfiles) => {
-                const appWithProfiles = app;
-                appWithProfiles.profiles = appProfiles;
+                const appWithProfiles = { ...app, profiles: appProfiles };
                 extension.apps.push(appWithProfiles);
               }),
             );
@@ -100,6 +99,7 @@ setTimeout(() => {
             extension.update(user);
             extension.loaded = true;
           }).catch((err) => {
+            extension.log(`aws-sso:error:${err.message}`);
             throw new Error('Something went terribly wrong and it needs to be handled', { cause: err });
           });
         });
