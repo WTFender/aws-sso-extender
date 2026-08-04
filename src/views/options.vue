@@ -494,6 +494,94 @@
         @addAccount="addAccount"
       />
     </div>
+    <div class="options-group">
+      <h2>Create Bookmarks</h2>
+      <p style="margin-bottom: 1rem;">Create a bookmarks file that can be used without this extension to sign into a specific AWS account and role.  Bookmarks do not contain sensitive data and can be shared with other users. IAM roles are not included.</p>
+      <div>
+        <PCheckbox
+          v-model="user.custom.bookmarkFolderEnabled"
+          input-id="bookmarkFolderEnabled"
+          name="bookmarkFolderEnabled"
+          :binary="true"
+          class="setting-checkbox"
+          style="margin-right: 10px; vertical-align: middle;"
+          @change="saveUser()"
+        />
+        <label
+          for="bookmarkFolderEnabled"
+          class="setting-label"
+        >Create folders for each AWS account</label>
+      </div>
+      <br>
+      <div>
+        <small
+          id="bookmark-export-label"
+          class="option-label"
+        >Bookmark Label</small>
+        <br>
+        <InputText
+          id="bookmarkLabel"
+          v-model="user.custom.bookmarkLabel"
+          aria-describedby="bookmark-export-label"
+          name="bookmarkLabel"
+          class="option-value"
+          style="width: 330px; margin-right: 10px; margin-bottom: 5px;"
+          :placeholder="user.custom.bookmarkLabel"
+          @change="saveUser()"
+        />
+      </div>
+      <div
+        class="option-label"
+        style="margin-left: 1rem; margin-top: 0.5rem;"
+      >
+        <p style="font-size: .75rem; margin-bottom: .5rem;">
+          Label variables
+        </p>
+        <code>{{ "\{\{user\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO user" }} </code><br>
+        <code>{{ "\{\{profile\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SSO profile" }} </code><br>
+        <code>{{ "\{\{account\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWS account ID" }} </code><br>
+        <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br>
+      </div>
+      <br>
+      <div
+        v-if="user.custom.bookmarkFolderEnabled"
+        style="margin-top: 1rem;"
+      >
+        <small
+          id="bookmark-folder-label"
+          class="option-label"
+        >Bookmark Folder Label</small>
+        <br>
+        <InputText
+          id="bookmarkFolderLabel"
+          v-model="user.custom.bookmarkFolderLabel"
+          aria-describedby="bookmark-folder-label"
+          name="bookmarkFolderLabel"
+          class="option-value"
+          style="width: 330px; margin-right: 10px; margin-bottom: 5px;"
+          :placeholder="user.custom.bookmarkFolderLabel"
+          @change="saveUser()"
+        />
+        <div
+          class="option-label"
+          style="margin-left: 1rem; margin-top: 0.5rem;"
+        >
+          <p style="font-size: .75rem; margin-bottom: .5rem;">
+            Folder variables
+          </p>
+          <code>{{ "\{\{account\}\}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AWS account ID" }} </code><br>
+          <code>{{ "\{\{accountName\}\} AWS account alias" }} </code><br>
+        </div>
+      </div>
+      <br>
+      <PrimeButton
+        raised
+        icon="pi pi-bookmark"
+        class="p-button-primary"
+        label="Export Bookmarks"
+        @click="exportBookmarks()"
+      />
+    </div>
     <div
       class="options-group"
     >
@@ -827,6 +915,17 @@ export default {
         }
       }, 1000);
     },
+    deduplicateLabels(profiles) {
+      const labelCounts: Record<string, number> = {};
+      return profiles.map((p) => {
+        const baseLabel = p.label;
+        labelCounts[baseLabel] = (labelCounts[baseLabel] || 0) + 1;
+        const finalLabel = labelCounts[baseLabel] > 1
+          ? `${baseLabel} (${labelCounts[baseLabel] - 1})`
+          : baseLabel;
+        return { ...p, label: finalLabel };
+      });
+    },
     exportUser() {
       const fileToSave = new Blob([JSON.stringify({
         user: this.user.custom,
@@ -835,6 +934,134 @@ export default {
         type: 'application/json',
       });
       saveAs(fileToSave, `${this.user.custom.displayName || this.user.subject}-${this.$ext.config.name}.json`);
+    },
+    async exportBookmarks() {
+      const profilePromises = this.userProfiles.map(async (ap) => ({
+        url: await this.$ext.createProfileUrl(this.user, ap),
+        label: this.$ext.buildLabel(
+          this.user.custom.bookmarkLabel,
+          this.user.custom.displayName || this.user.subject,
+          ap.profile.custom?.label || ap.profile.name,
+          null,
+          ap.searchMetadata?.AccountId,
+          ap.searchMetadata?.AccountName,
+          this.user.custom.accounts,
+        ),
+        accountId: ap.searchMetadata?.AccountId || '',
+        accountName: ap.searchMetadata?.AccountName || '',
+        applicationName: ap.applicationName,
+        profileName: ap.profile.name,
+      }));
+
+      const profiles = await Promise.all(profilePromises);
+
+      // Sort by accountId, then by label
+      profiles.sort((a, b) => {
+        if (a.accountId !== b.accountId) {
+          return a.accountId.localeCompare(b.accountId);
+        }
+        return a.label.localeCompare(b.label);
+      });
+
+      // Only do global deduplication if folders are disabled
+      const processedProfiles = this.user.custom.bookmarkFolderEnabled
+        ? profiles
+        : this.deduplicateLabels(profiles);
+
+      // Generate NETSCAPE-compliant HTML
+      const now = Math.floor(Date.now() / 1000);
+      let html = '<!DOCTYPE NETSCAPE-Bookmark-file-1>\n';
+      html += '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n';
+      html += '<TITLE>Bookmarks</TITLE>\n';
+      html += '<H1>Bookmarks</H1>\n';
+      html += '<DL><p>\n';
+      html += `  <DL><p>\n    <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">AWS SSO Extender</H3>\n    <DL><p>\n`;
+
+      if (this.user.custom.bookmarkFolderEnabled) {
+        // Group profiles by accountId, excluding profiles without accountId
+        const accountGroups: Record<string, typeof processedProfiles> = {};
+        const profilesWithoutAccount: typeof processedProfiles = [];
+
+        processedProfiles.forEach((profile) => {
+          if (profile.accountId) {
+            if (!accountGroups[profile.accountId]) {
+              accountGroups[profile.accountId] = [];
+            }
+            accountGroups[profile.accountId].push(profile);
+          } else {
+            profilesWithoutAccount.push(profile);
+          }
+        });
+
+        // Create folders for each account (sorted by accountId)
+        const sortedAccountIds = Object.keys(accountGroups).sort();
+        sortedAccountIds.forEach((accountId) => {
+          // Build folder name using buildLabel
+          const accountName = processedProfiles.find(p => p.accountId === accountId)?.accountName || '';
+          const folderName = this.$ext.buildLabel(
+            this.user.custom.bookmarkFolderLabel,
+            '',
+            '',
+            '',
+            accountId,
+            accountName,
+            {},
+          );
+
+          html += `      <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">${folderName}</H3>\n      <DL><p>\n`;
+
+          // Deduplicate labels within this account folder
+          const labelCounts: Record<string, number> = {};
+          accountGroups[accountId].forEach((profile) => {
+            const baseLabel = profile.label;
+            labelCounts[baseLabel] = (labelCounts[baseLabel] || 0) + 1;
+            const finalLabel = labelCounts[baseLabel] > 1
+              ? `${baseLabel} (${labelCounts[baseLabel] - 1})`
+              : baseLabel;
+            html += `        <DT><A HREF="${profile.url}">${finalLabel}</A>\n`;
+          });
+
+          html += '      </DL><p>\n';
+        });
+
+        // Create "Other Apps" folder for profiles without account IDs
+        if (profilesWithoutAccount.length > 0) {
+          html += `      <DT><H3 ADD_DATE="${now}" LAST_MODIFIED="${now}">Other Apps</H3>\n      <DL><p>\n`;
+
+          // Sort by application name, then profile name
+          profilesWithoutAccount.sort((a, b) => {
+            if (a.applicationName !== b.applicationName) {
+              return a.applicationName.localeCompare(b.applicationName);
+            }
+            return a.profileName.localeCompare(b.profileName);
+          });
+
+          // Deduplicate labels within Other Apps folder
+          const otherAppLabelCounts: Record<string, number> = {};
+          profilesWithoutAccount.forEach((profile) => {
+            const baseLabel = `${profile.applicationName} - ${profile.profileName}`;
+            otherAppLabelCounts[baseLabel] = (otherAppLabelCounts[baseLabel] || 0) + 1;
+            const finalLabel = otherAppLabelCounts[baseLabel] > 1
+              ? `${baseLabel} (${otherAppLabelCounts[baseLabel] - 1})`
+              : baseLabel;
+            html += `        <DT><A HREF="${profile.url}">${finalLabel}</A>\n`;
+          });
+
+          html += '      </DL><p>\n';
+        }
+      } else {
+        // Flat structure without folders
+        processedProfiles.forEach((profile) => {
+          html += `      <DT><A HREF="${profile.url}">${profile.label}</A>\n`;
+        });
+      }
+
+      html += '    </DL><p>\n</DL><p>\n</DL><p>\n';
+
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      const fileToSave = new Blob([html], { type: 'text/html' });
+      saveAs(fileToSave, `aws-sso-extender-bookmarks-${dateStr}.html`);
     },
     requestPermissionsContainers() {
       this.$ext.config.browser.permissions.request({

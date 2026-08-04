@@ -35,6 +35,9 @@ class Extension {
     displayName: '',
     sessionLabelSso: '{{user}}/{{profile}} @ {{account}}',
     sessionLabelIam: '{{user}}/{{role}} @ {{account}} via {{profile}}',
+    bookmarkLabel: '{{profile}} @ {{account}} {{accountName}}',
+    bookmarkFolderEnabled: false,
+    bookmarkFolderLabel: '{{account}} {{accountName}}',
     colorDefault: '222f3e',
     colorFooter: true, // confusing if these are disabled
     colorHeader: true, // after granting permissions
