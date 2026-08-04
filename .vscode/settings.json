@@ -26,5 +26,8 @@
     "vuejs",
     "webextension",
     "xmlhttprequest"
-  ]
+  ],
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+  }
 }

@@ -1,3 +1,6 @@
+## 1.9.9
+- 🔖 Export AWS accounts and roles to a bookmarks file that can be shared with other users; bookmarks do not require this extension to be installed.
+
 ## 1.9.8
 - Fix profiles not loading in Firefox.
 
