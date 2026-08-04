@@ -1,3 +1,6 @@
+## 1.9.8
+- Fix profiles not loading in Firefox.
+
 ## 1.9.7
 - Fix to support 100+ accounts (thank @nis17nagaid)
 

@@ -59,6 +59,9 @@ export default async function api<ResponseType = ApiData>(path: string): Promise
     headers: { 'x-amz-sso_bearer_token': token },
   }).then(async (response) => {
     extension.log(`aws-sso:api:${path}:results`);
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+    }
     return response.json() as ResponseType;
   });
 }
