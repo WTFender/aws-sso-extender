@@ -44,4 +44,6 @@ Settings & IAM Roles
 JSON Editor  
 <img src="./docs/img/json-editor.png" width="500">  
 Open the AWS Console in Firefox containers  
-<img src="./docs/img/ff-containers.png" width="500">
+<img src="./docs/img/ff-containers.png" width="500">  
+Save AWS accounts and roles as bookmarks  
+<img src="./docs/img/bookmarks.png" width="300">
