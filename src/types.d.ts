@@ -87,6 +87,7 @@ export interface UserData {
     labelHeader: boolean,
     labelIcon: boolean,
     profiles: Record<string, CustomData>
+    ssoSubdomain?: string,
     hotkeys: {
       openProfile1: string,
       openProfile2: string,

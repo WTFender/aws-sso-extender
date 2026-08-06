@@ -190,15 +190,29 @@ function customizeConsole(aws: AwsConsole): void {
         // add the new node we made in the above loop to the nav bar
         if (copiedNode) menuList.append(copiedNode);
         // run the function below when the button is clicked
-        document.getElementById("copyLinkButton")?.addEventListener("click", () => copyToClipBoard(aws.user!.managedActiveDirectoryId,aws.accountId!,aws.ssoRoleName!))
+        document.getElementById("copyLinkButton")?.addEventListener("click", () => copyToClipBoard(aws))
       });
     });
   }
 }
 
 
-function copyToClipBoard(awsDirectoryId: string,accountId: string,ssoRoleName: string){
-  var linkurl="https://"+awsDirectoryId+".awsapps.com/start/#/console?account_id="+accountId+"&role_name="+ssoRoleName+"&destination="+encodeURIComponent(window.location.href);
+function getSsoSubdomain(user: UserData): string {
+  if (user.custom?.ssoSubdomain) {
+    return user.custom.ssoSubdomain;
+  }
+  return user.managedActiveDirectoryId;
+}
+
+function copyToClipBoard(aws: AwsConsole){
+  let linkurl: string;
+
+  // Strip multi-session subdomain for shareable URL
+  const cleanDestinationUrl = window.location.href.replace(/https:\/\/\d{12}-[a-z0-9]+\./, 'https://');
+
+  const ssoSubdomain = getSsoSubdomain(aws.user!);
+  linkurl = `https://${ssoSubdomain}.awsapps.com/start/#/console?account_id=${aws.accountId}&role_name=${aws.ssoRoleName}&destination=${encodeURIComponent(cleanDestinationUrl)}`;
+
   navigator.clipboard.writeText(linkurl);
   waitForElement('#copyLinkButton').then(async (el)=> { var textElement=el.querySelector("span"); if (textElement){textElement.textContent="Link Copied"; await delay(1000); textElement.textContent="Copy Link"}})
 }
@@ -281,11 +295,51 @@ async function init(): Promise<AwsConsole> {
     iamRole: null,
   };
 
-  const accountMenu = await getAccountMenu();
-  const menuInfo = parseAccountMenu(accountMenu, ssoAccountPrompts);
-  
-  Object.assign(aws, menuInfo);
+  const isMultiSession = /^https:\/\/\d{12}-[a-z0-9]+\./.test(window.location.href);
+  extension.log(`Multi-session mode: ${isMultiSession}`);
 
+  if (isMultiSession) {
+    // Multi-session URLs have a different account menu structure
+    // Parse from the menu button title attribute instead
+    let menuButton: Element | null = null;
+    let title = '';
+    for (let i = 0; i < 30; i++) {
+      menuButton = document.querySelector('button[aria-controls="menu--account"]');
+      title = menuButton?.getAttribute('title') || '';
+      if (title) {
+        extension.log(`Title found after ${i + 1} attempts`);
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    extension.log(`Button title: ${title}`);
+
+    const roleMatch = title.match(/^([^/]+)/);
+    if (roleMatch) {
+      aws.roleName = roleMatch[1].trim();
+      extension.log(`Role name: ${aws.roleName}`);
+
+      if (aws.roleName.startsWith('AWSReservedSSO_')) {
+        extension.log('sso user (multi-session)');
+        aws.userType = 'sso';
+        aws.ssoRoleName = ssoRoleName(aws.roleName);
+        extension.log(`SSO role name: ${aws.ssoRoleName}`);
+      } else {
+        extension.log('iam user (multi-session)');
+        aws.userType = 'iam';
+      }
+    }
+    const accountMatch = title.match(/@\s*([\d-]+)$/);
+    if (accountMatch) {
+      aws.accountId = accountMatch[1].replaceAll('-', '');
+      extension.log(`Account ID: ${aws.accountId}`);
+    }
+  } else {
+    const accountMenu = await getAccountMenu();
+    const menuInfo = parseAccountMenu(accountMenu, ssoAccountPrompts);
+    Object.assign(aws, menuInfo);
+  }
   if ((aws.userType === 'sso' && aws.ssoRoleName)
     || (aws.userType === 'iam' && aws.roleName)) {
     aws.data = await extension.loadData();

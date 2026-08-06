@@ -246,6 +246,23 @@
                 @change="saveUser()"
               />
             </div>
+            <div>
+              <small
+                id="sso-subdomain-label"
+                class="option-label"
+              >SSO Subdomain (optional)</small>
+              <br>
+              <InputText
+                id="ssoSubdomain"
+                v-model="user.custom.ssoSubdomain"
+                aria-describedby="sso-subdomain-label"
+                name="ssoSubdomain"
+                class="option-value"
+                style="width: 330px; margin-right: 10px; margin-bottom: 5px;"
+                placeholder="e.g., yourcompany (for yourcompany.awsapps.com)"
+                @change="saveUser()"
+              />
+            </div>
             <div
               class="option-label"
               style="margin-left: 1rem;"
